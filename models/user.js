@@ -11,4 +11,12 @@ const UserSchema = new mongoose.Schema({
   verificationExpires: Date,
 }, { timestamps: true });
 
+UserSchema.index(
+  { createdAt: 1 }, 
+  { 
+    expireAfterSeconds: 3600, 
+    partialFilterExpression: { isVerified: false } 
+  }
+);
+
 export default mongoose.models.User || mongoose.model("User", UserSchema);

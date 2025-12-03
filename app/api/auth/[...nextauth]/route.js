@@ -19,12 +19,11 @@ export const authOptions = {
 
         let account = await User.findOne({
           $or: [{ email: identifier }, { phone: identifier }],
-        });
-
+        }).select("+password");
         if (!account) {
           account = await Seller.findOne({
             $or: [{ email: identifier }, { phone: identifier }],
-          });
+          }).select("+password");
         }
 
         if (!account) throw new Error("No user or seller found with that identifier");

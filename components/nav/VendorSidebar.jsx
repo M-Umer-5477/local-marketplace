@@ -75,10 +75,10 @@ const VendorSidebar = ({ isCollapsed }) => {
   const vendorLinks = [
     { href: "/vendor/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/vendor/manageProducts", label: "Manage Products", icon: Package },
-    { href: "/vendor/manageOrders", label: "Online Orders", icon: ShoppingCart },
+    { href: "/vendor/orders", label: "Online Orders", icon: ShoppingCart },
     { href: "/vendor/pos", label: "Offline Checkout", icon: ClipboardList },
     { href: "/vendor/khata", label: "Customer Khata", icon: BookUser },
-    { href: "/vendor/shop", label: "View My Shop", icon: Store },
+    { href: "/vendor/myShop", label: "View My Shop", icon: Store },
   ];
 
   return (

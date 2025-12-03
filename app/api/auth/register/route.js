@@ -1,95 +1,125 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import User from "@/models/user";
-import Seller from "@/models/seller";
+import Seller from "@/models/seller"; // Import Seller to check for duplicates
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import sendVerificationEmail from "@/lib/mailer";
 
 export async function POST(req) {
   try {
     await db.connect();
-    // 1. 'role' is removed. It's no longer expected from the frontend.
-    const { name, email, phone, password } = await req.json();
+    const { name, email, password, phone } = await req.json();
 
-    // 2. Check for existing User (safer check)
-    const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
-    if (existingUser) {
-      if (!existingUser.isVerified) {
-        // You could add logic here to resend the verification email
-        return NextResponse.json(
-          { error: "This email/phone is already registered but not verified. Please check your email." },
-          { status: 400 }
-        );
-      }
-      // If verified, it's a hard block
-      return NextResponse.json(
-        { error: "This email/phone is already registered as a user." },
-        { status: 400 }
-      );
-    }
+    // --- 1. PREPARE DATA ---
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
-    // 3. Check for existing Seller
-    const existingSeller = await Seller.findOne({ $or: [{ email }, { phone }] });
+    // --- 2. CHECK SELLER COLLECTION (Strict Block) ---
+    // Prevent a Seller email/phone from being used as a Customer
+    const existingSeller = await Seller.findOne({ 
+        $or: [{ email }, { phone }] 
+    });
+
     if (existingSeller) {
-      // Block registration if the email/phone is *already* a seller
-      return NextResponse.json(
-        { error: "This email/phone is already registered as a seller. Please log in as a seller." },
-        { status: 400 }
-      );
+      return NextResponse.json({ 
+        error: "This email or phone is already registered as a Seller account." 
+      }, { status: 400 });
     }
 
-    // --- 4. Corrected Token and User Creation ---
-    
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    // --- 3. CHECK USER COLLECTION (Smart Logic) ---
+    const existingUser = await User.findOne({ 
+        $or: [{ email }, { phone }] 
+    });
 
-    // Standard Secure Token Pattern:
-    // 1. Generate a raw, unhashed token
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    
-    // 2. Hash the token to store in the database
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(rawToken)
-      .digest("hex");
-      
-    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+    if (existingUser) {
+      if (existingUser.isVerified) {
+        // A. Real Account Exists -> BLOCK
+        return NextResponse.json({ error: "Email or Phone already registered" }, { status: 400 });
+      } else {
+        // B. Unverified "Zombie" Account -> OVERWRITE
+        // User previously tried to sign up but didn't verify. Allow retry.
+        
+        existingUser.name = name;
+        existingUser.email = email; // Ensure email matches current request
+        existingUser.phone = phone; // Update phone in case they changed it
+        existingUser.password = hashedPassword;
+        existingUser.verificationToken = otp;
+        existingUser.verificationExpires = expiry;
+        
+        await existingUser.save();
+        await sendVerificationEmail(email, otp);
 
-    // 5. Create the new user with a hardcoded role
-    const user = await User.create({
+        return NextResponse.json({ message: "OTP resent to email" }, { status: 200 });
+      }
+    }
+
+    // --- 4. CREATE NEW USER (If no conflict found) ---
+    await User.create({
       name,
       email,
       phone,
-      password: passwordHash,
-      role: 'customer', // <-- Role is hardcoded to 'user'
-      verificationToken: hashedToken, // 3. Save the HASHED token
-      verificationExpires: tokenExpiry,
+      password: hashedPassword,
+      role: "customer",
+      isVerified: false,
+      verificationToken: otp, 
+      verificationExpires: expiry,
     });
 
-    // 6. Send the RAW token in the email link
-    // This is the NEW line
-const verifyUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${rawToken}&id=${user._id}`;
-    await sendVerificationEmail(email, verifyUrl);
+    // --- 5. SEND EMAIL ---
+    await sendVerificationEmail(email, otp);
 
-    return NextResponse.json(
-      { message: "User registered. Check your email for verification link." },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: "OTP sent to email" }, { status: 201 });
 
   } catch (error) {
-    // 7. Added robust error handling
-    console.error("User Registration Error:", error);
-    // Catch database duplicate key error
-    if (error.code === 11000) {
-      return NextResponse.json(
-        { error: "This email or phone is already registered." },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { error: "An internal server error occurred." },
-      { status: 500 }
-    );
+    console.error("Register Error:", error);
+    return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }
+// import { NextResponse } from "next/server";
+// import db from "@/lib/db";
+// import User from "@/models/user";
+// import bcrypt from "bcryptjs";
+// import sendVerificationEmail from "@/lib/mailer"; // Import your updated mailer
+
+// export async function POST(req) {
+//   try {
+//     await db.connect();
+//     const { name, email, password, phone } = await req.json();
+
+//     // 1. Check if user exists
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return NextResponse.json({ error: "Email already registered" }, { status: 400 });
+//     }
+
+//     // 2. Hash Password
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     // 3. Generate 6-Digit OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
+
+//     // 4. Create User
+//     // We reuse 'verificationToken' to store the OTP. No Schema change needed!
+//     await User.create({
+//       name,
+//       email,
+//       phone,
+//       password: hashedPassword,
+//       role: "customer",
+//       isVerified: false,
+//       verificationToken: otp, 
+//       verificationExpires: expiry,
+//     });
+
+//     // 5. Send Email
+//     await sendVerificationEmail(email, otp);
+
+//     return NextResponse.json({ message: "OTP sent to email" }, { status: 201 });
+
+//   } catch (error) {
+//     console.error("Register Error:", error);
+//     return NextResponse.json({ error: "Server Error" }, { status: 500 });
+//   }
+// }

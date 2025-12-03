@@ -21,6 +21,6 @@ export const metadata = {
 };
 
 export default function PublicLayout({ children }) {
-  return <PublicLayoutClient>{children}</PublicLayoutClient>;
+  return <PublicLayoutClient> {children}</PublicLayoutClient>;
 }
 

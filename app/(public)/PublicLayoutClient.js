@@ -16,10 +16,8 @@ export default function PublicLayoutClient({ children }) {
       const role = session.user?.role;
 
       if (role === "seller") {
-        router.replace("/seller/dashboard");
-      } else {
-        router.replace("/customer/dashboard");
-      }
+        router.replace("/vendor/dashboard");
+      } 
     }
   }, [session, status, router]);
 

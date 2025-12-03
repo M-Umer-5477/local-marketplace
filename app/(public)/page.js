@@ -1,289 +1,4 @@
-// "use client";
-
-// import React, { useState } from 'react';
-// import Link from 'next/link';
-// import { 
-//   Store,
-//   BookText, 
-//   ShoppingCart, 
-//   Search, 
-//   CreditCard, 
-//   History,
-//   Star,
-//   ArrowRight,
-// } from 'lucide-react'; // <-- Removed Menu and X
-// import { Button } from '@/components/ui/button';
-
-// // --- Main App Component ---
-// export default function App() {
-//   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // No longer needed
-
-//   return (
-//     <div className="font-sans antialiased text-gray-900 bg-white">
-//       {/* --- Header Removed --- */}
-      
-//       {/* --- Main Content --- */}
-//       <main>
-//         <HeroSection />
-//         <FeaturesSection />
-//         <ExploreStoresSection />
-//         <TestimonialsSection />
-//         <CallToActionSection />
-//       </main>
-      
-//       {/* --- Footer Removed --- */}
-//     </div>
-//   );
-// }
-
-// // --- Header Component Removed ---
-
-// // --- Hero Section ---
-// function HeroSection() {
-//   return (
-//     <section className="py-20 md:py-32 bg-gray-50">
-//       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-//         <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">
-//           Your Digital Partner for Local Commerce.
-//         </h1>
-//         <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-//           Whether you're a local shop owner or a customer who loves their community,
-//           we connect you in one simple, powerful platform.
-//         </p>
-//         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-//           <Button asChild size="lg" className="w-full sm:w-auto" >
-//             <Link href="/vendor/register">
-//               Start Selling Today
-//             </Link>
-//           </Button>
-//           <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white">
-//             Explore Local Stores
-//           </Button>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// // --- Features (How It Works) Section ---
-// function FeaturesSection() {
-//   const [activeTab, setActiveTab] = useState('sellers'); // 'sellers' or 'customers'
-
-//   const sellerFeatures = [
-//     {
-//       icon: <Store className="h-8 w-8 text-primary" />,
-//       title: "Digital Storefront",
-//       description: "Create a beautiful online store in minutes. No coding required."
-//     },
-//     {
-//       icon: <BookText className="h-8 w-8 text-primary" />,
-//       title: "Khata Management",
-//       description: "Ditch the paper. Track all your customer credit (udhaar) digitally."
-//     },
-//     {
-//       icon: <ShoppingCart className="h-8 w-8 text-primary" />,
-//       title: "Offline POS & Inventory",
-//       description: "Manage your in-store sales and inventory with our simple checkout system."
-//     }
-//   ];
-
-//   const customerFeatures = [
-//     {
-//       icon: <Search className="h-8 w-8 text-primary" />,
-//       title: "Discover Local",
-//       description: "Find and shop from your favorite neighborhood stores online."
-//     },
-//     {
-//       icon: <CreditCard className="h-8 w-8 text-primary" />,
-//       title: "Easy Payments",
-//       description: "Pay securely with cash, card, or browse products from home."
-//     },
-//     {
-//       icon: <History className="h-8 w-8 text-primary" />,
-//       title: "View Order History", // <-- MODIFIED FEATURE
-//       description: "Keep track of all your purchases from local stores, all in one place." // <-- MODIFIED
-//     }
-//   ];
-
-//   return (
-//     <section className="py-20 md:py-24">
-//       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//         <h2 className="text-3xl md:text-4xl font-bold text-center">
-//           One App. Two Ways to Grow.
-//         </h2>
-//         <p className="text-lg text-gray-600 text-center max-w-2xl mx-auto mt-4">
-//           We provide dedicated tools to help you thrive, whether you're
-//           selling or shopping.
-//         </p>
-        
-//         {/* Tabbed Interface */}
-//         <div className="mt-12 max-w-lg mx-auto flex p-1 bg-gray-100 rounded-lg">
-//           <button
-//             onClick={() => setActiveTab('sellers')}
-//             className={`w-1/2 py-3 rounded-md font-medium transition-all ${
-//               activeTab === 'sellers' ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-200'
-//             }`}
-//           >
-//             For Sellers
-//           </button>
-//           <button
-//             onClick={() => setActiveTab('customers')}
-//             className={`w-1/2 py-3 rounded-md font-medium transition-all ${
-//               activeTab === 'customers' ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-200'
-//             }`}
-//           >
-//             For Customers
-//           </button>
-//         </div>
-
-//         {/* Features Grid */}
-//         <div className="mt-12">
-//           {activeTab === 'sellers' && (
-//             <div className="grid md:grid-cols-3 gap-8">
-//               {sellerFeatures.map((feature, i) => (
-//                 <FeatureCard key={i} {...feature} />
-//               ))}
-//             </div>
-//           )}
-//           {activeTab === 'customers' && (
-//             <div className="grid md:grid-cols-3 gap-8">
-//               {customerFeatures.map((feature, i) => (
-//                 <FeatureCard key={i} {...feature} />
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// // --- Feature Card Sub-component ---
-// function FeatureCard({ icon, title, description }) {
-//   return (
-//     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-//       <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-//         {icon}
-//       </div>
-//       <h3 className="mt-5 text-xl font-semibold">{title}</h3>
-//       <p className="mt-2 text-gray-600">{description}</p>
-//     </div>
-//   );
-// }
-
-// // --- Explore Stores Section ---
-// function ExploreStoresSection() {
-//   const stores = [
-//     { name: "City Electronics", category: "Electronics", img: "https://placehold.co/400x300/e2e8f0/334155?text=City+Electronics" },
-//     { name: "Fresh Grocers", category: "Grocery", img: "https://placehold.co/400x300/dbeafe/1e3a8a?text=Fresh+Grocers" },
-//     { name: "Modern Fashions", category: "Apparel", img: "https://placehold.co/400x300/fce7f3/831843?text=Modern+Fashions" },
-//     { name: "Punjab Pharmacy", category: "Health", img: "https://placehold.co/400x300/dcfce7/15803d?text=Punjab+Pharmacy" }
-//   ];
-
-//   return (
-//     <section className="py-20 md:py-24 bg-gray-50">
-//       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//         <h2 className="text-3xl md:text-4xl font-bold text-center">
-//           Explore Featured Stores
-//         </h2>
-//         <p className="text-lg text-gray-600 text-center max-w-2xl mx-auto mt-4">
-//           Discover the best local businesses already on our platform.
-//         </p>
-        
-//         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-//           {stores.map((store, i) => (
-//             <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden group transition-all hover:shadow-xl">
-//               <img src={store.img} alt={store.name} className="w-full h-48 object-cover" />
-//               <div className="p-4">
-//                 <h3 className="text-lg font-semibold">{store.name}</h3>
-//                 <p className="text-sm text-gray-500">{store.category}</p>
-//                 <a href="#" className="inline-flex items-center text-sm font-medium text-primary mt-3 group-hover:underline">
-//                   Visit Store <ArrowRight className="h-4 w-4 ml-1" />
-//                 </a>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// // --- Testimonials Section ---
-// function TestimonialsSection() {
-//   const testimonials = [
-//     {
-//       quote: "Managing my khata book online has saved me hours every week. My customers love the transparency!",
-//       name: "Ali Ahmed",
-//       role: "Owner, Fresh Grocers"
-//     },
-//     {
-//       quote: "As a customer, I love that I can check my balance with my local shop anytime. It's so convenient.",
-//       name: "Fatima Khan",
-//       role: "Local Shopper"
-//     },
-//     {
-//       quote: "The offline checkout is fast and my inventory is always up to date. This app is a game-changer for my store.",
-//       name: "Usman Butt",
-//       role: "Owner, City Electronics"
-//     }
-//   ];
-
-//   return (
-//     <section className="py-20 md:py-24">
-//       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//         <h2 className="text-3xl md:text-4xl font-bold text-center">
-//           Trusted by Businesses and Shoppers
-//         </h2>
-        
-//         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-//           {testimonials.map((item, i) => (
-//             <div key={i} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col">
-//               <div className="flex text-yellow-400">
-//                 <Star className="h-5 w-5 fill-current" />
-//                 <Star className="h-5 w-5 fill-current" />
-//                 <Star className="h-5 w-5 fill-current" />
-//                 <Star className="h-5 w-5 fill-current" />
-//                 <Star className="h-5 w-5 fill-current" />
-//               </div>
-//               <p className="mt-4 text-gray-700 italic text-lg grow">"{item.quote}"</p>
-//               <div className="mt-4">
-//                 <p className="font-semibold">{item.name}</p>
-//                 <p className="text-sm text-gray-500">{item.role}</p>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// // --- Final Call to Action Section ---
-// function CallToActionSection() {
-//   return (
-//     <section className="py-20 md:py-24 bg-primary text-white">
-//       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-//         <h2 className="text-3xl md:text-4xl font-bold">
-//           Ready to Get Started?
-//         </h2>
-//         <p className="mt-4 text-lg text-primary-100 max-w-2xl mx-auto">
-//           Join thousands of local businesses and customers building a
-//           stronger community.
-//         </p>
-//         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-//           <Button size="lg" variant="secondary">
-//             I'm a Seller
-//           </Button>
-//           <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary">
-//             I'm a Customer
-//           </Button>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
+// 
 "use client";
 
 import React, { useState } from 'react';
@@ -297,197 +12,258 @@ import {
   History,
   Star,
   ArrowRight,
+  CheckCircle2,
+  Zap,
+  LayoutDashboard
 } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge'; // Assuming you have ShadCN Badge
 
 // --- Main App Component ---
-export default function App() {
+export default function LandingPage() {
   return (
-    // Replace bg-white with bg-background, text-gray-900 with text-foreground
-    <div className="font-sans antialiased text-foreground bg-background flex flex-col min-h-screen">
-      
-      {/* --- Main Content --- */}
+    <div className="font-sans antialiased text-foreground bg-background flex flex-col min-h-screen selection:bg-primary/20 selection:text-primary">
       <main className="grow">
         <HeroSection />
+        <StatsSection />
         <FeaturesSection />
         <ExploreStoresSection />
         <TestimonialsSection />
         <CallToActionSection />
       </main>
-      
     </div>
   );
 }
 
-// --- Hero Section ---
+// --- 1. Upgraded Hero Section with Grid Background ---
 function HeroSection() {
   return (
-    // bg-gray-50 -> bg-muted/40: A subtle difference from the main white background
-    <section className="py-20 md:py-32 bg-muted/40">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* text-gray-900 -> text-foreground */}
-        <h1 className="text-4xl md:text-6xl font-extrabold text-foreground leading-tight tracking-tight">
-          Your Digital Partner for <br className="hidden md:inline" /> 
-          <span className="text-primary">Local Commerce.</span>
-        </h1>
-        {/* text-gray-600 -> text-muted-foreground */}
-        <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-          Whether you're a local shop owner or a customer who loves their community,
-          we connect you in one simple, powerful platform.
-        </p>
-        <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-          <Button asChild size="lg" className="w-full sm:w-auto shadow-lg shadow-primary/20" >
-            <Link href="/vendor/register">
-              Start Selling Today
-            </Link>
-          </Button>
-          {/* bg-white -> bg-background */}
-          <Button size="lg" variant="outline" className="w-full sm:w-auto bg-background">
-            Explore Local Stores
-          </Button>
+    <section className="relative pt-20 pb-32 md:pt-8 md:pb-48 overflow-hidden">
+      
+      {/* BACKGROUND PATTERN: The "Fancy" Engineering Look */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-slate-950 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[14px_24px]">
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="flex flex-col lg:flex-row items-center gap-12 text-center lg:text-left">
+          
+          {/* Left: Text Content */}
+          <div className="lg:w-1/2 space-y-8 animate-in slide-in-from-bottom-5 duration-700 fade-in">
+             <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
+                <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+                The #1 Marketplace for Locals
+             </div>
+             
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+              Digitize Your <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-500 to-pink-500">
+                Local Business.
+              </span>
+            </h1>
+            
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              Accept orders, manage your <strong>Khata</strong>, and run your <strong>POS</strong>—all from one dashboard. Connect with your neighborhood like never before.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+              <Button asChild size="lg" className="h-12 px-8 text-lg shadow-lg shadow-primary/25 transition-transform hover:scale-105" >
+                <Link href="/vendor/register">
+                  Start Selling Now
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 px-8 text-lg border-primary/20 bg-background/50 backdrop-blur-sm hover:bg-primary/5">
+                Find Nearby Stores
+              </Button>
+            </div>
+            
+            <div className="pt-4 flex items-center justify-center lg:justify-start gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" /> Free 14-day trial
+                </div>
+                <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" /> No credit card required
+                </div>
+            </div>
+          </div>
+
+          {/* Right: Visual Element (Floating Mockup) */}
+          <div className="lg:w-1/2 relative animate-in slide-in-from-right-10 duration-1000 fade-in">
+             <div className="relative mx-auto w-full max-w-[500px]">
+                {/* Background Blob for depth */}
+                <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob"></div>
+                <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-blue-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob animation-delay-2000"></div>
+                
+                {/* Main Card Image */}
+                <div className="relative rounded-2xl border bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden transform rotate-2 hover:rotate-0 transition-all duration-500">
+                   <img 
+                     src="https://placehold.co/600x400/1e293b/ffffff?text=Dashboard+Preview" 
+                     alt="App Dashboard" 
+                     className="w-full h-auto"
+                   />
+                   
+                   {/* Floating Badge 1 */}
+                   <div className="absolute -left-6 top-10 bg-card p-3 rounded-lg shadow-xl border border-border flex items-center gap-3 animate-bounce duration-3000">
+                      <div className="bg-green-100 p-2 rounded-full">
+                        <Zap className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                         <p className="text-xs text-muted-foreground font-bold">New Order</p>
+                         <p className="text-sm font-bold text-foreground">Rs. 1,250</p>
+                      </div>
+                   </div>
+
+                   {/* Floating Badge 2 */}
+                   <div className="absolute -right-6 bottom-10 bg-card p-3 rounded-lg shadow-xl border border-border flex items-center gap-3 animate-bounce duration-4000">
+                      <div className="bg-blue-100 p-2 rounded-full">
+                        <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                         <p className="text-xs text-muted-foreground font-bold">Khata Updated</p>
+                         <p className="text-sm font-bold text-foreground">Balance: 0</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+
         </div>
       </div>
     </section>
   );
 }
 
-// --- Features (How It Works) Section ---
+// --- 2. Stats Section (Social Proof) ---
+function StatsSection() {
+    return (
+        <section className="border-y border-border bg-muted/30 py-10">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    {[
+                        { label: "Active Vendors", value: "500+" },
+                        { label: "Daily Orders", value: "2.5k" },
+                        { label: "Cities Covered", value: "12" },
+                        { label: "Happy Customers", value: "10k+" },
+                    ].map((stat, i) => (
+                        <div key={i} className="space-y-1">
+                            <h3 className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</h3>
+                            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )
+}
+
+// --- 3. Features with Gradient Tabs ---
 function FeaturesSection() {
   const [activeTab, setActiveTab] = useState('sellers');
 
   const sellerFeatures = [
-    {
-      icon: <Store className="h-8 w-8 text-primary" />,
-      title: "Digital Storefront",
-      description: "Create a beautiful online store in minutes. No coding required."
-    },
-    {
-      icon: <BookText className="h-8 w-8 text-primary" />,
-      title: "Khata Management",
-      description: "Ditch the paper. Track all your customer credit (udhaar) digitally."
-    },
-    {
-      icon: <ShoppingCart className="h-8 w-8 text-primary" />,
-      title: "Offline POS & Inventory",
-      description: "Manage your in-store sales and inventory with our simple checkout system."
-    }
+    { icon: <Store className="h-6 w-6 text-white" />, color: "bg-blue-500", title: "Digital Storefront", description: "Create a beautiful online store in minutes. No coding required." },
+    { icon: <BookText className="h-6 w-6 text-white" />, color: "bg-purple-500", title: "Khata Management", description: "Ditch the paper. Track all your customer credit (udhaar) digitally." },
+    { icon: <ShoppingCart className="h-6 w-6 text-white" />, color: "bg-pink-500", title: "Offline POS", description: "Manage your in-store sales and inventory with our simple checkout system." }
   ];
 
   const customerFeatures = [
-    {
-      icon: <Search className="h-8 w-8 text-primary" />,
-      title: "Discover Local",
-      description: "Find and shop from your favorite neighborhood stores online."
-    },
-    {
-      icon: <CreditCard className="h-8 w-8 text-primary" />,
-      title: "Easy Payments",
-      description: "Pay securely with cash, card, or browse products from home."
-    },
-    {
-      icon: <History className="h-8 w-8 text-primary" />,
-      title: "View Order History", 
-      description: "Keep track of all your purchases from local stores, all in one place." 
-    }
+    { icon: <Search className="h-6 w-6 text-white" />, color: "bg-indigo-500", title: "Discover Local", description: "Find and shop from your favorite neighborhood stores online." },
+    { icon: <CreditCard className="h-6 w-6 text-white" />, color: "bg-emerald-500", title: "Easy Payments", description: "Pay securely with cash, card, or browse products from home." },
+    { icon: <History className="h-6 w-6 text-white" />, color: "bg-orange-500", title: "Order History", description: "Keep track of all your purchases from local stores, all in one place." }
   ];
 
   return (
-    <section className="py-20 md:py-24 bg-background">
+    <section className="py-24 bg-background relative">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground">
-          One App. Two Ways to Grow.
-        </h2>
-        <p className="text-lg text-muted-foreground text-center max-w-2xl mx-auto mt-4">
-          We provide dedicated tools to help you thrive, whether you're
-          selling or shopping.
-        </p>
+        <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+            One Platform. <br/> <span className="text-primary">Infinite Possibilities.</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+            Whether you are buying groceries or selling electronics, we have built the tools to make it seamless.
+            </p>
+        </div>
         
-        {/* Tabbed Interface */}
-        {/* bg-gray-100 -> bg-muted */}
-        <div className="mt-12 max-w-lg mx-auto flex p-1 bg-muted rounded-lg">
-          <button
-            onClick={() => setActiveTab('sellers')}
-            // Conditional classes updated for semantic colors
-            className={`w-1/2 py-3 rounded-md font-medium transition-all ${
-              activeTab === 'sellers' 
-                ? 'bg-background text-foreground shadow-sm' // Active: Card-like
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50' // Inactive
-            }`}
-          >
-            For Sellers
-          </button>
-          <button
-            onClick={() => setActiveTab('customers')}
-            className={`w-1/2 py-3 rounded-md font-medium transition-all ${
-              activeTab === 'customers' 
-                ? 'bg-background text-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-            }`}
-          >
-            For Customers
-          </button>
+        {/* Toggle */}
+        <div className="flex justify-center mb-12">
+            <div className="inline-flex p-1 bg-muted rounded-xl border border-border">
+                {['sellers', 'customers'].map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 capitalize ${
+                            activeTab === tab 
+                            ? 'bg-background text-foreground shadow-md scale-105' 
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                        For {tab}
+                    </button>
+                ))}
+            </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="mt-12">
-          <div className="grid md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {(activeTab === 'sellers' ? sellerFeatures : customerFeatures).map((feature, i) => (
-              <FeatureCard key={i} {...feature} />
-            ))}
-          </div>
+        {/* Grid */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {(activeTab === 'sellers' ? sellerFeatures : customerFeatures).map((feature, i) => (
+            <div key={i} className="group relative bg-card hover:bg-muted/50 p-8 rounded-2xl border border-border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+              <div className={`h-14 w-14 ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg transform group-hover:rotate-6 transition-transform`}>
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// --- Feature Card Sub-component ---
-function FeatureCard({ icon, title, description }) {
-  return (
-    // bg-white -> bg-card, text-gray-900 -> text-card-foreground, border-gray-200 -> border-border
-    <div className="bg-card text-card-foreground p-6 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
-      <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-        {icon}
-      </div>
-      <h3 className="mt-5 text-xl font-semibold">{title}</h3>
-      <p className="mt-2 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
-// --- Explore Stores Section ---
+// --- 4. Explore Stores with Image Cards ---
 function ExploreStoresSection() {
   const stores = [
-    { name: "City Electronics", category: "Electronics", img: "https://placehold.co/400x300/e2e8f0/334155?text=City+Electronics" },
-    { name: "Fresh Grocers", category: "Grocery", img: "https://placehold.co/400x300/dbeafe/1e3a8a?text=Fresh+Grocers" },
-    { name: "Modern Fashions", category: "Apparel", img: "https://placehold.co/400x300/fce7f3/831843?text=Modern+Fashions" },
-    { name: "Punjab Pharmacy", category: "Health", img: "https://placehold.co/400x300/dcfce7/15803d?text=Punjab+Pharmacy" }
+    { name: "City Electronics", category: "Electronics", img: "https://placehold.co/400x300/1e293b/ffffff?text=Electronics" },
+    { name: "Fresh Grocers", category: "Grocery", img: "https://placehold.co/400x300/064e3b/ffffff?text=Fresh+Veg" },
+    { name: "Modern Fashions", category: "Apparel", img: "https://placehold.co/400x300/831843/ffffff?text=Fashion" },
+    { name: "Punjab Pharmacy", category: "Health", img: "https://placehold.co/400x300/14532d/ffffff?text=Pharmacy" }
   ];
 
   return (
-    // bg-gray-50 -> bg-muted/40
-    <section className="py-20 md:py-24 bg-muted/40">
+    <section className="py-24 bg-secondary/20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground">
-          Explore Featured Stores
-        </h2>
-        <p className="text-lg text-muted-foreground text-center max-w-2xl mx-auto mt-4">
-          Discover the best local businesses already on our platform.
-        </p>
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+            <div>
+                <h2 className="text-3xl font-bold text-foreground">Featured Shops</h2>
+                <p className="text-muted-foreground mt-2">Support local businesses in your area.</p>
+            </div>
+            <Button variant="ghost" className="text-primary gap-2 mt-4 md:mt-0">
+                View All Shops <ArrowRight className="h-4 w-4" />
+            </Button>
+        </div>
         
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stores.map((store, i) => (
-            <div key={i} className="bg-card rounded-lg border border-border shadow-sm overflow-hidden group transition-all hover:shadow-lg">
-              {/* Added darker brightness filter for dark mode images if desired, usually not needed for placeholders */}
-              <div className="relative overflow-hidden">
-                 <img src={store.img} alt={store.name} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
+            <div key={i} className="group bg-card rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer">
+              <div className="relative h-48 overflow-hidden">
+                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10" />
+                 <img 
+                    src={store.img} 
+                    alt={store.name} 
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
+                 />
+                 <div className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-black shadow-sm">
+                    4.8 ★
+                 </div>
               </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-card-foreground">{store.name}</h3>
-                <p className="text-sm text-muted-foreground">{store.category}</p>
-                <a href="#" className="inline-flex items-center text-sm font-medium text-primary mt-3 group-hover:underline">
-                  Visit Store <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
+              <div className="p-5">
+                <h3 className="text-lg font-bold text-card-foreground group-hover:text-primary transition-colors">{store.name}</h3>
+                <p className="text-sm text-muted-foreground font-medium mb-4">{store.category}</p>
+                <div className="w-full h-px bg-border mb-4" />
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-green-600 font-medium">Open Now</span>
+                    <span className="text-muted-foreground">1.2 km away</span>
+                </div>
               </div>
             </div>
           ))}
@@ -497,47 +273,28 @@ function ExploreStoresSection() {
   );
 }
 
-// --- Testimonials Section ---
+// --- 5. Testimonials Section ---
 function TestimonialsSection() {
   const testimonials = [
-    {
-      quote: "Managing my khata book online has saved me hours every week. My customers love the transparency!",
-      name: "Ali Ahmed",
-      role: "Owner, Fresh Grocers"
-    },
-    {
-      quote: "As a customer, I love that I can check my balance with my local shop anytime. It's so convenient.",
-      name: "Fatima Khan",
-      role: "Local Shopper"
-    },
-    {
-      quote: "The offline checkout is fast and my inventory is always up to date. This app is a game-changer for my store.",
-      name: "Usman Butt",
-      role: "Owner, City Electronics"
-    },
+    { quote: "Managing my khata book online has saved me hours every week.", name: "Ali Ahmed", role: "Owner, Fresh Grocers" },
+    { quote: "The offline checkout is fast and my inventory is always up to date.", name: "Usman Butt", role: "Owner, City Electronics" },
+    { quote: "As a customer, I love that I can check my balance anytime.", name: "Fatima Khan", role: "Local Shopper" },
   ];
 
   return (
-    <section className="py-20 md:py-24 bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground">
-          Trusted by Businesses and Shoppers
-        </h2>
-        
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="py-24 bg-background">
+      <div className="container mx-auto px-4 text-center">
+        <h2 className="text-3xl font-bold mb-16">What our Community says</h2>
+        <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((item, i) => (
-            <div key={i} className="bg-card text-card-foreground p-6 rounded-lg border border-border shadow-sm flex flex-col">
-              <div className="flex text-yellow-500">
-                {[...Array(5)].map((_, i) => (
-                   <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
+            <div key={i} className="relative bg-card p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
+              {/* Quote Icon */}
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground h-12 w-12 flex items-center justify-center rounded-full text-2xl shadow-lg">
+                ❝
               </div>
-              {/* text-gray-700 -> text-muted-foreground or card-foreground */}
-              <p className="mt-4 text-card-foreground/80 italic text-lg grow">"{item.quote}"</p>
-              <div className="mt-4">
-                <p className="font-semibold text-foreground">{item.name}</p>
-                <p className="text-sm text-muted-foreground">{item.role}</p>
-              </div>
+              <p className="text-muted-foreground italic mb-6 mt-4">"{item.quote}"</p>
+              <h4 className="font-bold text-foreground">{item.name}</h4>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{item.role}</p>
             </div>
           ))}
         </div>
@@ -546,30 +303,40 @@ function TestimonialsSection() {
   );
 }
 
-// --- Final Call to Action Section ---
+// --- 6. CTA Section ---
+// --- 6. CTA Section ---
 function CallToActionSection() {
   return (
-    // bg-primary -> bg-primary, text-white -> text-primary-foreground
-    <section className="py-20 md:py-24 bg-primary text-primary-foreground">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold">
-          Ready to Get Started?
+    // Added 'bg-primary' as a fallback color in case the gradient fails
+    <section className="py-20 relative overflow-hidden bg-primary">
+        
+        {/* Gradient Background */}
+        {/* FIX: Changed 'bg-linear-to-br' to 'bg-gradient-to-br' */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary via-purple-700 to-blue-700 -z-10" />
+        
+        {/* Decorative Circles */}
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-black/10 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-4 text-center text-primary-foreground relative z-10">
+        <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
+          Ready to Grow Your Business?
         </h2>
-        <p className="mt-4 text-lg text-primary-foreground/80 max-w-2xl mx-auto">
-          Join thousands of local businesses and customers building a
-          stronger community.
+        <p className="text-xl text-primary-foreground/90 max-w-2xl mx-auto mb-10">
+          Join thousands of local businesses and customers building a stronger community economy today.
         </p>
-        <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-          <Button size="lg" variant="secondary">
-            I'm a Seller
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-bold shadow-2xl text-primary hover:bg-white">
+            Get Started as Vendor
           </Button>
-          {/* Custom outline styling for contrast against primary background */}
+          
+          {/* Adjusted button styles to ensure visibility */}
           <Button 
             size="lg" 
             variant="outline" 
-            className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            className="h-14 px-8 text-lg bg-transparent border-white/40 text-white hover:bg-white/20 hover:text-white"
           >
-            I'm a Customer
+            Start Shopping
           </Button>
         </div>
       </div>
