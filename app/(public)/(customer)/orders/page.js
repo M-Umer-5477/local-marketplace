@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function MyOrdersPage() {
   const router = useRouter();
@@ -46,13 +45,23 @@ export default function MyOrdersPage() {
   }
 
   // Filter Orders
-  const activeOrders = orders.filter(o => 
-    ["Pending", "Confirmed", "Preparing", "Out_for_Delivery"].includes(o.orderStatus)
-  );
+  // ACTIVE STATUSES
+const ACTIVE_STATUSES = [
+  "Pending",
+  "Confirmed",
+  "Preparing",
+  "Out_for_Delivery",
+  "Ready_for_Pickup"
   
-  const pastOrders = orders.filter(o => 
-    ["Delivered", "Cancelled"].includes(o.orderStatus)
-  );
+];
+
+// FILTERING
+const activeOrders = orders.filter(o => ACTIVE_STATUSES.includes(o.orderStatus));
+
+const pastOrders = orders.filter(o =>
+  ["Delivered", "Cancelled","Picked_Up"].includes(o.orderStatus)
+);
+
 
   return (
     <div className="min-h-screen bg-muted/20 p-4 md:p-8">
@@ -75,7 +84,7 @@ export default function MyOrdersPage() {
               <TabsTrigger value="past">History</TabsTrigger>
             </TabsList>
 
-            {/* --- ACTIVE ORDERS TAB --- */}
+            {/* ACTIVE ORDERS */}
             <TabsContent value="active" className="mt-6 space-y-4">
               {activeOrders.length > 0 ? (
                 activeOrders.map((order) => (
@@ -89,7 +98,7 @@ export default function MyOrdersPage() {
               )}
             </TabsContent>
 
-            {/* --- PAST ORDERS TAB --- */}
+            {/* PAST ORDERS */}
             <TabsContent value="past" className="mt-6 space-y-4">
               {pastOrders.length > 0 ? (
                 pastOrders.map((order) => (
@@ -109,67 +118,100 @@ export default function MyOrdersPage() {
   );
 }
 
-// --- SUB-COMPONENT: ORDER CARD ---
+
+
+// ---------------------- ORDER LIST ITEM (FIXED) ----------------------
+
 function OrderListItem({ order, isActive }) {
-  // Determine Status Color
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending": return "bg-yellow-500 hover:bg-yellow-600";
       case "Confirmed": return "bg-blue-500 hover:bg-blue-600";
+      case "Preparing": return "bg-orange-500 hover:bg-orange-600";
+      case "Ready_for_Pickup": return "bg-orange-600 hover:bg-orange-700";
       case "Out_for_Delivery": return "bg-purple-500 hover:bg-purple-600";
-      case "Delivered": return "bg-green-600 hover:bg-green-600";
+      case "Delivered": return "bg-green-600 hover:bg-green-700";
       case "Cancelled": return "bg-red-500 hover:bg-red-600";
       default: return "bg-gray-500";
     }
   };
 
+  // FIX DELIVERY ADDRESS
+  const formattedAddress =
+    typeof order.deliveryAddress === "string"
+      ? order.deliveryAddress
+      : order.deliveryAddress?.address
+        ? `${order.deliveryAddress.address}, ${order.deliveryAddress.city}`
+        : "Home Delivery";
+
   return (
     <Link href={`/orders/${order._id}`} className="block">
-      <Card className="hover:shadow-md transition-shadow group cursor-pointer border-l-4" style={{ borderLeftColor: isActive ? '#3b82f6' : '#9ca3af' }}>
+      <Card
+        className="hover:shadow-md transition-shadow group cursor-pointer border-l-4"
+        style={{ borderLeftColor: isActive ? "#3b82f6" : "#9ca3af" }}
+      >
         <CardContent className="p-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             
-            {/* Left: Shop Info & Items */}
             <div className="flex gap-4">
-              {/* Shop Logo / Icon */}
-              <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center shrink-0 overflow-hidden border">
-                 {order.shopId?.shopLogo ? (
-                    <img src={order.shopId.shopLogo} alt="Shop" className="h-full w-full object-cover" />
-                 ) : (
-                    <Store className="h-6 w-6 text-muted-foreground" />
-                 )}
+
+              <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center overflow-hidden border">
+                {order.shopId?.shopLogo ? (
+                  <img src={order.shopId.shopLogo} className="h-full w-full object-cover" />
+                ) : (
+                  <Store className="h-6 w-6 text-muted-foreground" />
+                )}
               </div>
 
               <div className="space-y-1">
+
                 <div className="flex items-center gap-2">
-                   <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
-                     {order.shopId?.shopName || "Unknown Shop"}
-                   </h3>
-                   <Badge className={`${getStatusColor(order.orderStatus)} text-xs px-2 py-0.5`}>
-                     {order.orderStatus.replace(/_/g, " ")}
-                   </Badge>
+                  <h3 className="font-bold text-lg group-hover:text-primary">
+                    {order.shopId?.shopName || "Unknown Shop"}
+                  </h3>
+                  <Badge className={`${getStatusColor(order.orderStatus)} text-xs`}>
+                    {order.orderStatus.replace(/_/g, " ")}
+                  </Badge>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground line-clamp-1">
-                   {order.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}
+                  {order.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}
                 </p>
-                
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                   <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(order.createdAt).toLocaleDateString()}
-                   </span>
-                   <span className="font-semibold text-foreground">
-                      Rs. {order.total}
-                   </span>
+
+                {/* FIXED DELIVERY MODE */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+
+                  {order.deliveryMode === "store_pickup" ? (
+                    <span className="flex items-center gap-1">
+                      <Store className="h-3 w-3" /> Store Pickup
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" /> {formattedAddress}
+                    </span>
+                  )}
+
+                  <span className="ml-3">Fee: Rs {order.deliveryFee}</span>
                 </div>
+
+                {/* Date + total */}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    Rs. {order.total}
+                  </span>
+                </div>
+
               </div>
             </div>
 
-            {/* Right: Action Chevron */}
             <div className="hidden md:flex items-center text-muted-foreground group-hover:text-primary">
-                <span className="text-sm font-medium mr-2">View Details</span>
-                <ChevronRight className="h-5 w-5" />
+              <span className="text-sm font-medium mr-2">View Details</span>
+              <ChevronRight className="h-5 w-5" />
             </div>
 
           </div>
@@ -179,7 +221,10 @@ function OrderListItem({ order, isActive }) {
   );
 }
 
-// --- SUB-COMPONENT: EMPTY STATE ---
+
+
+// --------------------------- EMPTY STATE ---------------------------
+
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20">
@@ -187,7 +232,9 @@ function EmptyState() {
         <ShoppingBag className="h-12 w-12 text-muted-foreground" />
       </div>
       <h2 className="text-2xl font-bold">No orders yet</h2>
-      <p className="text-muted-foreground mb-6">Looks like you haven't placed any orders yet.</p>
+      <p className="text-muted-foreground mb-6">
+        Looks like you haven't placed any orders yet.
+      </p>
       <Link href="/shops">
         <Button size="lg">Start Shopping</Button>
       </Link>
