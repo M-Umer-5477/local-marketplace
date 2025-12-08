@@ -56,7 +56,7 @@ export default function CheckoutAuthModal({ children }) {
     } else {
       toast.success("Welcome back!");
       setOpen(false); 
-      window.location.reload(); 
+      // window.location.reload(); 
     }
   };
   // ----------------------------------------------------
@@ -92,6 +92,8 @@ export default function CheckoutAuthModal({ children }) {
   // ----------------------------------------------------
   // 3. HANDLE VERIFY & AUTO-LOGIN
   // ----------------------------------------------------
+ 
+
  const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -117,7 +119,7 @@ export default function CheckoutAuthModal({ children }) {
 
         if (loginRes?.ok) {
             setOpen(false); 
-            window.location.reload(); 
+          //window.location.reload(); 
         } else {
             toast.error("Verification successful, please login manually.");
             setNeedsVerification(false);

@@ -97,13 +97,34 @@ export default function ProductForm ({ product, onSave, onCancel, isLoading }) {
       <SelectValue placeholder="Select a category" />
     </SelectTrigger>
     <SelectContent>
-      <SelectItem value="spices">Spices</SelectItem>
-      <SelectItem value="dairy">Dairy</SelectItem>
-      <SelectItem value="snacks">Snacks</SelectItem>
-      <SelectItem value="beverages">Beverages</SelectItem>
-      <SelectItem value="grains">Grains</SelectItem>
-      <SelectItem value="household">Household</SelectItem>
-    </SelectContent>
+  {/* Fresh & Perishables */}
+  <SelectItem value="fruits-vegetables">Fruits & Vegetables</SelectItem>
+  <SelectItem value="dairy-bakery">Dairy, Bread & Eggs</SelectItem>
+  <SelectItem value="meat-seafood">Meat & Seafood</SelectItem>
+  <SelectItem value="frozen-food">Frozen Food</SelectItem>
+
+  {/* Pantry & Cooking */}
+  <SelectItem value="staples">Atta, Rice, Oil & Dals</SelectItem>
+  <SelectItem value="spices-masalas">Spices, Salt & Sugar</SelectItem>
+  <SelectItem value="sauces-spreads">Sauces & Spreads</SelectItem>
+
+  {/* Snacks & Drinks */}
+  <SelectItem value="snacks-biscuits">Biscuits & Snacks</SelectItem>
+  <SelectItem value="beverages">Cold Drinks & Juices</SelectItem>
+  <SelectItem value="tea-coffee">Tea & Coffee</SelectItem>
+  <SelectItem value="chocolates-desserts">Chocolates & Sweets</SelectItem>
+
+  {/* Personal & Home */}
+  <SelectItem value="personal-care">Personal Care & Beauty</SelectItem>
+  <SelectItem value="household-cleaning">Household & Cleaning</SelectItem>
+  <SelectItem value="health-wellness">Pharma & Wellness</SelectItem>
+  <SelectItem value="baby-care">Baby Care</SelectItem>
+  <SelectItem value="pet-care">Pet Care</SelectItem>
+
+  {/* General Merchandise */}
+  <SelectItem value="electronics">Electronics & Accessories</SelectItem>
+  <SelectItem value="stationery">Stationery & Office</SelectItem>
+</SelectContent>
   </Select>
 </div>
        <div className="grid grid-cols-4 items-center gap-4">
