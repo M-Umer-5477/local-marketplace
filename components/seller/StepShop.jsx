@@ -206,6 +206,7 @@ export default function StepShop({ nextStep, prevStep, data }) {
     defaultValues: {
       shopName: data?.shopName || "",
       shopType: data?.shopType || "",
+      shopDescription: data?.shopDescription || "",
       shopAddress: data?.shopAddress || "",
       shopBanner: data?.shopBanner || "",
       shopLogo: data?.shopLogo || "",
@@ -300,10 +301,25 @@ export default function StepShop({ nextStep, prevStep, data }) {
                   <SelectItem value="Grocery">Grocery</SelectItem>
                   <SelectItem value="General">General</SelectItem>
                   <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                  <SelectItem value="Bakery">Bakery</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
               {error && error.includes("type") && (
                 <p className="text-destructive text-sm mt-1">{error}</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Input
+                placeholder="Shop Description"
+                {...register("shopDescription", {
+                  required: "Shop Description is required",
+                })}
+              />
+              {errors.shopDescription && (
+                <p className="text-destructive text-sm mt-1">
+                  {errors.shopDescription.message}
+                </p>
               )}
             </div>
 
@@ -340,7 +356,7 @@ export default function StepShop({ nextStep, prevStep, data }) {
               Shop Logo
             </p>
             <ImageUploader
-              label="Upload Banner"
+              label="Upload Logo"
               value={shopLogo}
               onUpload={(url) => {
                 setValue("shopLogo", url, {

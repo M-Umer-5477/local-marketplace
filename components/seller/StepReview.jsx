@@ -131,6 +131,10 @@ export default function StepReview({ data, prevStep }) {
                     <span className="col-span-2">{data.shopType}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
+                    <span className="text-muted-foreground font-medium">Description:</span>
+                    <span className="col-span-2 line-clamp-2">{data.shopDescription}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
                     <span className="text-muted-foreground font-medium">Address:</span>
                     <span className="col-span-2 line-clamp-2">{data.shopAddress}</span>
                 </div>

@@ -368,7 +368,7 @@ if (isLoading) {
   const chartBarColor = '#2563eb'; // Primary Blue
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 bg-background min-h-screen">
+    <div className="flex-1 space-y-4 p-4 md:p-2 bg-background min-h-screen">
       
       {/* Header */}
       <div className="flex items-center justify-between">
