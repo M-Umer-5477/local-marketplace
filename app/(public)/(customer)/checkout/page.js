@@ -76,9 +76,9 @@ export default function CheckoutPage() {
         toast.success("Order placed successfully!");
         
         router.push(`/orders/${data.orderId}`);
-        setTimeout(() => {
-  clearCart();
-}, 800);
+//         setTimeout(() => {
+//         clearCart();
+// }, 1500);
       } else {
         toast.error(data.error || "Order failed");
       }
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!mounted || status === "loading" || loading ) {
+  if (!mounted || status === "loading" ) {
      return (
        <div className="h-screen flex items-center justify-center">
           <Loader2 className="animate-spin h-8 w-8 text-primary" />

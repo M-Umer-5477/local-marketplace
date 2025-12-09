@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import ClearCartOnMount from "./ClearCartOnMount";
 import {
   Loader2, CheckCircle2, Package, Truck, Store, MapPin, Phone, ArrowLeft, ShoppingBag
 } from "lucide-react";
@@ -13,9 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-/* ---------------------------------------------------------
-   1) DELIVERY MODE STEPS
---------------------------------------------------------- */
+
 
 const DELIVERY_STEPS = [
   { id: "Pending", label: "Order Placed", icon: Package },
@@ -33,9 +31,7 @@ const PICKUP_STEPS = [
   { id: "Picked_Up", label: "Picked Up", icon: CheckCircle2 },
 ];
 
-/* ---------------------------------------------------------
-   MAIN COMPONENT
---------------------------------------------------------- */
+
 
 export default function OrderDetailsPage() {
   const params = useParams();
@@ -108,7 +104,8 @@ export default function OrderDetailsPage() {
      RENDER
   --------------------------------------------------------- */
 
-  return (
+  return (<>
+  <ClearCartOnMount />
     <div className="min-h-screen bg-muted/20 p-4 md:p-8">
       {/* NAV */}
       <div className="max-w-5xl mx-auto flex justify-between items-center mb-6">
@@ -304,6 +301,6 @@ export default function OrderDetailsPage() {
         </div>
       </div>
     </div>
-  );
+  </>);
 }
 

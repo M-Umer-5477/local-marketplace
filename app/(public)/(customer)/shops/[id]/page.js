@@ -93,7 +93,7 @@ export default function SingleShopPage() {
           />
           {/* Gradient Overlay for Text Readability */}
           {/* Fixed typo: bg-linear-to-t -> bg-gradient-to-t */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
         </div>
 
         {/* Shop Info Card */}
