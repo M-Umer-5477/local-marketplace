@@ -327,7 +327,7 @@ function CallToActionSection() {
           Join thousands of local businesses and customers building a stronger community economy today.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-bold shadow-2xl text-primary hover:bg-white">
+          <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-bold shadow-2xl text-primary hover:bg-white/20">
             Get Started as Vendor
           </Button>
           

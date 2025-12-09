@@ -219,7 +219,7 @@ const { user } = useSeller();
   if (isLoadingKhatas && !khatas.length && !selected) {
     return (
       <div className="flex h-[calc(100vh-80px)] items-center justify-center text-foreground">
-        <Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading Khata records...
+        <Loader2 className="w-6 h-6 animate-spin mr-2" />
       </div>
     );
   }

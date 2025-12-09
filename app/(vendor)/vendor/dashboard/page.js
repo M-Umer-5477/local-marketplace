@@ -462,7 +462,7 @@ if (isLoading) {
              )}
           </CardContent>
           <CardFooter>
-             <Link href="/seller/dashboard/orders" className="w-full">
+             <Link href="/vendor/orders" className="w-full">
                 <Button variant="outline" className="w-full">View All Orders <ArrowRight className="ml-2 h-4 w-4" /></Button>
              </Link>
           </CardFooter>
