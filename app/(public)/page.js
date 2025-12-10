@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -73,17 +73,29 @@ function HeroSection() {
           </div>
 
           {/* Visual Element */}
+          {/* Visual Element */}
           <div className="lg:w-1/2 relative animate-in slide-in-from-right-10 duration-1000 fade-in">
              <div className="relative mx-auto w-full max-w-[500px]">
+                {/* Background Blobs */}
                 <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob"></div>
                 <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-blue-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob animation-delay-2000"></div>
                 
+                {/* Main Card Container */}
                 <div className="relative rounded-2xl border bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden transform rotate-2 hover:rotate-0 transition-all duration-500">
-                   {/* Placeholder for Defense if no image exists */}
-                   <div className="w-full h-[300px] bg-muted flex items-center justify-center text-muted-foreground">
-                        <LayoutDashboard className="h-16 w-16 opacity-20" />
-                        <span className="absolute mt-24 opacity-50">App Dashboard Preview</span>
-                   </div>
+                   
+                   {/* FIXES APPLIED:
+                      1. Removed the <div className="h-[300px]..."> wrapper which caused the empty space.
+                      2. Used <Image /> component for optimization.
+                      3. Used "w-full h-auto" to make it fit perfectly without gaps.
+                   */}
+                   <Image 
+                      src="/assets/dashboard-pic2.png" 
+                      alt="ShopSync Dashboard Preview" 
+                      width={600} 
+                      height={400} 
+                      className="w-full h-auto object-cover"
+                      priority // Loads immediately since it's above the fold
+                   />
                    
                    {/* Floating Badges */}
                    <div className="absolute -left-6 top-10 bg-card p-3 rounded-lg shadow-xl border border-border flex items-center gap-3 animate-bounce duration-3000">
@@ -97,6 +109,7 @@ function HeroSection() {
                 </div>
              </div>
           </div>
+          
 
         </div>
       </div>
