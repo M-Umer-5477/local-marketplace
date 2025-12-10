@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import MainNavbar from "@/components/nav/MainNavbar";
+import Footer from "@/components/nav/Footer";
 
 export default function PublicLayoutClient({ children }) {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function PublicLayoutClient({ children }) {
     <div className="flex min-h-screen flex-col bg-background">
       <MainNavbar />
       <main className="flex-1">{children}</main>
+      <Footer/>
     </div>
   );
 }

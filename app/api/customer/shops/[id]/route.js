@@ -6,7 +6,7 @@ import Product from "@/models/product"; // Assuming you have this model
 export async function GET(req, { params }) {
   try {
     await db.connect();
-    const { id } = params;
+    const { id } = await params;
 
     // 1. Fetch Shop Details (excluding sensitive data)
     const shop = await Seller.findById(id).select("-password -cnic -verificationDocs");

@@ -1,4 +1,4 @@
-// app/orders/[id]/ClearCartOnMount.tsx
+
 "use client";
 
 import { useEffect } from "react";
@@ -9,6 +9,6 @@ export default function ClearCartOnMount() {
 
   useEffect(() => {
     clearCart();
-  }, [clearCart]);
+  }, []);
   return null;
 }
