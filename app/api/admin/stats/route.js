@@ -1,30 +1,56 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import Seller from "@/models/seller";
-import Order from "@/models/order"; // Assuming you have an Order model
+import Order from "@/models/order"; 
 import User from "@/models/user";
 
 export async function GET() {
   try {
     await db.connect();
 
-    // 1. Fetch Counts
+    // 1. Basic Counts (Keep existing logic)
     const pendingVerifications = await Seller.countDocuments({ verificationStatus: "Pending", role: "seller" });
     const activeShops = await Seller.countDocuments({ isActive: true, role: "seller" });
     const totalCustomers = await User.countDocuments({ role: "customer" });
 
-    // 2. Calculate Financials (Aggregation Pipeline)
-    // Sum up the 'total' field of all orders where status is 'Delivered'
-    const revenueStats = await Order.aggregate([
-      { $match: { orderStatus: "Delivered" } },
-      { $group: { _id: null, totalVolume: { $sum: "$total" } } }
+    // 2. Financial Aggregation (NEW: The Hybrid Economy Logic)
+    // We filter out Cancelled orders to get real GMV and Revenue
+    const financials = await Order.aggregate([
+      { 
+        $match: { 
+            orderStatus: { $nin: ["Cancelled", "Pending"] } // Only confirmed/completed orders count towards revenue
+        } 
+      },
+      {
+        $group: {
+          _id: null,
+          totalGMV: { $sum: "$total" }, // Total money flowed through system
+          platformRevenue: { $sum: "$commissionAmount" }, // Your actual Profit (Commission)
+          totalOrders: { $count: {} }
+        }
+      }
     ]);
-    
-    // Total value of goods sold
-    const grossVolume = revenueStats[0]?.totalVolume || 0;
-    
-    // Platform Revenue (1% Commission)
-    const platformRevenue = grossVolume * 0.01;
+
+    const financialStats = financials[0] || { totalGMV: 0, platformRevenue: 0, totalOrders: 0 };
+
+    // 3. Wallet Health (Who owes who?)
+    const walletStats = await Seller.aggregate([
+      {
+        $group: {
+          _id: null,
+          // Money you owe sellers (Positive Balances from Stripe)
+          totalSellerCredit: { 
+             $sum: { $cond: [{ $gt: ["$walletBalance", 0] }, "$walletBalance", 0] }
+          },
+          // Money sellers owe you (Negative Balances from COD)
+          totalSellerDebt: { 
+             $sum: { $cond: [{ $lt: ["$walletBalance", 0] }, "$walletBalance", 0] }
+          }
+        }
+      }
+    ]);
+
+    const wallet = walletStats[0] || { totalSellerCredit: 0, totalSellerDebt: 0 };
 
     return NextResponse.json({ 
         success: true, 
@@ -32,8 +58,15 @@ export async function GET() {
             pendingVerifications,
             activeShops,
             totalCustomers,
-            grossVolume,
-            platformRevenue
+            
+            // New Calculated Fields
+            grossVolume: financialStats.totalGMV,
+            platformRevenue: financialStats.platformRevenue,
+            totalOrders: financialStats.totalOrders,
+            
+            // Wallet Data
+            payableToSellers: wallet.totalSellerCredit,
+            receivableFromSellers: Math.abs(wallet.totalSellerDebt) // Make positive for display
         } 
     }, { status: 200 });
 

@@ -30,9 +30,34 @@ export default function FinancePage() {
   }, []);
 
   // Mock function to simulate collecting cash from a seller
-  const handleMarkPaid = (sellerId) => {
-    toast.info("This feature would integrate with a payment gateway (Future Scope).");
+ // ... imports
+
+  // Updated Handler
+  const handleMarkPaid = async (sellerId) => {
+    // Optional: Add a confirm dialog here if you want extra safety
+    if(!confirm("Confirm that you received cash from this seller?")) return;
+
+    try {
+      const res = await fetch("/api/admin/finance/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sellerId }),
+      });
+
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success("Debt cleared successfully!");
+        // Refresh the list automatically
+        fetchData();
+      } else {
+        toast.error(data.error || "Failed to clear");
+      }
+    } catch (error) {
+      toast.error("Network error");
+    }
   };
+// ... rest of component
 
   if (loading) return <div className="flex h-[50vh] items-center justify-center"><Loader2 className="animate-spin text-primary h-8 w-8" /></div>;
 

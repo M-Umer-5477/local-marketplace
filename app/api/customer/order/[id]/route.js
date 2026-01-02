@@ -28,7 +28,7 @@ export async function GET(req, { params }) {
     }
 
     // Security Check: Ensure logged-in user owns this order
-    if (order.userId.toString() !== session.user.id) {
+    if (!order.userId || order.userId.toString() !== session.user.id) {
       return NextResponse.json({ error: "Access Denied" }, { status: 403 });
     }
 

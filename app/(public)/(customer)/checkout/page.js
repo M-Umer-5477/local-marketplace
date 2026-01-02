@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import { useState, useEffect } from "react";
@@ -18,6 +19,9 @@
 
 // import { Loader2, MapPin, CreditCard, Banknote, ArrowLeft, ShoppingBag, Lock, Store } from "lucide-react";
 
+// // --- NEW IMPORT: The Map Component ---
+// import LocationPicker from "@/components/maps/LocationPicker"; 
+
 // export default function CheckoutPage() {
 //   const router = useRouter();
 //   const { data: session, status } = useSession(); 
@@ -28,14 +32,28 @@
   
 //   const [deliveryMode, setDeliveryMode] = useState("home_delivery"); 
 //   const [address, setAddress] = useState("");
-//   const [city, setCity] = useState("");
+//   const [city, setCity] = useState("Gujrat"); // Default city
 //   const [paymentMethod, setPaymentMethod] = useState("cod");
+
+//   // --- NEW STATE: Store Coordinates for Rider ---
+//   const [mapCoordinates, setMapCoordinates] = useState(null);
 
 //   // UI Fee Logic (Visual only)
 //   const deliveryFee = deliveryMode === "home_delivery" ? 50 : 0;
 //   const grandTotal = cartTotal + deliveryFee;
 
 //   useEffect(() => setMounted(true), []);
+
+//   // --- NEW HANDLER: Auto-fill Address from Map ---
+//   const handleLocationSelect = (loc) => {
+//     // 1. Save Coordinates (Lat/Lng) for the database
+//     setMapCoordinates({ lat: loc.lat, lng: loc.lng });
+    
+//     // 2. Auto-fill the Text Address Input if Google found one
+//     if (loc.address) {
+//       setAddress(loc.address);
+//     }
+//   };
 
 //   const handlePlaceOrder = async () => {
 //     if (!session) {
@@ -45,13 +63,14 @@
 
 //     if (cart.items.length === 0) return toast.error("Cart is empty");
     
-//     if (deliveryMode === "home_delivery" && (!address || !city)) {
-//         return toast.error("Please provide a delivery address");
+//     // Updated Validation: Require Map Pin for Home Delivery
+//     if (deliveryMode === "home_delivery") {
+//         if (!address) return toast.error("Please provide a delivery address");
+//         if (!mapCoordinates) return toast.error("Please pin your location on the map");
 //     }
 
 //     setLoading(true);
     
-//     // --- CRITICAL FIX: Calculate explicitly for API Payload ---
 //     const finalFee = deliveryMode === "home_delivery" ? 50 : 0;
 //     const finalTotal = cartTotal + finalFee;
 
@@ -62,11 +81,16 @@
 //         body: JSON.stringify({
 //           shopId: cart.shopId,
 //           items: cart.items,
-//           total: finalTotal,      // Use calculated total
+//           total: finalTotal,      
 //           paymentMethod,
 //           deliveryMode, 
-//           deliveryFee: finalFee,  // Use calculated fee
-//           deliveryAddress: deliveryMode === "home_delivery" ? { address, city } : undefined,
+//           deliveryFee: finalFee,
+//           // Updated Payload: Include Coordinates inside deliveryAddress object
+//           deliveryAddress: deliveryMode === "home_delivery" ? { 
+//              address, 
+//              city, 
+//              coordinates: mapCoordinates // Sending {lat, lng} to backend
+//           } : undefined,
 //         }),
 //       });
 
@@ -74,15 +98,14 @@
 
 //       if (res.ok) {
 //         toast.success("Order placed successfully!");
-        
+//         // Optional: Clear cart logic here
+//         // clearCart(); 
 //         router.push(`/orders/${data.orderId}`);
-// //         setTimeout(() => {
-// //         clearCart();
-// // }, 1500);
 //       } else {
 //         toast.error(data.error || "Order failed");
 //       }
 //     } catch (error) {
+//       console.error(error);
 //       toast.error("Network error");
 //     } finally {
 //       setLoading(false);
@@ -145,9 +168,32 @@
 //                 {deliveryMode === "home_delivery" ? (
 //                     <Card>
 //                         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5"/> Shipping Details</CardTitle></CardHeader>
-//                         <CardContent className="space-y-4">
-//                             <div className="space-y-2"><Label>Full Address</Label><Input placeholder="House #, Street, Area" value={address} onChange={(e) => setAddress(e.target.value)} /></div>
-//                             <div className="space-y-2"><Label>City</Label><Input placeholder="Gujrat" value={city} onChange={(e) => setCity(e.target.value)} /></div>
+//                         <CardContent className="space-y-5">
+                            
+//                             {/* --- MAP SECTION START --- */}
+//                             <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-sm text-blue-800 mb-2">
+//                                 📍 <strong>Pin Location:</strong> Drag the map pin to your exact gate for faster delivery.
+//                             </div>
+                            
+//                             <LocationPicker onLocationSelect={handleLocationSelect} />
+//                             {/* --- MAP SECTION END --- */}
+
+//                             <div className="space-y-2">
+//                                 <Label>Full Address</Label>
+//                                 <Input 
+//                                     placeholder="House #, Street, Area (Auto-filled from map)" 
+//                                     value={address} 
+//                                     onChange={(e) => setAddress(e.target.value)} 
+//                                 />
+//                             </div>
+//                             <div className="space-y-2">
+//                                 <Label>City</Label>
+//                                 <Input 
+//                                     placeholder="Gujrat" 
+//                                     value={city} 
+//                                     onChange={(e) => setCity(e.target.value)} 
+//                                 />
+//                             </div>
 //                         </CardContent>
 //                     </Card>
 //                 ) : (
@@ -192,8 +238,8 @@
 //                 {cart.items.map((item) => (
 //                   <div key={item.productId} className="flex justify-between items-center text-sm group">
 //                     <div className="flex items-center gap-3">
-//                        <span className="bg-muted px-2 py-1 rounded text-xs font-bold">x{item.quantity}</span>
-//                        <span className="line-clamp-1">{item.name}</span>
+//                         <span className="bg-muted px-2 py-1 rounded text-xs font-bold">x{item.quantity}</span>
+//                         <span className="line-clamp-1">{item.name}</span>
 //                     </div>
 //                     <span className="font-mono">Rs. {item.price * item.quantity}</span>
 //                   </div>
@@ -245,52 +291,36 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; 
 
 import { Loader2, MapPin, CreditCard, Banknote, ArrowLeft, ShoppingBag, Lock, Store } from "lucide-react";
-
-// --- NEW IMPORT: The Map Component ---
 import LocationPicker from "@/components/maps/LocationPicker"; 
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session, status } = useSession(); 
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal } = useCart(); // Removed clearCart here, we do it on success
   
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   
   const [deliveryMode, setDeliveryMode] = useState("home_delivery"); 
   const [address, setAddress] = useState("");
-  const [city, setCity] = useState("Gujrat"); // Default city
+  const [city, setCity] = useState("Gujrat"); 
   const [paymentMethod, setPaymentMethod] = useState("cod");
-
-  // --- NEW STATE: Store Coordinates for Rider ---
   const [mapCoordinates, setMapCoordinates] = useState(null);
 
-  // UI Fee Logic (Visual only)
   const deliveryFee = deliveryMode === "home_delivery" ? 50 : 0;
   const grandTotal = cartTotal + deliveryFee;
 
   useEffect(() => setMounted(true), []);
 
-  // --- NEW HANDLER: Auto-fill Address from Map ---
   const handleLocationSelect = (loc) => {
-    // 1. Save Coordinates (Lat/Lng) for the database
     setMapCoordinates({ lat: loc.lat, lng: loc.lng });
-    
-    // 2. Auto-fill the Text Address Input if Google found one
-    if (loc.address) {
-      setAddress(loc.address);
-    }
+    if (loc.address) setAddress(loc.address);
   };
 
   const handlePlaceOrder = async () => {
-    if (!session) {
-        toast.error("Please login first");
-        return;
-    }
-
+    if (!session) return toast.error("Please login first");
     if (cart.items.length === 0) return toast.error("Cart is empty");
     
-    // Updated Validation: Require Map Pin for Home Delivery
     if (deliveryMode === "home_delivery") {
         if (!address) return toast.error("Please provide a delivery address");
         if (!mapCoordinates) return toast.error("Please pin your location on the map");
@@ -298,10 +328,42 @@ export default function CheckoutPage() {
 
     setLoading(true);
     
+    // Prepare Data
     const finalFee = deliveryMode === "home_delivery" ? 50 : 0;
     const finalTotal = cartTotal + finalFee;
+    const finalAddress = deliveryMode === "home_delivery" ? { 
+         address, city, coordinates: mapCoordinates 
+    } : undefined;
 
     try {
+      // ------------------------------------------
+      // 1. IF ONLINE PAYMENT -> REDIRECT TO STRIPE
+      // ------------------------------------------
+      if (paymentMethod === "online") {
+         const res = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               shopId: cart.shopId,
+               items: cart.items,
+               deliveryAddress: finalAddress,
+               deliveryFee: finalFee,
+               deliveryMode: deliveryMode
+            }),
+         });
+         const data = await res.json();
+         if (data.url) {
+            window.location.href = data.url; // Go to Stripe
+         } else {
+            toast.error("Failed to start payment");
+            setLoading(false);
+         }
+         return; // Stop execution here
+      }
+
+      // ------------------------------------------
+      // 2. IF COD -> CREATE ORDER NORMALLY
+      // ------------------------------------------
       const res = await fetch("/api/customer/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,12 +374,7 @@ export default function CheckoutPage() {
           paymentMethod,
           deliveryMode, 
           deliveryFee: finalFee,
-          // Updated Payload: Include Coordinates inside deliveryAddress object
-          deliveryAddress: deliveryMode === "home_delivery" ? { 
-             address, 
-             city, 
-             coordinates: mapCoordinates // Sending {lat, lng} to backend
-          } : undefined,
+          deliveryAddress: finalAddress,
         }),
       });
 
@@ -325,34 +382,24 @@ export default function CheckoutPage() {
 
       if (res.ok) {
         toast.success("Order placed successfully!");
-        // Optional: Clear cart logic here
-        // clearCart(); 
         router.push(`/orders/${data.orderId}`);
       } else {
         toast.error(data.error || "Order failed");
+        setLoading(false);
       }
     } catch (error) {
       console.error(error);
       toast.error("Network error");
-    } finally {
       setLoading(false);
     }
   };
 
-  if (!mounted || status === "loading" ) {
-     return (
-       <div className="h-screen flex items-center justify-center">
-          <Loader2 className="animate-spin h-8 w-8 text-primary" />
-       </div>
-     );
-  }
+  if (!mounted || status === "loading" ) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
 
   if (cart.items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 animate-in fade-in zoom-in duration-500">
-        <div className="bg-muted p-6 rounded-full">
-            <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="bg-muted p-6 rounded-full"><ShoppingBag className="h-10 w-10 text-muted-foreground" /></div>
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
         <Link href="/shops"><Button>Browse Shops</Button></Link>
       </div>
@@ -362,88 +409,52 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-muted/20 p-4 md:p-8">
       <div className="max-w-4xl mx-auto mb-6">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-2">
-            <ArrowLeft className="h-4 w-4" /> Back
-        </Button>
+        <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-2"><ArrowLeft className="h-4 w-4" /> Back</Button>
       </div>
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        {/* Left Column */}
         <div className="space-y-6">
           {!session ? (
-            <Card className="border-primary/50 shadow-md">
-                <CardHeader className="bg-primary/5">
-                    <CardTitle className="text-primary flex items-center gap-2"><Lock className="h-5 w-5" /> Account Required</CardTitle>
-                    <CardDescription>Login or register to complete your order.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                    <CheckoutAuthModal>
-                        <Button size="lg" className="w-full shadow-lg">Login / Sign Up</Button>
-                    </CheckoutAuthModal>
-                </CardContent>
-            </Card>
+            <Card><CardHeader><CardTitle>Account Required</CardTitle></CardHeader><CardContent><CheckoutAuthModal><Button className="w-full">Login</Button></CheckoutAuthModal></CardContent></Card>
           ) : (
             <>
                 <Tabs value={deliveryMode} onValueChange={setDeliveryMode} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12">
-                        <TabsTrigger value="home_delivery" className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Home Delivery</TabsTrigger>
-                        <TabsTrigger value="store_pickup" className="flex items-center gap-2"><Store className="h-4 w-4" /> Pickup</TabsTrigger>
+                        <TabsTrigger value="home_delivery" className="gap-2"><MapPin className="h-4 w-4" /> Home Delivery</TabsTrigger>
+                        <TabsTrigger value="store_pickup" className="gap-2"><Store className="h-4 w-4" /> Pickup</TabsTrigger>
                     </TabsList>
                 </Tabs>
 
                 {deliveryMode === "home_delivery" ? (
                     <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5"/> Shipping Details</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5"/> Shipping</CardTitle></CardHeader>
                         <CardContent className="space-y-5">
-                            
-                            {/* --- MAP SECTION START --- */}
-                            <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-sm text-blue-800 mb-2">
-                                📍 <strong>Pin Location:</strong> Drag the map pin to your exact gate for faster delivery.
-                            </div>
-                            
                             <LocationPicker onLocationSelect={handleLocationSelect} />
-                            {/* --- MAP SECTION END --- */}
-
-                            <div className="space-y-2">
-                                <Label>Full Address</Label>
-                                <Input 
-                                    placeholder="House #, Street, Area (Auto-filled from map)" 
-                                    value={address} 
-                                    onChange={(e) => setAddress(e.target.value)} 
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>City</Label>
-                                <Input 
-                                    placeholder="Gujrat" 
-                                    value={city} 
-                                    onChange={(e) => setCity(e.target.value)} 
-                                />
-                            </div>
+                            <div className="space-y-2"><Label>Address</Label><Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House #, Street..." /></div>
+                            <div className="space-y-2"><Label>City</Label><Input value={city} onChange={(e) => setCity(e.target.value)} /></div>
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card className="bg-yellow-50/50 border-yellow-200 shadow-sm">
-                        <CardContent className="p-6 flex gap-4 items-start">
-                            <div className="bg-yellow-100 p-2 rounded-full"><Store className="h-6 w-6 text-yellow-700" /></div>
-                            <div>
-                                <h3 className="font-bold text-yellow-900 text-lg">Self Pickup Selected</h3>
-                                <p className="text-sm text-yellow-700 mt-1">Collect order from shop counter. <strong>No delivery fee applies.</strong></p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <Card className="bg-yellow-50/50 border-yellow-200"><CardContent className="p-6 text-yellow-900 font-bold">Self Pickup Selected (No Fee)</CardContent></Card>
                 )}
 
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5"/> Payment</CardTitle></CardHeader>
                     <CardContent>
-                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                            <div className={`flex items-center space-x-2 border p-3 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
+                            {/* COD OPTION */}
+                            <div className={`flex items-center space-x-2 border p-3 rounded-lg cursor-pointer ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
                                 <RadioGroupItem value="cod" id="cod" />
-                                <Label htmlFor="cod" className="flex items-center gap-2 cursor-pointer w-full font-medium">
-                                    <Banknote className="h-4 w-4 text-green-600" /> 
-                                    {deliveryMode === "store_pickup" ? "Pay at Counter" : "Cash on Delivery"}
+                                <Label htmlFor="cod" className="flex items-center gap-2 w-full cursor-pointer font-medium">
+                                    <Banknote className="h-4 w-4 text-green-600" /> Cash on Delivery
+                                </Label>
+                            </div>
+
+                            {/* ONLINE OPTION (NEW) */}
+                            <div className={`flex items-center space-x-2 border p-3 rounded-lg cursor-pointer ${paymentMethod === 'online' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                                <RadioGroupItem value="online" id="online" />
+                                <Label htmlFor="online" className="flex items-center gap-2 w-full cursor-pointer font-medium">
+                                    <CreditCard className="h-4 w-4 text-blue-600" /> Pay with Card (Stripe)
                                 </Label>
                             </div>
                         </RadioGroup>
@@ -453,45 +464,34 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Right Column */}
+        {/* Order Summary */}
         <div>
-          <Card className="sticky top-24 shadow-lg border-primary/20">
+          <Card className="sticky top-24 shadow-lg">
             <CardHeader className="bg-primary/5 border-b">
               <CardTitle>Order Summary</CardTitle>
-              <CardDescription>Ordering from <span className="font-bold text-primary">{cart.shopName}</span></CardDescription>
+              <CardDescription>{cart.shopName}</CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+              {/* Items List */}
+              <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
                 {cart.items.map((item) => (
-                  <div key={item.productId} className="flex justify-between items-center text-sm group">
-                    <div className="flex items-center gap-3">
-                        <span className="bg-muted px-2 py-1 rounded text-xs font-bold">x{item.quantity}</span>
-                        <span className="line-clamp-1">{item.name}</span>
-                    </div>
+                  <div key={item.productId} className="flex justify-between text-sm">
+                    <span>x{item.quantity} {item.name}</span>
                     <span className="font-mono">Rs. {item.price * item.quantity}</span>
                   </div>
                 ))}
               </div>
               <Separator />
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>Rs. {cartTotal}</span></div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery Fee</span>
-                  {deliveryMode === "home_delivery" ? <span>Rs. {deliveryFee}</span> : <span className="text-green-600 font-medium">Free (Pickup)</span>}
-                </div>
+                <div className="flex justify-between"><span>Subtotal</span><span>Rs. {cartTotal}</span></div>
+                <div className="flex justify-between"><span>Delivery</span><span>{deliveryMode === "home_delivery" ? `Rs. ${deliveryFee}` : "Free"}</span></div>
                 <Separator className="my-2" />
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span className="text-primary">Rs. {grandTotal}</span></div>
               </div>
 
-              {session ? (
-                  <Button size="lg" className="w-full mt-4 shadow-xl" onClick={handlePlaceOrder} disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin mr-2" /> : "Place Order"}
-                  </Button>
-              ) : (
-                  <CheckoutAuthModal>
-                     <Button size="lg" className="w-full mt-4 shadow-xl bg-muted text-muted-foreground hover:bg-muted/80">Login to Complete Order</Button>
-                  </CheckoutAuthModal>
-              )}
+              <Button size="lg" className="w-full mt-4 shadow-xl" onClick={handlePlaceOrder} disabled={loading}>
+                {loading ? <Loader2 className="animate-spin mr-2" /> : (paymentMethod === 'online' ? "Proceed to Payment" : "Place Order")}
+              </Button>
             </CardContent>
           </Card>
         </div>

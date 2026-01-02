@@ -175,3 +175,17 @@
     cursor: pointer;
   }
 }
+/* FORCE CLOUDINARY TO BE ON TOP */
+iframe[src*="cloudinary"] {
+    z-index: 100000 !important;
+    position: fixed !important; 
+}
+
+.cloudinary-overlay {
+    z-index: 100000 !important;
+}
+
+/* Allow clicking outside the dialog */
+body[data-scroll-locked] {
+    padding-right: 0px !important; 
+}

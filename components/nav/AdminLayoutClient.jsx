@@ -1,87 +1,4 @@
-// "use client";
-// import Link from "next/link";
-// import { usePathname } from "next/navigation";
-// import { signOut } from "next-auth/react"; // We still need this for the Logout button
-// import { 
-//   LayoutDashboard, 
-//   Users, 
-//   FileCheck, 
-//   Wallet, 
-//   LogOut, 
-//   ShieldCheck 
-// } from "lucide-react";
-// import { Button } from "@/components/ui/button";
 
-// export default function AdminLayoutClient({ children, user }) {
-//   const pathname = usePathname();
-
-//   const navItems = [
-//     { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-//     { name: "Seller Verifications", href: "/admin/verifications", icon: FileCheck },
-//     { name: "Active Shops", href: "/admin/shops", icon: Users },
-//     { name: "Financials & Debt", href: "/admin/finance", icon: Wallet },
-//   ];
-
-//   return (
-//     <div className="min-h-screen bg-muted/20 flex">
-//       {/* --- Sidebar --- */}
-//       <aside className="w-64 bg-background border-r border-border hidden md:flex flex-col fixed h-full z-10">
-        
-//         {/* Brand */}
-//         <div className="p-6 border-b border-border flex items-center gap-2">
-//            <div className="bg-primary p-1.5 rounded-lg">
-//              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
-//            </div>
-//            <div>
-//              <h1 className="font-bold text-lg tracking-tight">ShopSync</h1>
-//              <p className="text-xs text-muted-foreground">Admin Console</p>
-//            </div>
-//         </div>
-
-//         {/* Navigation */}
-//         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-//           {navItems.map((item) => {
-//             const isActive = pathname === item.href;
-//             return (
-//               <Link key={item.href} href={item.href}>
-//                 <Button 
-//                   variant={isActive ? "secondary" : "ghost"} 
-//                   className={`w-full justify-start gap-3 mb-1 ${isActive ? "bg-primary/10 text-primary hover:bg-primary/15" : "text-muted-foreground"}`}
-//                 >
-//                   <item.icon className="h-5 w-5" />
-//                   {item.name}
-//                 </Button>
-//               </Link>
-//             )
-//           })}
-//         </nav>
-
-//         {/* User / Logout */}
-//         <div className="p-4 border-t border-border">
-//           <div className="bg-muted/50 rounded-xl p-3 mb-3">
-//              {/* Use the server-provided user data here */}
-//              <p className="text-sm font-bold truncate">{user?.name || "Super Admin"}</p>
-//              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-//           </div>
-//           <Button 
-//             variant="outline" 
-//             className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-//             onClick={() => signOut({ callbackUrl: "/login" })}
-//           >
-//             <LogOut className="h-4 w-4" /> Sign Out
-//           </Button>
-//         </div>
-//       </aside>
-
-//       {/* --- Main Content Area --- */}
-//       <main className="flex-1 md:ml-64 p-8">
-//          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-//             {children}
-//          </div>
-//       </main>
-//     </div>
-//   );
-// }
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -92,7 +9,9 @@ import {
   FileCheck, 
   Wallet, 
   LogOut, 
-  ShieldCheck 
+  ShieldCheck,
+  Banknote,
+  
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle"; // Import the Toggle
@@ -104,6 +23,7 @@ export default function AdminLayoutClient({ children, user }) {
     { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Seller Verifications", href: "/admin/verifications", icon: FileCheck },
     { name: "Active Shops", href: "/admin/shops", icon: Users },
+    { name: "Billing Verification", href: "/admin/billing", icon: Banknote },
     { name: "Financials & Debt", href: "/admin/finance", icon: Wallet },
   ];
 
