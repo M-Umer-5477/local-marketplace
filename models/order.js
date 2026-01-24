@@ -126,7 +126,11 @@ const OrderSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   
   // ✅ NEW FIELD: Required for Stripe Verification API
-  stripeSessionId: { type: String }, 
+  stripeSessionId: { 
+    type: String ,
+    unique: true, // 🛑 No duplicates allowed
+    sparse: true
+  }, 
 
   // --- WALLET TRACKING FIELDS ---
   commissionDeducted: { type: Boolean, default: false }, 

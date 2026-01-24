@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PayDuesModal from "@/components/seller/PayDuesModal";
+import WithdrawModal from "@/components/seller/WithdrawModal";
 
 export default function WalletPage() {
   const [data, setData] = useState(null);
@@ -33,7 +34,7 @@ export default function WalletPage() {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       
       {/* 1. BALANCE CARD */}
-      <Card className="bg-gradient-to-br from-gray-900 to-gray-800 text-white border-none shadow-xl">
+      <Card className="bg-linear-to-br from-gray-900 to-gray-800 text-white border-none shadow-xl">
         <CardContent className="p-8">
           <div className="flex justify-between items-start">
             <div>
@@ -55,9 +56,10 @@ export default function WalletPage() {
    onPaymentSuccess={() => window.location.reload()} 
 />
               ) : (
-                <Button variant="secondary" className="gap-2 text-green-700 bg-white hover:bg-gray-100">
-                  <ArrowDownLeft className="h-4 w-4" /> Withdraw
-                </Button>
+                <WithdrawModal 
+       balance={data?.balance} 
+       onSuccess={() => window.location.reload()} 
+    />
               )}
             </div>
           </div>

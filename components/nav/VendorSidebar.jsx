@@ -66,6 +66,7 @@ import {
   ClipboardList,
   Store,
   BookUser,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,7 @@ const VendorSidebar = ({ isCollapsed }) => {
     { href: "/vendor/orders", label: "Online Orders", icon: ShoppingCart },
     { href: "/vendor/pos", label: "Offline Checkout", icon: ClipboardList },
     { href: "/vendor/khata", label: "Customer Khata", icon: BookUser },
+    { href: "/vendor/wallet", label: "Shop Wallet", icon: Wallet },
     { href: "/vendor/myShop", label: "View My Shop", icon: Store },
   ];
 

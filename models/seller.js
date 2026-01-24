@@ -166,7 +166,12 @@ const sellerSchema = new mongoose.Schema({
         date: { type: Date, default: Date.now }
     }
   ],
-
+  savedPayoutDetails: {
+      method: { type: String, default: "EasyPaisa" },
+      bankName: { type: String }, 
+      accountNumber: { type: String },
+      accountTitle: { type: String }
+  },
   // --- AUTH & OTP FIELDS ---
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String },

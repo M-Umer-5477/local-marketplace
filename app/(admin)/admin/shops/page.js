@@ -175,8 +175,8 @@ export default function ActiveShopsPage() {
                 </TableCell>
                 <TableCell className="font-mono font-medium">
                     <span className={shop.walletBalance < 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}>
-                        Rs. 0
-                        {/* {shop.walletBalance.toLocaleString()} */}
+                       
+                        {shop.walletBalance.toLocaleString()}
                     </span>
                 </TableCell>
                 <TableCell className="text-right">

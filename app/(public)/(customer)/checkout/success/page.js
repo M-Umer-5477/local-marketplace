@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // ✅ 1. Import useRef
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/cartContext";
 import { Loader2, CheckCircle, ArrowRight } from "lucide-react";
@@ -15,8 +15,19 @@ export default function SuccessPage() {
   const [loading, setLoading] = useState(true);
   const [orderId, setOrderId] = useState(null);
 
+  // ✅ 2. Create the Gatekeeper Variable
+  // This persists across re-renders but doesn't trigger them
+  const hasCalledAPI = useRef(false);
+
   useEffect(() => {
     if (!sessionId) return;
+
+    // ✅ 3. The Guard Clause
+    // If we have already called the API, STOP here immediately.
+    if (hasCalledAPI.current) return;
+
+    // Mark as true so subsequent renders are blocked
+    hasCalledAPI.current = true;
 
     const verifyPayment = async () => {
       try {
@@ -30,17 +41,22 @@ export default function SuccessPage() {
         
         if (data.success) {
            setOrderId(data.orderId);
-           clearCart(); // ✅ Clear the cart now
+           clearCart(); 
+        } else if (data.orderId) {
+           // Handle edge case: If API says "Order already exists" (from backend check)
+           // we still show success and the ID.
+           setOrderId(data.orderId);
+           clearCart();
         }
       } catch (err) {
-        console.error("Order creation failed");
+        console.error("Order creation failed", err);
       } finally {
         setLoading(false);
       }
     };
 
     verifyPayment();
-  }, [sessionId]);
+  }, [sessionId, clearCart]); // Added clearCart to dependency array for safety
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center space-y-4">
@@ -71,70 +87,5 @@ export default function SuccessPage() {
             </Button>
         </Card>
     </div>
-  );}
-// "use client";
-
-// import { useEffect, useState, useRef } from "react"; // 1. Import useRef
-// import { useSearchParams, useRouter } from "next/navigation";
-// import { Loader2, CheckCircle } from "lucide-react";
-
-// export default function SuccessPage() {
-//   const searchParams = useSearchParams();
-//   const router = useRouter();
-//   const sessionId = searchParams.get("session_id");
-//   const [status, setStatus] = useState("loading");
-
-//   // ✅ 2. Create a Ref to track if API was called
-//   const hasCalledAPI = useRef(false);
-
-//   useEffect(() => {
-//     if (!sessionId) return;
-
-//     // ✅ 3. The Guard Clause
-//     // If we already called it, STOP immediately.
-//     if (hasCalledAPI.current) return;
-    
-//     // Mark as called
-//     hasCalledAPI.current = true;
-
-//     const verifyPayment = async () => {
-//       try {
-//         const res = await fetch("/api/stripe/verify", {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify({ sessionId }),
-//         });
-
-//         const data = await res.json();
-        
-//         if (data.success) {
-//            setStatus("success");
-//            // Optional: Clear cart here
-//            localStorage.removeItem("cart"); 
-//            window.dispatchEvent(new Event("storage")); // Trigger cart update
-//         } else {
-//            setStatus("error");
-//         }
-//       } catch (error) {
-//         setStatus("error");
-//       }
-//     };
-
-//     verifyPayment();
-//   }, [sessionId]);
-
-//   // ... rest of your UI render ...
-//   if (status === "loading") return <div className="p-10 text-center">Verifying Payment...</div>;
-//   if (status === "error") return <div className="p-10 text-center text-red-500">Payment Verification Failed</div>;
-
-//   return (
-//     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-//       <CheckCircle className="w-16 h-16 text-green-500" />
-//       <h1 className="text-2xl font-bold text-green-700">Payment Successful!</h1>
-//       <p>Your order has been placed.</p>
-//       <button onClick={() => router.push('/orders')} className="bg-primary text-white px-4 py-2 rounded">
-//         View Orders
-//       </button>
-//     </div>
-//   );
-// }
+  );
+}
