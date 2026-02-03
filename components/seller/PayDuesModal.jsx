@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import SimpleUpload from "@/components/seller/SimpleUpload"; // ✅ Import the new component
+
+// ✅ IMPORT THE NEW STANDARD UPLOADER
+import ImageUpload from "@/components/seller/image-upload";
 
 export default function PayDuesModal({ balance, onPaymentSuccess }) {
   const [open, setOpen] = useState(false);
@@ -89,8 +91,12 @@ export default function PayDuesModal({ balance, onPaymentSuccess }) {
 
           <div className="space-y-2">
             <Label>Screenshot Proof</Label>
-            {/* ✅ NEW SIMPLE UPLOADER (No Bugs) */}
-            <SimpleUpload onUpload={setProof} value={proof} />
+            {/* ✅ UPDATED COMPONENT */}
+            <ImageUpload 
+                label="Upload Screenshot" 
+                onUpload={setProof} 
+                value={proof} 
+            />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

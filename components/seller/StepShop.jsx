@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import LocationPicker from "@/components/maps/LocationPicker"; 
-import ImageUploader from "@/components/seller/ImageUploader";
+// ✅ IMPORT THE NEW COMPONENT
+import ImageUpload from "@/components/seller/image-upload"; 
 
 export default function StepShop({ nextStep, prevStep, data }) {
   const {
@@ -31,14 +32,12 @@ export default function StepShop({ nextStep, prevStep, data }) {
   const shopBanner = watch("shopBanner");
   const shopLogo = watch("shopLogo");
 
-  // --- FIX: Initialize as NULL to trigger Auto-Detection ---
-  // If we pass hardcoded lat/lng here, the map won't ask for permission.
+  // Initialize as NULL to trigger LocationPicker's auto-detect
   const [location, setLocation] = useState(data?.shopLocation || null);
   
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // --- MAP HANDLER ---
   const handleLocationSelect = (newLoc) => {
     setLocation({ lat: newLoc.lat, lng: newLoc.lng });
     
@@ -54,7 +53,6 @@ export default function StepShop({ nextStep, prevStep, data }) {
     setError("");
 
     if (!formData.shopType) return setError("Please select a shop type.");
-    // Check if location was set (either by auto-detect or manual pin)
     if (!location || !location.lat) return setError("Please pin your shop location on the map.");
     if (!formData.shopBanner) return setError("Please upload a shop banner.");
     if (!formData.shopLogo) return setError("Please upload a shop logo.");
@@ -134,24 +132,27 @@ export default function StepShop({ nextStep, prevStep, data }) {
               </div>
               
               <div>
-                 <Input
-                   placeholder="Shop Description"
-                   {...register("shopDescription", { required: "Description is required" })}
-                 />
+                  <Input
+                    placeholder="Shop Description"
+                    {...register("shopDescription", { required: "Description is required" })}
+                  />
               </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* ✅ UPDATED IMAGE UPLOAD SECTION */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium mb-2">Shop Logo</p>
-                <ImageUploader
+                <ImageUpload
+                  label="Upload Logo"
                   value={shopLogo}
                   onUpload={(url) => setValue("shopLogo", url, { shouldValidate: true })}
                 />
               </div>
               <div>
                 <p className="text-sm font-medium mb-2">Shop Banner</p>
-                <ImageUploader
+                <ImageUpload
+                  label="Upload Banner"
                   value={shopBanner}
                   onUpload={(url) => setValue("shopBanner", url, { shouldValidate: true })}
                 />

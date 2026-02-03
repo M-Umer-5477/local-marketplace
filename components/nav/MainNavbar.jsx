@@ -69,7 +69,7 @@ export default function MainNavbar() {
              <BadgePercent className="h-5 w-5 text-primary" />
           </div>
           <span className="bg-linear-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
-            ShopSync
+            Martly
           </span>
         </Link>
 

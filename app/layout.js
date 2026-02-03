@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "ShopSync | Marketplace",
+  title: "Martly | Marketplace",
   description: "Buy and sell from local stores with ShopSync",
 };
 

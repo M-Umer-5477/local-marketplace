@@ -1,12 +1,13 @@
-
 "use client";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner"; // ✅ Recommended for network errors
 
 const schema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
@@ -16,10 +17,13 @@ const schema = z.object({
   cnic: z.string().min(13, "CNIC must be at least 13 digits"),
 });
 
-export default function StepPersonal({ nextStep, data }) { 
+export default function StepPersonal({ nextStep, data }) {
+  const [checking, setChecking] = useState(false);
+
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -32,9 +36,41 @@ export default function StepPersonal({ nextStep, data }) {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log("Step 1 Data:", data);
-    nextStep(data);
+  const onSubmit = async (formData) => {
+    setChecking(true);
+
+    try {
+      // 1. Call API to check email (Checks both Sellers AND Users now)
+      const res = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const result = await res.json();
+
+      if (result.exists) {
+        // 🛑 STOP: Email is taken (either as Seller or User)
+        const roleMsg = result.role ? ` (as ${result.role})` : "";
+        
+        setError("email", {
+          type: "manual",
+          message: `This email is already registered${roleMsg}. Please login.`,
+        });
+        
+        toast.error("Email already exists");
+        setChecking(false);
+        return; 
+      }
+
+      // ✅ SUCCESS: Proceed to Next Step
+      nextStep(formData);
+      
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to verify email. Please try again.");
+      setChecking(false);
+    }
   };
 
   return (
@@ -78,7 +114,7 @@ export default function StepPersonal({ nextStep, data }) {
               )}
             </div>
 
-            {/* Field 5: Password (Spans both columns) */}
+            {/* Field 5: Password */}
             <div className="md:col-span-2">
               <Input
                 placeholder="Password"
@@ -90,10 +126,15 @@ export default function StepPersonal({ nextStep, data }) {
               )}
             </div>
           </div>
-          {/* End Grid */}
 
-          <Button type="submit" className="w-full">
-            Next
+          <Button type="submit" className="w-full" disabled={checking}>
+            {checking ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking...
+              </>
+            ) : (
+              "Next"
+            )}
           </Button>
         </CardContent>
       </form>
