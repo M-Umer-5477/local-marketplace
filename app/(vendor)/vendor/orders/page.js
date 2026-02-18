@@ -7,7 +7,7 @@ import {
   Loader2, Package, CheckCircle2, Truck, XCircle, 
   MapPin, Phone, MessageCircle, RefreshCw, Store, CreditCard, Banknote 
 } from "lucide-react";
-
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
