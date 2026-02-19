@@ -16,7 +16,7 @@
 import PublicLayoutClient from"@/app/(public)/PublicLayoutClient";
 
 export const metadata = {
-  title: "ShopSync | Marketplace",
+  title: "MartLy | Marketplace",
   description: "Buy and sell from local stores with ShopSync",
 };
 
