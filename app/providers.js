@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider"; 
 import { CartProvider } from "@/context/cartContext"; // <--- 1. Import CartProvider
+import { AddressProvider } from "@/context/addressContext";
 import React from 'react'; 
 
 export default function Providers({ children }) {
@@ -16,7 +17,9 @@ export default function Providers({ children }) {
       <SessionProvider>
         {/* 2. Wrap CartProvider here so it can access Session if needed, and provide data to the App */}
         <CartProvider>
+          <AddressProvider>
             {children}
+          </AddressProvider>
         </CartProvider>
       </SessionProvider>
     </ThemeProvider>
