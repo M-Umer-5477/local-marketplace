@@ -37,10 +37,10 @@ export async function GET() {
         isVerified: true,               
         isActive: true                  
       }) 
-      // ⚠️ IMPORTANT: Added 'shopLocation' and 'deliveryRadius' for map logic
-      .select("shopName shopType shopLogo shopAddress shopLocation deliveryRadius")
+      // 🚨 FIX: Added 'isShopOpen', 'openingTime', and 'closingTime'
+      .select("shopName shopType shopLogo shopAddress shopLocation deliveryRadius isShopOpen openingTime closingTime shopBanner")
       .sort({ createdAt: -1 })
-      .limit(8); // Increased limit slightly to allow for distance sorting
+      .limit(8); 
 
     return NextResponse.json({ success: true, shops }, { status: 200 });
   } catch (error) {

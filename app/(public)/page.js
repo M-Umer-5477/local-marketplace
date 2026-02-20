@@ -1,3 +1,4 @@
+
 // "use client";
 // import Image from "next/image";
 // import React, { useState, useEffect } from 'react';
@@ -5,10 +6,11 @@
 // import { useRouter } from 'next/navigation';
 // import { 
 //   Store, BookText, ShoppingCart, Search, CreditCard, History,
-//   ArrowRight, CheckCircle2, Zap, LayoutDashboard, Loader2, MapPin
+//   ArrowRight, CheckCircle2, Zap, LayoutDashboard, MapPin, Navigation
 // } from 'lucide-react'; 
 // import { Button } from '@/components/ui/button';
 // import { Badge } from '@/components/ui/badge'; 
+// import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton
 // import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
 // // --- Main App Component ---
@@ -27,11 +29,10 @@
 //   );
 // }
 
-// // --- 1. Hero Section (Links Updated) ---
+// // --- 1. Hero Section ---
 // function HeroSection() {
 //   return (
 //     <section className="relative pt-20 pb-32 md:pt-8 md:pb-24 overflow-hidden">
-//       {/* Background Pattern */}
 //       <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-slate-950 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[14px_24px]">
 //         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
 //       </div>
@@ -41,11 +42,11 @@
           
 //           {/* Text Content */}
 //           <div className="lg:w-1/2 space-y-8 animate-in slide-in-from-bottom-5 duration-700 fade-in">
-//              <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
-//                 <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-//                 The #1 Marketplace for Locals
-//              </div>
-             
+//               <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
+//                  <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+//                  The #1 Marketplace for Locals
+//               </div>
+              
 //             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
 //               Digitize Your <br />
 //               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-500 to-pink-500">
@@ -73,28 +74,19 @@
 //           </div>
 
 //           {/* Visual Element */}
-//           {/* Visual Element */}
 //           <div className="lg:w-1/2 relative animate-in slide-in-from-right-10 duration-1000 fade-in">
-//              <div className="relative mx-auto w-full max-w-[500px]">
-//                 {/* Background Blobs */}
+//               <div className="relative mx-auto w-full max-w-[500px]">
 //                 <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob"></div>
 //                 <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-blue-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob animation-delay-2000"></div>
                 
-//                 {/* Main Card Container */}
 //                 <div className="relative rounded-2xl border bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden transform rotate-2 hover:rotate-0 transition-all duration-500">
-                   
-//                    {/* FIXES APPLIED:
-//                       1. Removed the <div className="h-[300px]..."> wrapper which caused the empty space.
-//                       2. Used <Image /> component for optimization.
-//                       3. Used "w-full h-auto" to make it fit perfectly without gaps.
-//                    */}
 //                    <Image 
 //                       src="/assets/dashboard-pic2.png" 
 //                       alt="ShopSync Dashboard Preview" 
 //                       width={600} 
 //                       height={400} 
 //                       className="w-full h-auto object-cover"
-//                       priority // Loads immediately since it's above the fold
+//                       priority 
 //                    />
                    
 //                    {/* Floating Badges */}
@@ -107,10 +99,8 @@
 //                       <div><p className="text-xs text-muted-foreground font-bold">Khata Updated</p><p className="text-sm font-bold text-foreground">Balance: 0</p></div>
 //                    </div>
 //                 </div>
-//              </div>
+//               </div>
 //           </div>
-          
-
 //         </div>
 //       </div>
 //     </section>
@@ -202,19 +192,90 @@
 //   );
 // }
 
-// // --- 4. Explore Stores (FULL STACK INTEGRATION) ---
+// // --- 4. Explore Stores (UPDATED WITH MAPS & SKELETON) ---
+// // --- 4. Explore Stores (Smart & Beautiful) ---
 // function ExploreStoresSection() {
 //   const [shops, setShops] = useState([]);
 //   const [loading, setLoading] = useState(true);
+//   const [userLocation, setUserLocation] = useState(null);
 //   const router = useRouter();
 
+//   // --- A. Helper: Time Check Logic ---
+//   const checkIsShopOpen = (shop) => {
+//     if (!shop.isShopOpen) return false; // Manual override
+//     if (!shop.openingTime || !shop.closingTime) return true; // No time set = Open
+
+//     const now = new Date();
+//     const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+//     const [openH, openM] = shop.openingTime.split(":").map(Number);
+//     const [closeH, closeM] = shop.closingTime.split(":").map(Number);
+
+//     const startMinutes = openH * 60 + openM;
+//     const endMinutes = closeH * 60 + closeM;
+
+//     if (endMinutes > startMinutes) {
+//       return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+//     } else {
+//       return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+//     }
+//   };
+
+//   // --- B. Helper: Distance Calculation ---
+//   const calculateDistance = (lat1, lon1, lat2, lon2) => {
+//     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+//     const R = 6371; 
+//     const dLat = (lat2 - lat1) * (Math.PI / 180);
+//     const dLon = (lon2 - lon1) * (Math.PI / 180);
+//     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//               Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+//               Math.sin(dLon / 2) * Math.sin(dLon / 2);
+//     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//     return R * c; 
+//   };
+
+//   // --- C. Get Location ---
+//   useEffect(() => {
+//     if ("geolocation" in navigator) {
+//         navigator.geolocation.getCurrentPosition(
+//             (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+//             () => console.log("Location denied")
+//         );
+//     }
+//   }, []);
+
+//   // --- D. Fetch, Process & Sort ---
 //   useEffect(() => {
 //     const fetchShops = async () => {
 //         try {
 //             const res = await fetch('/api/public/featured-shops');
 //             const data = await res.json();
+            
 //             if (data.success) {
-//                 setShops(data.shops);
+//                 let processedShops = data.shops.map(shop => {
+//                     // 1. Calculate Open Status
+//                     const isOpen = checkIsShopOpen(shop);
+                    
+//                     // 2. Calculate Distance (if loc exists)
+//                     let dist = null;
+//                     if (userLocation && shop.shopLocation?.coordinates) {
+//                         const shopLat = shop.shopLocation.coordinates[1];
+//                         const shopLng = shop.shopLocation.coordinates[0];
+//                         dist = calculateDistance(userLocation.lat, userLocation.lng, shopLat, shopLng);
+//                     }
+
+//                     return { ...shop, isOpen, distance: dist };
+//                 });
+
+//                 // 3. Sort: Open shops first, then by distance
+//                 processedShops.sort((a, b) => {
+//                     if (a.isOpen === b.isOpen) {
+//                         return (a.distance || 9999) - (b.distance || 9999);
+//                     }
+//                     return b.isOpen - a.isOpen; // Open shops first
+//                 });
+
+//                 setShops(processedShops);
 //             }
 //         } catch (error) {
 //             console.error("Failed to load featured shops");
@@ -223,64 +284,103 @@
 //         }
 //     };
 //     fetchShops();
-//   }, []);
+//   }, [userLocation]); 
 
 //   return (
-//     <section className="pt-10 pb-10 bg-secondary/20">
+//     <section className="pt-16 pb-24 bg-secondary/10">
 //       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 //         <div className="flex flex-col md:flex-row justify-between items-end mb-12">
 //             <div>
-//                 <h2 className="text-3xl font-bold text-foreground">Featured Shops</h2>
-//                 <p className="text-muted-foreground mt-2">Support local businesses in your area.</p>
+//                 <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">Featured Shops</h2>
+//                 <p className="text-muted-foreground mt-2 text-lg">
+//                     {userLocation ? "Top rated stores near you" : "Support local businesses in your area."}
+//                 </p>
 //             </div>
 //             <Link href="/shops">
-//                 <Button variant="ghost" className="text-primary gap-2 mt-4 md:mt-0">
-//                     View All Shops <ArrowRight className="h-4 w-4" />
+//                 <Button variant="ghost" className="text-primary gap-2 mt-4 md:mt-0 group hover:bg-primary/5">
+//                     View All Shops <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
 //                 </Button>
 //             </Link>
 //         </div>
         
 //         {loading ? (
-//             <div className="flex justify-center items-center py-20">
-//                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+//             // --- SKELETON UI ---
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+//                 {[1, 2, 3, 4].map((i) => (
+//                     <div key={i} className="rounded-2xl border border-border bg-card overflow-hidden h-80">
+//                         <Skeleton className="h-40 w-full" />
+//                         <div className="p-5 space-y-3">
+//                             <Skeleton className="h-6 w-3/4" />
+//                             <Skeleton className="h-4 w-1/2" />
+//                             <div className="pt-4 flex justify-between">
+//                                 <Skeleton className="h-4 w-1/4" />
+//                                 <Skeleton className="h-4 w-1/4" />
+//                             </div>
+//                         </div>
+//                     </div>
+//                 ))}
 //             </div>
 //         ) : shops.length === 0 ? (
-//             <div className="text-center py-10 text-muted-foreground">
-//                 No shops available yet. Be the first to join!
+//             <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-card">
+//                 No shops available right now.
 //             </div>
 //         ) : (
-//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-//             {shops.map((store, i) => (
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+//             {/* Slice Top 4 Items */}
+//             {shops.slice(0, 4).map((store, i) => (
 //                 <div 
 //                     key={i} 
 //                     onClick={() => router.push(`/shops/${store._id}`)}
-//                     className="group bg-card rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer"
+//                     className={`group bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-col h-full ${!store.isOpen ? "opacity-90" : ""}`}
 //                 >
-//                 <div className="relative h-48 overflow-hidden bg-muted flex items-center justify-center">
+//                 {/* Image Header */}
+//                 <div className="relative h-40 overflow-hidden bg-muted flex items-center justify-center">
 //                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
+                    
+//                     {/* Status Badge */}
+//                     <div className="absolute top-3 left-3 z-20">
+//                         <Badge className={`${store.isOpen ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"} shadow-lg border-0`}>
+//                             {store.isOpen ? "Open" : "Closed"}
+//                         </Badge>
+//                     </div>
+
+//                     {/* Distance Badge */}
+//                     {store.distance && (
+//                         <div className="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+//                             <Navigation className="h-3 w-3 text-sky-400" /> {store.distance.toFixed(1)} km
+//                         </div>
+//                     )}
+
 //                     {store.shopLogo ? (
 //                         <img 
 //                             src={store.shopLogo} 
 //                             alt={store.shopName} 
-//                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
+//                             className={`w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ${!store.isOpen ? "grayscale-[0.5]" : ""}`} 
 //                         />
 //                     ) : (
 //                         <Store className="h-16 w-16 text-muted-foreground/50" />
 //                     )}
-//                     <div className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-black shadow-sm">
-//                         Verified
-//                     </div>
 //                 </div>
-//                 <div className="p-5">
-//                     <h3 className="text-lg font-bold text-card-foreground group-hover:text-primary transition-colors line-clamp-1">{store.shopName}</h3>
-//                     <p className="text-sm text-muted-foreground font-medium mb-4">{store.shopType}</p>
-//                     <div className="w-full h-px bg-border mb-4" />
+
+//                 {/* Content */}
+//                 <div className="p-5 flex flex-col flex-1">
+//                     <div className="flex-1">
+//                         <h3 className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
+//                             {store.shopName}
+//                         </h3>
+//                         <p className="text-sm text-muted-foreground font-medium">{store.shopType}</p>
+//                     </div>
+                    
+//                     <div className="w-full h-px bg-border my-4" />
+                    
 //                     <div className="flex items-center justify-between text-sm">
-//                         <span className="text-green-600 font-medium">Open Now</span>
-//                         <div className="flex items-center gap-1 text-muted-foreground">
-//                             <MapPin className="h-3 w-3" />
-//                             <span className="truncate max-w-[100px]">{store.shopAddress}</span>
+//                         <div className="flex items-center gap-1.5 text-muted-foreground">
+//                             <MapPin className="h-3.5 w-3.5 text-primary" />
+//                             <span className="truncate max-w-[140px] text-xs font-medium">{store.shopAddress || "Local Store"}</span>
 //                         </div>
+//                         {!store.isOpen && (
+//                             <span className="text-xs text-red-500 font-semibold">Opens {store.openingTime}</span>
+//                         )}
 //                     </div>
 //                 </div>
 //                 </div>
@@ -321,11 +421,10 @@
 //   );
 // }
 
-// // --- 6. CTA Section (Links Updated) ---
+// // --- 6. CTA Section ---
 // function CallToActionSection() {
 //   return (
 //     <section className="py-20 relative overflow-hidden bg-primary">
-//         {/* Background Gradients */}
 //         <div className="absolute inset-0 bg-linear-to-br from-primary via-purple-700 to-blue-700 -z-10" />
 //         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 //         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-black/10 rounded-full blur-3xl" />
@@ -355,13 +454,14 @@ import Image from "next/image";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAddress } from "@/context/addressContext"; // ✅ IMPORT GLOBAL ADDRESS
 import { 
   Store, BookText, ShoppingCart, Search, CreditCard, History,
   ArrowRight, CheckCircle2, Zap, LayoutDashboard, MapPin, Navigation
 } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge'; 
-import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton
+import { Skeleton } from "@/components/ui/skeleton"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
 // --- Main App Component ---
@@ -391,7 +491,6 @@ function HeroSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex flex-col lg:flex-row items-center gap-12 text-center lg:text-left">
           
-          {/* Text Content */}
           <div className="lg:w-1/2 space-y-8 animate-in slide-in-from-bottom-5 duration-700 fade-in">
               <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
                  <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
@@ -424,7 +523,6 @@ function HeroSection() {
             </div>
           </div>
 
-          {/* Visual Element */}
           <div className="lg:w-1/2 relative animate-in slide-in-from-right-10 duration-1000 fade-in">
               <div className="relative mx-auto w-full max-w-[500px]">
                 <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl mix-blend-multiply filter opacity-70 animate-blob"></div>
@@ -440,7 +538,6 @@ function HeroSection() {
                       priority 
                    />
                    
-                   {/* Floating Badges */}
                    <div className="absolute -left-6 top-10 bg-card p-3 rounded-lg shadow-xl border border-border flex items-center gap-3 animate-bounce duration-3000">
                       <div className="bg-green-100 p-2 rounded-full"><Zap className="h-5 w-5 text-green-600" /></div>
                       <div><p className="text-xs text-muted-foreground font-bold">New Order</p><p className="text-sm font-bold text-foreground">Rs. 1,250</p></div>
@@ -543,36 +640,40 @@ function FeaturesSection() {
   );
 }
 
-// --- 4. Explore Stores (UPDATED WITH MAPS & SKELETON) ---
-// --- 4. Explore Stores (Smart & Beautiful) ---
+// --- 4. Explore Stores (WIRED TO GLOBAL ADDRESS STATE + GUEST UX + ROBUST TIME CHECK) ---
 function ExploreStoresSection() {
+  const { selectedAddress, loading: addressLoading } = useAddress(); 
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState(null);
   const router = useRouter();
 
-  // --- A. Helper: Time Check Logic ---
+  // ✅ UPDATED ROBUST TIME CHECK
   const checkIsShopOpen = (shop) => {
-    if (!shop.isShopOpen) return false; // Manual override
-    if (!shop.openingTime || !shop.closingTime) return true; // No time set = Open
+    if (shop.isShopOpen === false) return false; 
+    if (!shop.openingTime || !shop.closingTime) return true; 
 
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    try {
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    const [openH, openM] = shop.openingTime.split(":").map(Number);
-    const [closeH, closeM] = shop.closingTime.split(":").map(Number);
+      const [openH, openM] = shop.openingTime.split(":").map(Number);
+      const [closeH, closeM] = shop.closingTime.split(":").map(Number);
 
-    const startMinutes = openH * 60 + openM;
-    const endMinutes = closeH * 60 + closeM;
+      if (isNaN(openH) || isNaN(closeH)) return true; // Safe fallback
 
-    if (endMinutes > startMinutes) {
-      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
-    } else {
-      return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+      const startMinutes = openH * 60 + (openM || 0);
+      const endMinutes = closeH * 60 + (closeM || 0);
+
+      if (endMinutes > startMinutes) {
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+      } else {
+        return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+      }
+    } catch (error) {
+      return true; // Safe fallback
     }
   };
 
-  // --- B. Helper: Distance Calculation ---
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
     const R = 6371; 
@@ -585,45 +686,43 @@ function ExploreStoresSection() {
     return R * c; 
   };
 
-  // --- C. Get Location ---
   useEffect(() => {
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            () => console.log("Location denied")
-        );
-    }
-  }, []);
+    if (addressLoading) return; // Wait for context
 
-  // --- D. Fetch, Process & Sort ---
-  useEffect(() => {
     const fetchShops = async () => {
         try {
+            setLoading(true);
             const res = await fetch('/api/public/featured-shops');
             const data = await res.json();
             
             if (data.success) {
                 let processedShops = data.shops.map(shop => {
-                    // 1. Calculate Open Status
                     const isOpen = checkIsShopOpen(shop);
-                    
-                    // 2. Calculate Distance (if loc exists)
                     let dist = null;
-                    if (userLocation && shop.shopLocation?.coordinates) {
+                    
+                    // ✅ Calculate distance IF they have an address
+                    if (selectedAddress?.location?.coordinates && shop.shopLocation?.coordinates) {
+                        const userLat = selectedAddress.location.coordinates[1];
+                        const userLng = selectedAddress.location.coordinates[0];
                         const shopLat = shop.shopLocation.coordinates[1];
                         const shopLng = shop.shopLocation.coordinates[0];
-                        dist = calculateDistance(userLocation.lat, userLocation.lng, shopLat, shopLng);
+                        dist = calculateDistance(userLat, userLng, shopLat, shopLng);
                     }
-
                     return { ...shop, isOpen, distance: dist };
                 });
 
-                // 3. Sort: Open shops first, then by distance
+                // ✅ UX MAGIC: If they have an address, filter strictly. 
+                // If they DON'T have an address (Guest), show everything to entice them!
+                if (selectedAddress) {
+                    processedShops = processedShops.filter(shop => shop.distance !== null && shop.distance <= (shop.deliveryRadius || 10));
+                }
+
+                // Sort: Open shops first, then by distance (if available)
                 processedShops.sort((a, b) => {
                     if (a.isOpen === b.isOpen) {
                         return (a.distance || 9999) - (b.distance || 9999);
                     }
-                    return b.isOpen - a.isOpen; // Open shops first
+                    return b.isOpen - a.isOpen; 
                 });
 
                 setShops(processedShops);
@@ -635,7 +734,7 @@ function ExploreStoresSection() {
         }
     };
     fetchShops();
-  }, [userLocation]); 
+  }, [selectedAddress, addressLoading]); 
 
   return (
     <section className="pt-16 pb-24 bg-secondary/10">
@@ -644,7 +743,10 @@ function ExploreStoresSection() {
             <div>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">Featured Shops</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                    {userLocation ? "Top rated stores near you" : "Support local businesses in your area."}
+                    {/* ✅ UX Update: Friendly message for both states */}
+                    {selectedAddress 
+                        ? `Top rated stores delivering to ${selectedAddress.label}` 
+                        : "Discover top local businesses. Set your address above for precise delivery options!"}
                 </p>
             </div>
             <Link href="/shops">
@@ -654,8 +756,7 @@ function ExploreStoresSection() {
             </Link>
         </div>
         
-        {loading ? (
-            // --- SKELETON UI ---
+        {loading || addressLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="rounded-2xl border border-border bg-card overflow-hidden h-80">
@@ -673,30 +774,26 @@ function ExploreStoresSection() {
             </div>
         ) : shops.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-card">
-                No shops available right now.
+                {selectedAddress ? "No featured shops deliver to this address right now. Try expanding your search!" : "No featured shops available right now."}
             </div>
         ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Slice Top 4 Items */}
             {shops.slice(0, 4).map((store, i) => (
                 <div 
                     key={i} 
                     onClick={() => router.push(`/shops/${store._id}`)}
                     className={`group bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-col h-full ${!store.isOpen ? "opacity-90" : ""}`}
                 >
-                {/* Image Header */}
                 <div className="relative h-40 overflow-hidden bg-muted flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
                     
-                    {/* Status Badge */}
                     <div className="absolute top-3 left-3 z-20">
                         <Badge className={`${store.isOpen ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"} shadow-lg border-0`}>
                             {store.isOpen ? "Open" : "Closed"}
                         </Badge>
                     </div>
 
-                    {/* Distance Badge */}
-                    {store.distance && (
+                    {store.distance !== null && (
                         <div className="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
                             <Navigation className="h-3 w-3 text-sky-400" /> {store.distance.toFixed(1)} km
                         </div>
@@ -713,7 +810,6 @@ function ExploreStoresSection() {
                     )}
                 </div>
 
-                {/* Content */}
                 <div className="p-5 flex flex-col flex-1">
                     <div className="flex-1">
                         <h3 className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
