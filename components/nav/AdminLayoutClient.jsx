@@ -90,7 +90,7 @@ export default function AdminLayoutClient({ children, user }) {
           <Button 
             variant="outline" 
             className="w-full gap-2 text-destructive border-destructive/20 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: "/" })}
           >
             <LogOut className="h-4 w-4" /> Sign Out
           </Button>
