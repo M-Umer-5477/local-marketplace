@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import Order from "@/models/order";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function POST(request, { params }) {
   try {
     await db.connect();
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "seller") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
     const { id } = params;
     const { amount, method } = await request.json();
 

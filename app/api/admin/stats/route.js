@@ -3,11 +3,16 @@ import db from "@/lib/db";
 import Seller from "@/models/seller";
 import Order from "@/models/order"; 
 import User from "@/models/user";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET() {
   try {
     await db.connect();
-
+const session = await getServerSession(authOptions);
+    
+        if (!session || session.user.role !== "admin") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
     // 1. Basic Counts (Keep existing logic)
     const pendingVerifications = await Seller.countDocuments({ verificationStatus: "Pending", role: "seller" });
     const activeShops = await Seller.countDocuments({ isActive: true, role: "seller" });

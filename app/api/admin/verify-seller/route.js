@@ -3,11 +3,16 @@ import db from "@/lib/db";
 import Seller from "@/models/seller";
 // Import the named export from your new mailer
 import { sendEmail } from "@/lib/mailer"; 
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function POST(req) {
   try {
     await db.connect();
-    
+    const session = await getServerSession(authOptions);
+        
+            if (!session || session.user.role !== "admin") {
+              return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
     const { sellerId, action } = await req.json(); 
 
     // Basic Validation

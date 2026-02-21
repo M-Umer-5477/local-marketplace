@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import Product from "@/models/product";
 import db from "@/lib/db";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET(req) {
   try {
     await db.connect();
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "seller") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
     const { searchParams } = new URL(req.url);
     const name = searchParams.get("name");
     const shopId = searchParams.get("shopId");

@@ -6,14 +6,14 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req) {
   try {
-    // 1. Security Check (Optional but recommended: Check if user is Admin)
-    // const session = await getServerSession(authOptions);
-    // if (!session || session.user.role !== 'admin') {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+   
 
     await db.connect();
-
+    const session = await getServerSession(authOptions);
+        
+            if (!session || session.user.role !== "admin") {
+              return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
     // 2. Fetch all sellers where status is 'Pending' AND verification docs exist
     // We sort by newest first
     const pendingSellers = await Seller.find({ 
