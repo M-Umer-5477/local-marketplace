@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -64,7 +63,7 @@ export default function SellerOrdersPage() {
     }
   };
 
-  // 3. Smart WhatsApp Handler (UPDATED FOR PAYMENT STATUS)
+  // 3. Smart WhatsApp Handler
   const shareWithRider = (order) => {
     const address = order.deliveryAddress?.address || "Pickup";
     const city = order.deliveryAddress?.city || "Gujrat";
@@ -127,7 +126,16 @@ export default function SellerOrdersPage() {
 
         <TabsContent value="active" className="mt-6">
            {activeOrders.length === 0 ? (
-             <EmptyState />
+             // ✅ FIXED: Replaced <EmptyState /> with actual UI
+             <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl bg-card/50">
+               <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-6">
+                 <Package className="h-10 w-10 text-muted-foreground" />
+               </div>
+               <h3 className="text-2xl font-bold text-foreground">No active orders</h3>
+               <p className="text-muted-foreground mt-2 max-w-sm">
+                 You are all caught up! When customers place new orders, they will appear right here.
+               </p>
+             </div>
            ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                {activeOrders.map((order) => (
@@ -144,35 +152,42 @@ export default function SellerOrdersPage() {
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
-           <div className="space-y-4">
-             {historyOrders.map((order) => (
-                 <div key={order._id} className="flex justify-between items-center p-4 border rounded-lg bg-card/50">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="font-bold">#{order._id.slice(-6).toUpperCase()}</span>
-                            <Badge variant={order.orderStatus === 'Cancelled' ? 'destructive' : 'outline'}>
-                                {order.orderStatus.replace(/_/g, " ")}
-                            </Badge>
-                            {/* History Payment Status */}
-                            {order.isPaid ? (
-                                <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Paid</Badge>
-                            ) : (
-                                <Badge variant="outline">COD</Badge>
-                            )}
+           {historyOrders.length === 0 ? (
+               <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl bg-card/50">
+                 No order history yet.
+               </div>
+           ) : (
+               <div className="space-y-4">
+                 {historyOrders.map((order) => (
+                     <div key={order._id} className="flex justify-between items-center p-4 border rounded-lg bg-card/50">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold">#{order._id.slice(-6).toUpperCase()}</span>
+                                <Badge variant={order.orderStatus === 'Cancelled' ? 'destructive' : 'outline'}>
+                                    {order.orderStatus.replace(/_/g, " ")}
+                                </Badge>
+                                {/* History Payment Status */}
+                                {order.isPaid ? (
+                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Paid</Badge>
+                                ) : (
+                                    <Badge variant="outline">COD</Badge>
+                                )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="font-bold">Rs. {order.total}</p>
-                    </div>
-                 </div>
-             ))}
-           </div>
+                        <div className="text-right">
+                            <p className="font-bold">Rs. {order.total}</p>
+                        </div>
+                     </div>
+                 ))}
+               </div>
+           )}
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
 function OrderCard({ order, onUpdate, updating, onShare }) {
   const [showMap, setShowMap] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -214,10 +229,6 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
         
         {/* ✅ ITEMS LIST (SCROLLABLE & COMPACT) */}
         <div className="bg-muted/30 p-2 rounded-md space-y-1">
-           {/* This div controls the scrolling. 
-              max-h-40 = Limits height to approx 160px
-              overflow-y-auto = Shows scrollbar if content exceeds height
-           */}
            <div className={`space-y-1 ${expanded ? 'max-h-40 overflow-y-auto pr-1' : ''}`}>
                {visibleItems.map((item, i) => (
                  <div key={i} className="flex justify-between text-xs py-1 border-b border-muted/20 last:border-0">
@@ -254,9 +265,9 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
                 {showMap && (
                     <div className="mt-2 rounded-md overflow-hidden border h-32 relative animate-in fade-in zoom-in-95 duration-200">
                         <div className="pointer-events-none h-full w-full">
-                           <LocationPicker defaultPosition={locationPin} /> 
+                            <LocationPicker defaultPosition={{lat: locationPin.lat, lng: locationPin.lng}} /> 
                         </div>
-                        <a href={`https://www.google.com/maps/search/?api=1&query=${locationPin.lat},${locationPin.lng}`} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center transition-all cursor-pointer">
+                        <a href={`https://www.google.com/maps/search/?api=1&query=$${locationPin.lat},${locationPin.lng}`} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/0 hover:bg-black/20 flex items-center justify-center transition-all cursor-pointer">
                             <span className="text-xs bg-white/90 px-2 py-1 rounded shadow-sm opacity-0 hover:opacity-100">Open in App ↗</span>
                         </a>
                     </div>
