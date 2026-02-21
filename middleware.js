@@ -18,7 +18,7 @@ export default withAuth({
 // ✅ Keep your matcher configuration
 export const config = {
   matcher: [
- 
+    "/customer/dashboard/:path*",
     
      
   ],

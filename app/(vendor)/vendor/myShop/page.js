@@ -270,7 +270,7 @@ export default function MyShopPage() {
                     value={[deliveryRadius]}
                     onValueChange={(val) => setValue("deliveryRadius", val[0], { shouldDirty: true })}
                   />
-                  <div className="flex gap-2 items-start text-xs text-muted-foreground bg-blue-50 p-2 rounded text-blue-800">
+                  <div className="flex gap-2 items-start text-xs bg-blue-50 p-2 rounded text-blue-800">
                     <Info className="w-4 h-4 shrink-0 mt-0.5" />
                     <p>Moving this slider will shrink or grow the blue circle on the map above.</p>
                   </div>

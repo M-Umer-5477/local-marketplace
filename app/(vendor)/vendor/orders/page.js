@@ -221,7 +221,7 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
            <div className={`space-y-1 ${expanded ? 'max-h-40 overflow-y-auto pr-1' : ''}`}>
                {visibleItems.map((item, i) => (
                  <div key={i} className="flex justify-between text-xs py-1 border-b border-muted/20 last:border-0">
-                    <span className="truncate max-w-[160px]">
+                    <span className="truncate max-w-40">
                         <span className="font-bold mr-1">x{item.quantity}</span> 
                         {item.name}
                     </span>
