@@ -124,6 +124,7 @@ const OrderSchema = new mongoose.Schema({
 
   paymentMethod: { type: String, enum: ["cash", "card", "online", "cod", "khata"], default: "cash" },
   isPaid: { type: Boolean, default: false },
+  isRefunded: { type: Boolean, default: false }, // NEW FIELD to track refunds
   
   // ✅ NEW FIELD: Required for Stripe Verification API
   stripeSessionId: { 

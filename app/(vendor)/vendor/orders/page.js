@@ -1,22 +1,38 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { 
   Loader2, Package, CheckCircle2, Truck, XCircle, 
-  MapPin, Phone, MessageCircle, RefreshCw, Store, CreditCard, Banknote 
+  MapPin, Phone, MessageCircle, RefreshCw, Store, CreditCard, Banknote,
+  AlertTriangle, ShieldAlert
 } from "lucide-react";
 import { ChevronUp, ChevronDown } from "lucide-react";
+
+// Shadcn UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import LocationPicker from "@/components/maps/LocationPicker"; 
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null); 
+  
+  // 🚨 NEW: State for the master cancellation modal
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   // 1. Fetch Orders
   const fetchOrders = async () => {
@@ -60,6 +76,7 @@ export default function SellerOrdersPage() {
       toast.error("Network error");
     } finally {
       setUpdating(null);
+      setOrderToCancel(null); // Close modal if it was open
     }
   };
 
@@ -70,12 +87,10 @@ export default function SellerOrdersPage() {
     const customerName = order.userId?.name || "Customer";
     const customerPhone = order.userId?.phone || order.customerPhone || "N/A";
     
-    // Payment Status Logic
     const paymentStatus = order.isPaid 
         ? "✅ ALREADY PAID (Do NOT Collect Cash)" 
         : `💵 Collect Cash: Rs. ${order.total}`;
 
-    // Map Logic
     let mapLink = "";
     if (order.deliveryAddress?.location?.lat) {
         const { lat, lng } = order.deliveryAddress.location;
@@ -126,7 +141,6 @@ export default function SellerOrdersPage() {
 
         <TabsContent value="active" className="mt-6">
            {activeOrders.length === 0 ? (
-             // ✅ FIXED: Replaced <EmptyState /> with actual UI
              <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl bg-card/50">
                <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center mb-6">
                  <Package className="h-10 w-10 text-muted-foreground" />
@@ -145,6 +159,7 @@ export default function SellerOrdersPage() {
                    onUpdate={handleStatusUpdate} 
                    updating={updating === order._id}
                    onShare={shareWithRider}
+                   onCancelRequest={() => setOrderToCancel(order)} // 🚨 Pass to master modal
                  />
                ))}
              </div>
@@ -166,7 +181,6 @@ export default function SellerOrdersPage() {
                                 <Badge variant={order.orderStatus === 'Cancelled' ? 'destructive' : 'outline'}>
                                     {order.orderStatus.replace(/_/g, " ")}
                                 </Badge>
-                                {/* History Payment Status */}
                                 {order.isPaid ? (
                                     <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Paid</Badge>
                                 ) : (
@@ -184,11 +198,70 @@ export default function SellerOrdersPage() {
            )}
         </TabsContent>
       </Tabs>
+
+      {/* 🚨 THE MASTER SHADCN CANCELLATION MODAL */}
+      <Dialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className={`flex items-center gap-3 mb-2 ${orderToCancel?.isPaid ? 'text-red-600' : 'text-orange-500'}`}>
+                <div className={`p-2 rounded-full ${orderToCancel?.isPaid ? 'bg-red-100' : 'bg-orange-100'}`}>
+                    {orderToCancel?.isPaid ? <ShieldAlert className="h-6 w-6" /> : <AlertTriangle className="h-6 w-6" />}
+                </div>
+                <DialogTitle>Reject Order</DialogTitle>
+            </div>
+            
+            <DialogDescription className="text-sm">
+              {orderToCancel?.isPaid ? (
+                <span className="text-red-600 font-medium">
+                  🚨 WARNING: This order was already paid online via card. Canceling it will automatically trigger a refund and reverse the funds from your wallet.
+                </span>
+              ) : (
+                <span>Are you sure you want to reject this Cash on Delivery order? The customer will be notified.</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {orderToCancel && (
+            <div className="bg-muted/50 p-4 rounded-lg my-2 space-y-2 text-sm border">
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Order ID:</span>
+                    <span className="font-medium">#{orderToCancel._id.slice(-6).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Items:</span>
+                    <span className="font-medium text-right max-w-[200px] truncate">{orderToCancel.items.map(i => i.name).join(", ")}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2 mt-2">
+                    <span className="font-bold">Total Bill:</span>
+                    <span className="font-bold text-primary">Rs. {orderToCancel.total}</span>
+                </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setOrderToCancel(null)} disabled={updating}>
+              Keep Order
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => handleStatusUpdate(orderToCancel._id, "Cancelled")} 
+              disabled={updating}
+            >
+              {updating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Confirm Reject
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
 
-function OrderCard({ order, onUpdate, updating, onShare }) {
+// -----------------------------------
+// ORDER CARD COMPONENT
+// -----------------------------------
+function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest }) {
   const [showMap, setShowMap] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
@@ -196,13 +269,11 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
   const locationPin = order.deliveryAddress?.location;
   const hasPin = isDelivery && locationPin && locationPin.lat;
 
-  // Logic: If expanded, show all. If not, show first 2.
   const visibleItems = expanded ? order.items : order.items.slice(0, 2);
 
   return (
     <Card className={`flex flex-col h-full shadow-sm hover:shadow-md transition-all border-l-4 ${isDelivery ? 'border-l-blue-500' : 'border-l-yellow-500'}`}>
       
-      {/* --- HEADER --- */}
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
            <div>
@@ -224,10 +295,8 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
         </div>
       </CardHeader>
       
-      {/* --- CONTENT --- */}
       <CardContent className="p-4 pt-0 space-y-3 flex-1">
         
-        {/* ✅ ITEMS LIST (SCROLLABLE & COMPACT) */}
         <div className="bg-muted/30 p-2 rounded-md space-y-1">
            <div className={`space-y-1 ${expanded ? 'max-h-40 overflow-y-auto pr-1' : ''}`}>
                {visibleItems.map((item, i) => (
@@ -241,7 +310,6 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
                ))}
            </div>
 
-           {/* The Toggle Button (Stays fixed at bottom of list) */}
            {order.items.length > 2 && (
              <button 
                 onClick={() => setExpanded(!expanded)}
@@ -256,7 +324,6 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
            )}
         </div>
 
-        {/* Map Toggle */}
         {hasPin && (
             <div className="w-full">
                 <Button variant="outline" size="sm" className="w-full h-7 text-xs flex gap-2 border-dashed border-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => setShowMap(!showMap)}>
@@ -275,7 +342,6 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
             </div>
         )}
         
-        {/* Address & Contact */}
         <div className="text-xs space-y-2 text-muted-foreground pt-1">
            <div className="flex items-center gap-2">
               <Phone className="h-3 w-3" />
@@ -295,7 +361,6 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
         </div>
       </CardContent>
 
-      {/* --- FOOTER --- */}
       <CardFooter className="flex flex-col gap-2 p-3 bg-muted/10 border-t mt-auto">
          <div className="flex justify-between items-center w-full mb-1">
             <span className="text-xs font-semibold text-muted-foreground">TOTAL BILL</span>
@@ -315,7 +380,17 @@ function OrderCard({ order, onUpdate, updating, onShare }) {
 
          {order.orderStatus === "Pending" && (
              <div className="grid grid-cols-2 gap-2 w-full">
-                <Button variant="outline" size="sm" className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={() => onUpdate(order._id, "Cancelled")} disabled={updating}>Reject</Button>
+                {/* 🚨 Calls the master modal instead of window.confirm */}
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50" 
+                    disabled={updating}
+                    onClick={onCancelRequest} 
+                >
+                    Reject
+                </Button>
+
                 <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700" onClick={() => onUpdate(order._id, "Confirmed")} disabled={updating}>
                     {updating ? <Loader2 className="animate-spin h-3 w-3"/> : "Accept"}
                 </Button>
