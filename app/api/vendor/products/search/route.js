@@ -17,17 +17,16 @@ export async function GET(req) {
 
     console.log("🔎 Incoming search:", { q, shopId });
 
-    // ✅ Validate inputs
+   
     if (!q || !shopId) {
       console.log("❌ Missing q or shopId");
       return NextResponse.json({ error: "Missing query or shopId" }, { status: 400 });
     }
 
-    // ✅ Build regex safely
+    
     const nameRegex = new RegExp(q, "i");
     const barcodeRegex = new RegExp(`^${q}$`, "i");
 
-    // ✅ Try searching
     const products = await Product.find({
       shopId,
       $or: [{ name: nameRegex }, { barcode: barcodeRegex }],

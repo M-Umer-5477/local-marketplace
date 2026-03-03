@@ -1,33 +1,7 @@
-/*import { NextResponse } from "next/server";
-import db from "@/lib/db";
-import Order from "@/models/order";
 
-export async function POST(req) {
-  try {
-    await db.connect();
-    const body = await req.json();
-    const { orderId, amount } = body;
-
-    const order = await Order.findById(orderId);
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-
-    const remaining = order.balance - amount;
-    order.payments.push({ amount, method: "cash", note: "Khata payment" });
-    order.balance = Math.max(remaining, 0);
-    order.isPaid = remaining <= 0;
-
-    await order.save();
-
-    return NextResponse.json({ success: true, order }, { status: 200 });
-  } catch (err) {
-    console.error("KHATA PAYMENT ERROR:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-*/
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import Order from "@/models/order"; // Make sure this path is correct
+import Order from "@/models/order"; 
 import { auth } from "@/auth";
 
 export async function POST(req) {

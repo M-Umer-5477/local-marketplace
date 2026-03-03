@@ -3,7 +3,7 @@ import db from '@/lib/db';
 import Product from '@/models/product';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-// ✅ GET /api/vendor/products?shopId=xxxx&page=1&limit=10
+
 export async function GET(request) {
   try {
     await db.connect();
@@ -52,7 +52,7 @@ export async function GET(request) {
   }
 }
 
-// ✅ POST /api/vendor/products
+
 export async function POST(request) {
   try {
     await db.connect();
@@ -60,7 +60,6 @@ export async function POST(request) {
     const body = await request.json();
     const { shopId, name, description, price, category, stock, unit, barcode, imageUrl, isActive } = body;
 
-    // 🧠 Validate shopId
     if (!shopId) {
       return NextResponse.json(
         { error: "Missing shopId. Unauthorized access." },
@@ -68,7 +67,6 @@ export async function POST(request) {
       );
     }
 
-    // 🧠 Validate required fields
     if (!name || !description || !price || !category || !stock || !unit || !barcode) {
       return NextResponse.json(
         { error: "Missing required fields." },
@@ -76,7 +74,6 @@ export async function POST(request) {
       );
     }
 
-    // 🔍 Check for duplicate barcode (scoped to the same shop)
     const existingProduct = await Product.findOne({ barcode, shopId });
     if (existingProduct) {
       return NextResponse.json(
@@ -85,7 +82,7 @@ export async function POST(request) {
       );
     }
 
-    // ✅ Create new product
+    
     const newProduct = new Product({
       ...body,
       shopId,

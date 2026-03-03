@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useSession } from "next-auth/react"; // 👈 REMOVED
-// import { useRouter } from "next/navigation"; // 👈 REMOVED
-import { useSeller } from "@/app/(vendor)/SellerContext"; // 👈 ADDED
+
+import { useSeller } from "@/app/(vendor)/SellerContext"; 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {

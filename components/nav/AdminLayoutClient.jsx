@@ -39,7 +39,7 @@ export default function AdminLayoutClient({ children, user }) {
              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
            </div>
            <div>
-             <h1 className="font-bold text-lg tracking-tight text-foreground">ShopSync</h1>
+             <h1 className="font-bold text-lg tracking-tight text-foreground">MartLy</h1>
              <p className="text-xs text-muted-foreground">Admin Console</p>
            </div>
         </div>

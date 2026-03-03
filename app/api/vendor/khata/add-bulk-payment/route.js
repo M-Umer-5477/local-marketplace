@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import Order from "@/models/order"; // Adjust this path if your model is elsewhere
+import Order from "@/models/order"; 
 import { auth } from "@/auth";
 import mongoose from "mongoose";
 

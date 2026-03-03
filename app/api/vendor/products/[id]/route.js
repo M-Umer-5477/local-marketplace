@@ -3,7 +3,7 @@ import db from '@/lib/db';
 import Product from '@/models/product';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-// ✅ PUT /api/vendor/products/:productId — update a product
+
 export async function PUT(request, { params }) {
   const { id } = await params;
 

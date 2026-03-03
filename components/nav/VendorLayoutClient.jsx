@@ -7,17 +7,13 @@ import SellerContext from "@/app/(vendor)/SellerContext"; // 👈 1. Import the 
 
 export default function VendorLayoutClient({ session, children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  // 👈 2. Extract the 'user' object from the session
-  // This is what we will pass to all child pages.
   const { user } = session;
 
   return (
-    // 👈 3. Wrap your entire layout in the Context Provider
-    // The 'value' is what the useSeller() hook will return.
+   
     <SellerContext.Provider value={{ user }}>
       <div className="min-h-screen bg-backgound">
-        {/* Header always on top */}
+    
         <VendorHeader
           isCollapsed={isCollapsed}
           onToggleSidebar={() => setIsCollapsed(!isCollapsed)}

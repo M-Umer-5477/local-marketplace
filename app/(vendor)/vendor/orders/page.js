@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { 
   Loader2, Package, CheckCircle2, Truck, XCircle, 
   MapPin, Phone, MessageCircle, RefreshCw, Store, CreditCard, Banknote,
-  AlertTriangle, ShieldAlert
+  AlertTriangle, ShieldAlert, Ban
 } from "lucide-react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
@@ -31,8 +31,9 @@ export default function SellerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null); 
   
-  // 🚨 NEW: State for the master cancellation modal
+  // Modals State
   const [orderToCancel, setOrderToCancel] = useState(null);
+  const [orderToReturn, setOrderToReturn] = useState(null); // 🚨 NEW: For refused COD orders
 
   // 1. Fetch Orders
   const fetchOrders = async () => {
@@ -76,7 +77,8 @@ export default function SellerOrdersPage() {
       toast.error("Network error");
     } finally {
       setUpdating(null);
-      setOrderToCancel(null); // Close modal if it was open
+      setOrderToCancel(null); 
+      setOrderToReturn(null); 
     }
   };
 
@@ -115,8 +117,9 @@ export default function SellerOrdersPage() {
     window.open(url, "_blank");
   };
 
-  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled"].includes(o.orderStatus));
-  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled"].includes(o.orderStatus));
+  // 🚨 UPDATED FILTER: "Returned" moves to history automatically
+  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus));
+  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus));
 
   if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
 
@@ -159,7 +162,8 @@ export default function SellerOrdersPage() {
                    onUpdate={handleStatusUpdate} 
                    updating={updating === order._id}
                    onShare={shareWithRider}
-                   onCancelRequest={() => setOrderToCancel(order)} // 🚨 Pass to master modal
+                   onCancelRequest={() => setOrderToCancel(order)} 
+                   onReturnRequest={() => setOrderToReturn(order)} // 🚨 Pass to new return modal
                  />
                ))}
              </div>
@@ -178,7 +182,7 @@ export default function SellerOrdersPage() {
                         <div>
                             <div className="flex items-center gap-2">
                                 <span className="font-bold">#{order._id.slice(-6).toUpperCase()}</span>
-                                <Badge variant={order.orderStatus === 'Cancelled' ? 'destructive' : 'outline'}>
+                                <Badge variant={['Cancelled', 'Returned'].includes(order.orderStatus) ? 'destructive' : 'outline'}>
                                     {order.orderStatus.replace(/_/g, " ")}
                                 </Badge>
                                 {order.isPaid ? (
@@ -199,7 +203,7 @@ export default function SellerOrdersPage() {
         </TabsContent>
       </Tabs>
 
-      {/* 🚨 THE MASTER SHADCN CANCELLATION MODAL */}
+      {/* 🚨 MODAL 1: CANCEL ORDER (Reject at Pending state) */}
       <Dialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -254,6 +258,41 @@ export default function SellerOrdersPage() {
         </DialogContent>
       </Dialog>
 
+
+      {/* 🚨 MODAL 2: RETURN ORDER (Customer refused at door) */}
+      <Dialog open={!!orderToReturn} onOpenChange={(open) => !open && setOrderToReturn(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2 text-slate-700">
+                <div className="p-2 rounded-full bg-slate-100">
+                    <Ban className="h-6 w-6" />
+                </div>
+                <DialogTitle>Customer Refused Delivery</DialogTitle>
+            </div>
+            
+            <DialogDescription className="text-sm">
+              Are you sure you want to mark this order as <strong>Returned</strong>? Use this only if the rider attempted delivery but the customer refused to pay or accept the package. 
+              <br/><br/>
+              <em>Note: The inventory stock for these items will automatically be restored in your shop.</em>
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setOrderToReturn(null)} disabled={updating}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-slate-700 hover:bg-slate-800 text-white"
+              onClick={() => handleStatusUpdate(orderToReturn._id, "Returned")} 
+              disabled={updating}
+            >
+              {updating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Mark as Returned
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
@@ -261,7 +300,7 @@ export default function SellerOrdersPage() {
 // -----------------------------------
 // ORDER CARD COMPONENT
 // -----------------------------------
-function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest }) {
+function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onReturnRequest }) {
   const [showMap, setShowMap] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
@@ -380,7 +419,6 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest }) {
 
          {order.orderStatus === "Pending" && (
              <div className="grid grid-cols-2 gap-2 w-full">
-                {/* 🚨 Calls the master modal instead of window.confirm */}
                 <Button 
                     variant="outline" 
                     size="sm" 
@@ -407,12 +445,27 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest }) {
              </Button>
          )}
 
+         {/* 🚨 THE UPDATED OUT FOR DELIVERY SECTION 🚨 */}
          {order.orderStatus === "Out_for_Delivery" && (
              <div className="w-full space-y-1.5">
                  <Button variant="secondary" size="sm" className="w-full h-8 text-xs text-green-700 bg-green-100 hover:bg-green-200 border border-green-200" onClick={() => onShare(order)}>
                     <MessageCircle className="mr-2 h-3 w-3" /> Share with Rider
                  </Button>
-                 <Button size="sm" className="w-full h-8 text-xs" onClick={() => onUpdate(order._id, "Delivered")} disabled={updating}>Mark Delivered</Button>
+                 
+                 <div className="grid grid-cols-2 gap-2 w-full">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 text-xs text-slate-600 border-slate-200 hover:bg-slate-50" 
+                        disabled={updating}
+                        onClick={onReturnRequest} // Calls the new modal
+                    >
+                        Refused
+                    </Button>
+                    <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700" onClick={() => onUpdate(order._id, "Delivered")} disabled={updating}>
+                        Delivered
+                    </Button>
+                 </div>
              </div>
          )}
 

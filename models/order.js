@@ -117,7 +117,8 @@ const OrderSchema = new mongoose.Schema({
       "Ready_for_Pickup", 
       "Delivered",        
       "Picked_Up",        
-      "Cancelled"
+      "Cancelled",
+      "Returned"
     ], 
     default: "Pending" 
   },
