@@ -73,7 +73,7 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent>
                 <div className="text-4xl font-bold flex items-center">
-                    Rs. {totalDebt.toLocaleString()}
+                    Rs. {totalDebt?.toLocaleString?.() || 0}
                 </div>
                 <p className="text-sm opacity-80 mt-1">Commission money currently held by sellers (COD)</p>
             </CardContent>
@@ -89,7 +89,7 @@ export default function FinancePage() {
             </CardTitle>
         </CardHeader>
         <CardContent>
-            {debtors.length === 0 ? (
+            {!debtors || debtors.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground bg-muted/10 rounded-lg border border-dashed">
                     No sellers owe money right now.
                 </div>

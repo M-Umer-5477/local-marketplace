@@ -11,16 +11,45 @@ export async function GET(req) {
             if (!session || session.user.role !== "admin") {
               return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
             }
-    // 1. Fetch Debtors (Negative Wallet)
+    
+    // 1. RECEIVABLES: Sellers who owe us money (Negative Wallet = they collected COD)
     const debtors = await Seller.find({ 
         role: "seller", 
-        walletBalance: { $lt: 0 } // Less than 0
-    }).sort({ walletBalance: 1 }); // Ascending (Most negative first)
+        walletBalance: { $lt: 0 }
+    }).sort({ walletBalance: 1 }).select('shopName phone walletBalance email');
 
-    // 2. Calculate Total Debt (How much money is stuck in market)
-    const totalDebt = debtors.reduce((acc, curr) => acc + curr.walletBalance, 0);
+    const receivableAmount = debtors.reduce((acc, curr) => acc + Math.abs(curr.walletBalance), 0);
 
-    return NextResponse.json({ success: true, debtors, totalMarketDebt: Math.abs(totalDebt) }, { status: 200 });
+    // 2. PAYABLES: Sellers we owe money to (Positive Wallet = we owe from Stripe/Online)
+    const creditors = await Seller.find({ 
+        role: "seller", 
+        walletBalance: { $gt: 0 }
+    }).sort({ walletBalance: -1 }).select('shopName phone walletBalance email');
+
+    const payableAmount = creditors.reduce((acc, curr) => acc + curr.walletBalance, 0);
+
+    // 3. Summary
+    const netPosition = payableAmount - receivableAmount; // Positive = we owe more, Negative = sellers owe more
+
+    return NextResponse.json({ 
+      success: true, 
+      receivables: {
+        debtors,
+        totalAmount: receivableAmount,
+        count: debtors.length
+      },
+      payables: {
+        creditors,
+        totalAmount: payableAmount,
+        count: creditors.length
+      },
+      summary: {
+        totalReceivable: receivableAmount,
+        totalPayable: payableAmount,
+        netPosition: netPosition,
+        netPositionLabel: netPosition > 0 ? "Platform owes sellers" : "Sellers owe platform"
+      }
+    }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }

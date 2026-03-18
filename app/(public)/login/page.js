@@ -38,16 +38,9 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Effect for redirecting authenticated users
-  useEffect(() => {
-    if (status === "authenticated") {
-      if (session.user.role === "seller") {
-        router.push("/vendor/dashboard");
-      } else {
-        router.push("/");
-      }
-    }
-  }, [session, status, router]);
+  // 🚀 OPTIMIZATION: Removed client-side redirect check
+  // NextAuth redirect callback (in route.js) now handles redirects server-side
+  // This eliminates waiting for session state updates on the client
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -63,16 +56,18 @@ export default function LoginPage() {
 
     try {
       const res = await signIn("credentials", {
-        redirect: false,
         identifier: form.identifier,
         password: form.password,
+        redirect: true, // 🚀 Let NextAuth handle redirect via callback
+        callbackUrl: "/", // Fallback (will be overridden by callback)
       });
 
+      // With redirect: true, NextAuth handles navigation automatically
       if (res?.error) {
         throw new Error(res.error);
       }
       toast.success("Login Successful!", {
-        description: "Redirecting to your dashboard..."
+        description: "Redirecting..."
       });
 
     } catch (err) {

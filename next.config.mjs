@@ -18,6 +18,7 @@ eslint: {
       },
     ],
   },
+ 
 };
 
 export default nextConfig;

@@ -58,9 +58,15 @@ export const authOptions = {
       session.user.role = token.role;
       return session;
     },
+    async redirect({ baseUrl, user }) {
+      if (user?.role === "seller") return `${baseUrl}/vendor/dashboard`;
+      if (user?.role === "customer") return `${baseUrl}/dashboard`;
+      if (user?.role === "admin") return `${baseUrl}/admin/dashboard`;
+      return baseUrl;
+    },
   },
   pages: { signIn: "/login" },
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   secret: process.env.NEXTAUTH_SECRET,
 };
 

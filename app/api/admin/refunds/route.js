@@ -7,7 +7,7 @@ import Stripe from "stripe"; // ✅ IMPORT STRIPE
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// 1. GET: Fetch all pending refunds
+// 1. GET: Fetch all refunds with statistics
 export async function GET(req) {
   try {
     await db.connect();
@@ -17,16 +17,64 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const pendingRefunds = await Order.find({
+    // Get query parameter for filtering
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status') || 'all'; // all, pending, approved, rejected
+
+    // Build filter
+    let filter = {
+      orderStatus: "Cancelled",
+      isPaid: true
+    };
+
+    if (status === 'pending') {
+      filter.isRefunded = { $ne: true };
+    } else if (status === 'approved') {
+      filter.isRefunded = true;
+    }
+
+    // Fetch all matching refunds
+    const refunds = await Order.find(filter)
+      .populate("shopId", "shopName phone")
+      .populate("userId", "name email phone")
+      .sort({ updatedAt: -1 });
+
+    // Calculate statistics
+    const pending = await Order.countDocuments({
       orderStatus: "Cancelled",
       isPaid: true,
-      isRefunded: { $ne: true } 
-    })
-    .populate("shopId", "shopName")
-    .populate("userId", "name email phone")
-    .sort({ updatedAt: -1 });
+      isRefunded: { $ne: true }
+    });
 
-    return NextResponse.json({ success: true, refunds: pendingRefunds }, { status: 200 });
+    const approved = await Order.countDocuments({
+      orderStatus: "Cancelled",
+      isPaid: true,
+      isRefunded: true
+    });
+
+    const totalRefundValue = refunds.reduce((acc, curr) => acc + (curr.total || 0), 0);
+
+    // Calculate pending refunds older than 3 days
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const overdueRefunds = await Order.countDocuments({
+      orderStatus: "Cancelled",
+      isPaid: true,
+      isRefunded: { $ne: true },
+      createdAt: { $lt: threeDaysAgo }
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      refunds,
+      stats: {
+        total: refunds.length,
+        pending,
+        approved,
+        totalRefundValue,
+        overdueRefunds,
+        averageProcessingTime: pending > 0 ? "2-3 days" : "N/A"
+      }
+    }, { status: 200 });
 
   } catch (error) {
     console.error("Fetch Refunds Error:", error);

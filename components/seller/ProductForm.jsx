@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ✅ IMPORT NEW UPLOADER
-import ImageUpload from "@/components/seller/image-upload"; 
+import ProductImageUpload from "@/components/seller/Product-image-Uploader";
 
 export default function ProductForm ({ product, onSave, onCancel, isLoading }) {
   const initialState = { 
@@ -147,7 +147,7 @@ export default function ProductForm ({ product, onSave, onCancel, isLoading }) {
       <div className="grid grid-cols-4 items-start gap-4">
         <Label className="text-right mt-2">Image</Label>
         <div className="col-span-3">
-          <ImageUpload 
+          <ProductImageUpload 
             label="Product Image" 
             onUpload={handleImageUpload} 
             value={formData.imageUrl} 

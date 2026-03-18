@@ -4,10 +4,11 @@ import Image from "next/image";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useAddress } from "@/context/addressContext"; // ✅ IMPORT GLOBAL ADDRESS
 import { 
   Store, BookText, ShoppingCart, Search, CreditCard, History,
-  ArrowRight, CheckCircle2, Zap, LayoutDashboard, MapPin, Navigation
+  ArrowRight, CheckCircle2, Zap, LayoutDashboard, MapPin, Navigation, LogIn, Eye
 } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge'; 
@@ -60,7 +61,7 @@ function HeroSection() {
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <Button asChild size="lg" className="h-12 px-8 text-lg shadow-lg shadow-primary/25 transition-transform hover:scale-105" >
-                <Link href="/seller/register">Start Selling Now</Link>
+                <Link href="/vendor/register">Start Selling Now</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 px-8 text-lg border-primary/20 bg-background/50 backdrop-blur-sm hover:bg-primary/5">
                 <Link href="/shops">Find Nearby Stores</Link>
@@ -190,8 +191,9 @@ function FeaturesSection() {
   );
 }
 
-// --- 4. Explore Stores (WIRED TO GLOBAL ADDRESS STATE + GUEST UX + ROBUST TIME CHECK) ---
+// --- 4. Explore Stores (GUEST-FOCUSED WITH CLEAR CTAs) ---
 function ExploreStoresSection() {
+  const { data: session } = useSession();
   const { selectedAddress, loading: addressLoading } = useAddress(); 
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -289,19 +291,40 @@ function ExploreStoresSection() {
   return (
     <section className="pt-16 pb-24 bg-secondary/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Guest-Focused Banner */}
+        {!session && (
+          <div className="mb-12 p-6 bg-linear-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-1">
+                  <ShoppingCart className="h-5 w-5 text-primary" />
+                  Ready to Start Shopping?
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Login to browse shops near you and checkout with ease.
+                </p>
+              </div>
+              <Link href="/login">
+                <Button className="gap-2 min-w-fit" size="lg">
+                  <LogIn className="h-4 w-4" />
+                  Login to Order
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row justify-between items-end mb-12">
             <div>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">Featured Shops</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                    {/* ✅ UX Update: Friendly message for both states */}
-                    {selectedAddress 
-                        ? `Top rated stores delivering to ${selectedAddress.label}` 
-                        : "Discover top local businesses. Set your address above for precise delivery options!"}
+                    Explore some of our top-rated local businesses
                 </p>
             </div>
             <Link href="/shops">
                 <Button variant="ghost" className="text-primary gap-2 mt-4 md:mt-0 group hover:bg-primary/5">
-                    View All Shops <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    Browse All Shops <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
             </Link>
         </div>
@@ -331,8 +354,7 @@ function ExploreStoresSection() {
             {shops.slice(0, 4).map((store, i) => (
                 <div 
                     key={i} 
-                    onClick={() => router.push(`/shops/${store._id}`)}
-                    className={`group bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer flex flex-col h-full ${!store.isOpen ? "opacity-90" : ""}`}
+                    className={`group bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full ${!store.isOpen ? "opacity-75" : ""}`}
                 >
                 <div className="relative h-40 overflow-hidden bg-muted flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors z-10" />
@@ -361,24 +383,28 @@ function ExploreStoresSection() {
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                    <div className="flex-1">
-                        <h3 className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
+                    <div className="flex-1 mb-4">
+                        <h3 className="text-lg font-bold text-card-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
                             {store.shopName}
                         </h3>
-                        <p className="text-sm text-muted-foreground font-medium">{store.shopType}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{store.shopType}</p>
                     </div>
                     
-                    <div className="w-full h-px bg-border my-4" />
+                    <div className="w-full h-px bg-border mb-4" />
                     
-                    <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <MapPin className="h-3.5 w-3.5 text-primary" />
-                            <span className="truncate max-w-[140px] text-xs font-medium">{store.shopAddress || "Local Store"}</span>
-                        </div>
-                        {!store.isOpen && (
-                            <span className="text-xs text-red-500 font-semibold">Opens {store.openingTime}</span>
-                        )}
+                    {/* Info */}
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-4">
+                        <MapPin className="h-3 w-3 text-primary shrink-0" />
+                        <span className="truncate">{store.shopAddress || "Local Store"}</span>
                     </div>
+
+                    {/* CTA Button */}
+                    <Link href="/shops" className="w-full">
+                        <Button className="w-full gap-2" variant="default" size="sm">
+                            <Eye className="h-4 w-4" />
+                            Browse Shops
+                        </Button>
+                    </Link>
                 </div>
                 </div>
             ))}
