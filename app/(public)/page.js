@@ -81,7 +81,7 @@ function HeroSection() {
                 
                 <div className="relative rounded-2xl border bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden transform rotate-2 hover:rotate-0 transition-all duration-500">
                    <Image 
-                      src="/assets/dashboard-pic2.png" 
+                      src="/assets/dp.png" 
                       alt="ShopSync Dashboard Preview" 
                       width={600} 
                       height={400} 

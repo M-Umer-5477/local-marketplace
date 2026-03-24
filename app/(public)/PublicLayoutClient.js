@@ -38,9 +38,6 @@ export default function PublicLayoutClient({ children }) {
     }
   }, [session, status, router]);
 
-  // 🚀 OPTIMIZATION: Don't block render on session loading
-  // Let navbar and children render while session is loading
-  // This prevents blank page flicker
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <MainNavbar />

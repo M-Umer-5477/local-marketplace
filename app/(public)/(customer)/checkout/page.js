@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/cartContext";
-import { useAddress } from "@/context/addressContext"; // ✅ Import the global address state
+import { useAddress } from "@/context/addressContext"; 
 import { toast } from "sonner";
 import { useSession } from "next-auth/react"; 
 

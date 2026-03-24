@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* 🚨 ACTION ALERTS SECTION */}
+      {/* ACTION ALERTS SECTION */}
       <Card className="border-l-4 border-l-red-500 bg-red-50/50 dark:bg-red-950/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">

@@ -116,7 +116,7 @@ if (isLoading) {
   const chartBarColor = '#2563eb'; // Primary Blue
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-6 bg-background min-h-screen">
+    <div className="flex-1 space-y-4 p-4 md:p-6 md:py-4 bg-background min-h-screen">
       
       {/* Header with Date Range Selector */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
