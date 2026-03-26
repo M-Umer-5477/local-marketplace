@@ -94,7 +94,17 @@ export default function RegisterPage() {
       });
 
       if (loginRes?.ok) {
-        router.push("/"); // Redirect to Home or Dashboard
+        // Get session to check role and redirect accordingly
+        const session = await fetch("/api/auth/session").then(r => r.json());
+        
+        if (session?.user?.role === "seller") {
+          router.push("/vendor/dashboard");
+        } else if (session?.user?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          // Customer - redirect to dashboard
+          router.push("/dashboard");
+        }
       } else {
         // Fallback if login fails but verification worked
         router.push("/login");

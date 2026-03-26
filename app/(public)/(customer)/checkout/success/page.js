@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react"; // ✅ Imported Suspense
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/cartContext";
-import { Loader2, CheckCircle, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -16,11 +16,16 @@ function SuccessContent() {
   
   const [loading, setLoading] = useState(true);
   const [orderId, setOrderId] = useState(null);
+  const [error, setError] = useState(null);
 
   const hasCalledAPI = useRef(false);
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setError("No session found");
+      setLoading(false);
+      return;
+    }
 
     if (hasCalledAPI.current) return;
     hasCalledAPI.current = true;
@@ -35,27 +40,60 @@ function SuccessContent() {
         
         const data = await res.json();
         
-        if (data.success) {
-           setOrderId(data.orderId);
-           clearCart(); 
-        } else if (data.orderId) {
-           setOrderId(data.orderId);
+        if (data.success && data.orderId) {
            clearCart();
+           setOrderId(data.orderId.toString()); // Ensure it's a string
+           setLoading(false);
+           
+           // Auto-redirect to order details after 2 seconds
+           setTimeout(() => {
+             router.push(`/orders/${data.orderId}`);
+           }, 2000);
+        } else if (data.error) {
+           setError(data.error);
+           setLoading(false);
+        } else {
+           setError("Payment verification failed");
+           setLoading(false);
         }
       } catch (err) {
-        console.error("Order creation failed", err);
-      } finally {
+        console.error("Order verification error:", err);
+        setError("Failed to verify payment");
         setLoading(false);
       }
     };
 
     verifyPayment();
-  }, [sessionId, clearCart]); 
+  }, [sessionId, clearCart, router]); 
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center space-y-4">
         <Loader2 className="h-12 w-12 text-primary animate-spin" />
         <p className="text-muted-foreground">Verifying your payment...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">
+        <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-xl border-red-200">
+            <div className="flex justify-center">
+                <AlertTriangle className="h-20 w-20 text-red-500" />
+            </div>
+            
+            <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-red-700">Verification Failed</h1>
+                <p className="text-red-600">{error}</p>
+            </div>
+
+            <Button 
+              className="w-full gap-2" 
+              size="lg" 
+              onClick={() => router.push('/orders')}
+              variant="outline"
+            >
+              View All Orders <ArrowRight className="h-4 w-4" />
+            </Button>
+        </Card>
     </div>
   );
 
@@ -68,22 +106,28 @@ function SuccessContent() {
             
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold text-gray-900">Payment Successful!</h1>
-                <p className="text-gray-500">Your order has been confirmed and the seller has been notified.</p>
+                <p className="text-gray-500">Your order has been confirmed. Redirecting...</p>
             </div>
 
-            <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground">Order ID</p>
-                <p className="font-mono font-bold text-lg">#{orderId ? orderId.slice(-6).toUpperCase() : "..."}</p>
-            </div>
+            {orderId && (
+              <div className="bg-muted p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Order ID</p>
+                  <p className="font-mono font-bold text-lg">#{orderId.slice(-6).toUpperCase()}</p>
+              </div>
+            )}
 
-            <Button className="w-full gap-2" size="lg" onClick={() => router.push(orderId ? `/orders/${orderId}` : '/orders')}>
+            <Button 
+              className="w-full gap-2" 
+              size="lg" 
+              onClick={() => router.push(orderId ? `/orders/${orderId}` : '/orders')}
+            >
                 View Order Details <ArrowRight className="h-4 w-4" />
             </Button>
         </Card>
     </div>
   );
 }
-
+  
 // ✅ 2. Created the new default export that wraps your logic in Suspense
 export default function SuccessPage() {
   return (

@@ -38,7 +38,8 @@ export default function MyShopPage() {
       shopLogo: "",
       shopBanner: "",
       latitude: 32.5731, // Default Gujrat Lat
-      longitude: 74.1005 // Default Gujrat Lng
+      longitude: 74.1005, // Default Gujrat Lng
+      minimumOrderAmount: 0 // ✅ NEW: Minimum order amount
     }
   });
 
@@ -67,6 +68,7 @@ export default function MyShopPage() {
           setValue("closingTime", s.closingTime || "22:00");
           setValue("shopLogo", s.shopLogo || "");
           setValue("shopBanner", s.shopBanner || "");
+          setValue("minimumOrderAmount", s.minimumOrderAmount || 0); // ✅ NEW
           
           // Set Coords (fallback to Gujrat if 0)
           if (data.data.latitude && data.data.longitude) {
@@ -147,9 +149,10 @@ export default function MyShopPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+          <TabsList className="grid w-full grid-cols-5 lg:w-fit">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="branding">Branding</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="location">Location</TabsTrigger>
             <TabsTrigger value="hours">Hours</TabsTrigger>
           </TabsList>
@@ -225,7 +228,66 @@ export default function MyShopPage() {
             </div>
           </TabsContent>
 
-          {/* --- TAB 3: Location (INTEGRATED RADAR) --- */}
+          {/* --- TAB 3: Pricing --- */}
+          <TabsContent value="pricing" className="mt-6 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pricing & Orders</CardTitle>
+                <CardDescription>Control minimum orders and future dynamic pricing.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                
+                {/* Minimum Order Amount */}
+                <div className="space-y-3 p-4 border rounded-lg bg-blue-50/30 dark:bg-blue-950/20 border-blue-200/50">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor="min-order" className="text-base font-semibold">Minimum Order Amount</Label>
+                      <p className="text-xs text-muted-foreground">Set the lowest order value customers must place. (0 = no minimum)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-primary">Rs.</span>
+                    <Input 
+                      id="min-order"
+                      type="number" 
+                      min="0" 
+                      step="10"
+                      placeholder="e.g., 500"
+                      {...register("minimumOrderAmount", { 
+                        valueAsNumber: true,
+                        min: { value: 0, message: "Minimum must be 0 or higher" }
+                      })} 
+                      className="text-lg font-semibold"
+                    />
+                  </div>
+                  
+                  <div className="bg-white/50 dark:bg-black/20 p-3 rounded text-xs space-y-1">
+                    <p className="font-semibold text-foreground">Examples:</p>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li>• <strong>0</strong> = No minimum (customers can order any amount)</li>
+                      <li>• <strong>200</strong> = Customers must order at least Rs. 200</li>
+                      <li>• <strong>500</strong> = Customers must order at least Rs. 500</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Future Feature Notice */}
+                <div className="p-4 border rounded-lg bg-amber-50/30 dark:bg-amber-950/20 border-amber-200/50">
+                  <div className="flex gap-3">
+                    <div className="text-2xl">🚀</div>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm text-foreground">Coming Soon</p>
+                      <p className="text-xs text-muted-foreground">Dynamic delivery fee based on customer distance (automatically calculate fees based on how far customers are from your shop)</p>
+                    </div>
+                  </div>
+                </div>
+
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* --- TAB 4: Location (INTEGRATED RADAR) --- */}
           <TabsContent value="location" className="mt-6 space-y-4">
             <Card>
               <CardHeader>
@@ -286,7 +348,7 @@ export default function MyShopPage() {
             </Card>
           </TabsContent>
 
-          {/* --- TAB 4: Hours --- */}
+          {/* --- TAB 5: Hours --- */}
           <TabsContent value="hours" className="mt-6 space-y-4">
             <Card>
               <CardHeader><CardTitle>Operating Hours</CardTitle></CardHeader>

@@ -166,6 +166,18 @@ export async function POST(req) {
       }
     }
 
+    // ✅ NEW: 2.5. Validate Minimum Order Amount
+    const seller = await Seller.findById(shopId);
+    if (!seller) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    
+    const minimumOrderAmount = seller.minimumOrderAmount || 0;
+    if (minimumOrderAmount > 0 && total < minimumOrderAmount) {
+      return NextResponse.json(
+        { error: `Minimum order amount is Rs. ${minimumOrderAmount}. Current total: Rs. ${total}` }, 
+        { status: 400 }
+      );
+    }
+
     // --- 3. SERVER-SIDE CONSISTENCY CHECK ---
     let finalDeliveryFee = 50; 
     let finalAddress = deliveryAddress; // Default to what was sent
@@ -190,11 +202,7 @@ export async function POST(req) {
     }
 
     // --- 4. COMMISSION CALCULATION (NEW) ---
-    // Fetch seller to get their specific commission rate
-    const seller = await Seller.findById(shopId);
-    if (!seller) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
-
-// Use seller's rate or default to 2%
+    // Use seller's rate or default to 2%
     const commRate = seller.commissionRate || 2;
     
     // ✅ FIX: Subtract delivery fee so we commission ONLY on product price

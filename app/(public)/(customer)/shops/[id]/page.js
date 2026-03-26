@@ -343,65 +343,148 @@ export default function SingleShopPage() {
   );
 }
 
-// --- PRODUCT CARD ---
+// --- PRODUCT CARD with SMOOTH EXPANSION ---
 function ProductCard({ product, quantity, onAdd, onRemove, isShopOpen }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const imageSrc = product.image || product.imageUrl || "https://placehold.co/400?text=No+Image";
+  
+  // Stock checks
+  const isOutOfStock = !product.stock || product.stock <= 0;
+  const stockRemaining = product.stock ? Math.max(0, product.stock - quantity) : 0;
+  const canAddMore = !isOutOfStock && quantity < product.stock;
 
   return (
-    <div className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
-      <div className="relative h-40 w-full bg-white overflow-hidden">
-        <img 
-          src={imageSrc} 
-          alt={product.name} 
-          className={`w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ${!isShopOpen ? "grayscale" : ""}`}
-        />
-        {quantity > 0 && (
-           <div className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-             x{quantity}
-           </div>
-        )}
-      </div>
-
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex-1">
-           <h3 className="font-semibold text-foreground line-clamp-1">{product.name}</h3>
-           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-             {product.description || "Fresh and best quality product."}
-           </p>
-        </div>
-        
-        <div className="mt-4 flex items-center justify-between">
-           <p className="font-bold text-lg text-foreground">Rs. {product.price}</p>
-           
-           {quantity === 0 ? (
-             <Button 
-               size="sm" 
-               variant="outline" 
-               disabled={!isShopOpen} 
-               className="h-8 rounded-full border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors"
-               onClick={onAdd}
-             >
-               {isShopOpen ? "Add" : "Closed"}
-             </Button>
-           ) : (
-             <div className="flex items-center gap-2 bg-primary/10 rounded-full p-1 border border-primary/20">
-                <button 
-                  onClick={onRemove}
-                  disabled={!isShopOpen}
-                  className="h-6 w-6 rounded-full bg-background text-primary flex items-center justify-center shadow-sm disabled:opacity-50"
-                >
-                  <Minus className="h-3 w-3" />
-                </button>
-                <span className="text-sm font-bold w-4 text-center tabular-nums">{quantity}</span>
-                <button 
-                  onClick={onAdd}
-                  disabled={!isShopOpen}
-                  className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm disabled:opacity-50"
-                >
-                  <Plus className="h-3 w-3" />
-                </button>
+    <div 
+      className="group relative"
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+    >
+      {/* CARD - Natural height, expands on hover */}
+      <div 
+        className={`bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col cursor-pointer ${isExpanded ? "ring-2 ring-primary/30" : ""} ${isOutOfStock ? "opacity-70" : ""}`}
+      >
+        {/* IMAGE SECTION */}
+        <div className="relative h-40 w-full bg-white overflow-hidden flex-shrink-0">
+          <img 
+            src={imageSrc} 
+            alt={product.name} 
+            className={`w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 ${!isShopOpen ? "grayscale" : ""} ${isOutOfStock ? "grayscale" : ""}`}
+          />
+          {quantity > 0 && (
+             <div className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-10">
+               x{quantity}
              </div>
-           )}
+          )}
+          
+          {/* OUT OF STOCK BADGE */}
+          {isOutOfStock && (
+             <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+               <span className="text-white font-bold text-sm">Out of Stock</span>
+             </div>
+          )}
+        </div>
+
+        {/* MAIN CONTENT */}
+        <div className="p-4 flex flex-col">
+          
+          {/* TITLE & DESCRIPTION */}
+          <div>
+             <h3 className="font-semibold text-foreground line-clamp-1">{product.name}</h3>
+             <p className={`text-xs text-muted-foreground mt-1 transition-all duration-300 ${isExpanded ? "line-clamp-6" : "line-clamp-2"}`}>
+               {product.description || "Fresh and best quality product."}
+             </p>
+          </div>
+
+          {/* EXPANDED SECTION - Shows on Hover */}
+          <div 
+            className={`overflow-hidden transition-all duration-300 ${isExpanded ? "max-h-40 opacity-100 mt-3" : "max-h-0 opacity-0"}`}
+          >
+            <div className="space-y-2.5">
+              
+              {/* RATING */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5">
+                  <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
+                  <span className="text-xs font-semibold text-foreground">4.8</span>
+                </div>
+                <span className="text-xs text-muted-foreground">(128 reviews)</span>
+              </div>
+
+              {/* CATEGORY & STOCK */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <p className="text-muted-foreground font-medium">Category</p>
+                  <p className="text-foreground font-semibold">{product.category || "General"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground font-medium">Stock</p>
+                  <p className={`font-semibold ${isOutOfStock ? "text-red-600" : stockRemaining <= 5 ? "text-orange-600" : "text-foreground"}`}>
+                    {isOutOfStock ? "Out of Stock" : stockRemaining <= 0 ? "Out of Stock" : stockRemaining === 1 ? "1 left" : `${stockRemaining} left`}
+                  </p>
+                </div>
+              </div>
+
+              {/* ORIGINAL PRICE */}
+              {product.originalPrice && product.originalPrice > product.price && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs line-through text-muted-foreground">
+                    Rs. {product.originalPrice}
+                  </span>
+                  <Badge variant="secondary" className="text-xs h-5">
+                    Save {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* PRICE & ACTION BUTTONS */}
+          <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between">
+             <p className="font-bold text-lg text-foreground">Rs. {product.price}</p>
+             
+             {quantity === 0 ? (
+               <Button 
+                 size="sm" 
+                 disabled={!isShopOpen || isOutOfStock} 
+                 className={`h-8 rounded-full border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors ${isOutOfStock ? "opacity-50 cursor-not-allowed" : ""}`}
+                 variant="outline"
+                 onClick={() => {
+                   if (isOutOfStock) {
+                     toast.error("This item is out of stock.");
+                     return;
+                   }
+                   if (!isShopOpen) return;
+                   onAdd();
+                 }}
+               >
+                 {!isShopOpen ? "Closed" : isOutOfStock ? "Out of Stock" : "Add"}
+               </Button>
+             ) : (
+               <div className="flex items-center gap-2 bg-primary/10 rounded-full p-1 border border-primary/20">
+                  <button 
+                    onClick={onRemove}
+                    disabled={!isShopOpen}
+                    className="h-6 w-6 rounded-full bg-background text-primary flex items-center justify-center shadow-sm disabled:opacity-50 hover:bg-primary hover:text-white transition-colors"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="text-sm font-bold w-4 text-center tabular-nums">{quantity}</span>
+                  <button 
+                    onClick={() => {
+                      if (!canAddMore) {
+                        toast.error(`Only ${product.stock} available in stock.`);
+                        return;
+                      }
+                      onAdd();
+                    }}
+                    disabled={!isShopOpen || !canAddMore}
+                    className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm disabled:opacity-50 hover:bg-primary/80 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+               </div>
+             )}
+          </div>
         </div>
       </div>
     </div>

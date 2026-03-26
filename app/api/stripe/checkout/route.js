@@ -2,16 +2,34 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import db from "@/lib/db";
+import Seller from "@/models/seller";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
   try {
+    await db.connect();
+    
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
     const { items, shopId, deliveryAddress, deliveryFee, deliveryMode } = body;
+
+    // ✅ NEW: Check minimum order amount
+    const seller = await Seller.findById(shopId);
+    if (!seller) return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    
+    const cartTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const minimumOrderAmount = seller.minimumOrderAmount || 0;
+    
+    if (minimumOrderAmount > 0 && cartTotal < minimumOrderAmount) {
+      return NextResponse.json(
+        { error: `Minimum order amount is Rs. ${minimumOrderAmount}. Current total: Rs. ${cartTotal}` }, 
+        { status: 400 }
+      );
+    }
 
     // 1. Format items for Stripe
     const line_items = items.map((item) => ({
@@ -48,10 +66,10 @@ export async function POST(req) {
       metadata: {
         userId: session.user.id,
         shopId: shopId,
-        // We pass the full address as a string to retrieve it later
-        addressJSON: JSON.stringify(deliveryAddress), 
-        deliveryMode: deliveryMode,
-        deliveryFee: deliveryFee
+        // Only stringify the address if it exists, otherwise send empty string
+        addressJSON: deliveryAddress ? JSON.stringify(deliveryAddress) : "",
+        deliveryMode: deliveryMode || "pickup",
+        deliveryFee: deliveryFee || 0
       },
     });
 

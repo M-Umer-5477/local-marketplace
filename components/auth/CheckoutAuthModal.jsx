@@ -40,12 +40,12 @@ export default function CheckoutAuthModal({ children }) {
           const sessionData = await sessionRes.json();
           
           if (sessionData?.user?.role === 'seller') {
-              router.push('/vendor/dashboard'); // Change this if your URL is different
-          }else if (sessionData?.user?.role === 'admin') {
-              router.push('/admin/dashboard'); // Change this if your URL is different
-          }  
-          else {
-              router.refresh(); 
+              router.push('/vendor/dashboard');
+          } else if (sessionData?.user?.role === 'admin') {
+              router.push('/admin/dashboard');
+          } else {
+              // Customer - redirect to dashboard
+              router.push('/dashboard');
           }
       } catch (error) {
           router.refresh(); // Fallback

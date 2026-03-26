@@ -124,7 +124,7 @@ export default function ShopsListingPage() {
         ) : !selectedAddress ? (
           
           /* 🚨 UX UPGRADE: BEAUTIFUL GUEST ONBOARDING STATE */
-          <div className="flex flex-col items-center justify-center py-12 md:py-24">
+          <div className="flex flex-col items-center justify-center py-10 md:py-12">
              <Card className="w-full max-w-md shadow-xl border-primary/20 bg-background/50 backdrop-blur-xl">
                  <CardHeader className="text-center pb-2">
                      <div className="mx-auto h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -262,7 +262,9 @@ function ShopCard({ shop }) {
                        </span>
                     )}
                 </div>
-                <div className="font-medium text-foreground">Min: Rs. 0</div>
+                <div className="font-medium text-foreground">
+                  Min: Rs. {shop.minimumOrderAmount && shop.minimumOrderAmount > 0 ? shop.minimumOrderAmount : 300}
+                </div>
             </div>
         </div>
       </div>

@@ -68,6 +68,8 @@ export default function CheckoutPage() {
   // 🚨 ACTIVE VALIDATION: Calculate distance on the fly
   let isOutOfRange = false;
   let currentDistance = 0;
+  let isBelowMinimum = false;
+  let remainingForMinimum = 0;
   
   if (selectedAddress && shopDetails && deliveryMode === "home_delivery") {
       // Remember MongoDB GeoJSON is [longitude, latitude] -> [0, 1]
@@ -79,12 +81,24 @@ export default function CheckoutPage() {
           isOutOfRange = true;
       }
   }
+  
+  // ✅ NEW: Check minimum order amount
+  const shopMinimum = shopDetails?.minimumOrderAmount || 0;
+  if (shopMinimum > 0 && cartTotal < shopMinimum) {
+      isBelowMinimum = true;
+      remainingForMinimum = shopMinimum - cartTotal;
+  }
 
   const handlePlaceOrder = async () => {
     if (!session) return toast.error("Please login first");
     if (cart.items.length === 0) return toast.error("Cart is empty");
     
-    // ✅ NEW SECURITY: Verify address selection AND range!
+    // ✅ NEW: Check minimum order amount
+    if (isBelowMinimum) {
+        return toast.error(`Minimum order is Rs. ${shopMinimum}. Add Rs. ${remainingForMinimum} more items.`);
+    }
+    
+    // ✅ Check address selection AND range!
     if (deliveryMode === "home_delivery") {
         if (!selectedAddress) {
             return toast.error("Please select a delivery address from the top bar.");
@@ -279,12 +293,26 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span className="text-primary">Rs. {grandTotal}</span></div>
               </div>
 
-              {/* 🚨 BUTTON DISABLED IF OUT OF RANGE */}
+              {/* ✅ NEW: Minimum Order Warning */}
+              {shopMinimum > 0 && (
+                <div className={`p-3 rounded-lg text-sm ${isBelowMinimum ? "bg-amber-50 border border-amber-200 text-amber-800" : "bg-green-50 border border-green-200 text-green-800"}`}>
+                  {isBelowMinimum ? (
+                    <>
+                      <p className="font-semibold">Minimum Order: Rs. {shopMinimum}</p>
+                      <p className="mt-1">Add Rs. <span className="font-bold text-amber-900">{remainingForMinimum}</span> more to proceed</p>
+                    </>
+                  ) : (
+                    <p className="font-semibold">✓ Minimum order met ({shopMinimum})</p>
+                  )}
+                </div>
+              )}
+
+              {/* 🚨 BUTTON DISABLED IF OUT OF RANGE OR BELOW MINIMUM */}
               <Button 
                 size="lg" 
                 className="w-full mt-4 shadow-xl" 
                 onClick={handlePlaceOrder} 
-                disabled={loading || (deliveryMode === "home_delivery" && (!selectedAddress || isOutOfRange))}
+                disabled={loading || isBelowMinimum || (deliveryMode === "home_delivery" && (!selectedAddress || isOutOfRange))}
               >
                 {loading ? <Loader2 className="animate-spin mr-2" /> : (paymentMethod === 'online' ? "Proceed to Payment" : "Place Order")}
               </Button>

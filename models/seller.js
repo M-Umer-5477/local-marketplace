@@ -43,6 +43,7 @@ const sellerSchema = new mongoose.Schema({
   isShopOpen: { type: Boolean, default: true },
   openingTime: { type: String, default: "09:00" },
   closingTime: { type: String, default: "22:00" },
+  minimumOrderAmount: { type: Number, default: 300 }, // ✅ NEW: Per-shop minimum order
 
   // --- Verification ---
   verificationDocs: [

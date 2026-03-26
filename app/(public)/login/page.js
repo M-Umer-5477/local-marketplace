@@ -58,17 +58,30 @@ export default function LoginPage() {
       const res = await signIn("credentials", {
         identifier: form.identifier,
         password: form.password,
-        redirect: true, // 🚀 Let NextAuth handle redirect via callback
-        callbackUrl: "/", // Fallback (will be overridden by callback)
+        redirect: false, // Don't auto-redirect, handle manually
       });
 
-      // With redirect: true, NextAuth handles navigation automatically
       if (res?.error) {
         throw new Error(res.error);
       }
-      toast.success("Login Successful!", {
-        description: "Redirecting..."
-      });
+
+      if (res?.ok) {
+        toast.success("Login Successful!", {
+          description: "Redirecting..."
+        });
+        
+        // Get session to check user role and redirect accordingly
+        const session = await fetch("/api/auth/session").then(r => r.json());
+        
+        if (session?.user?.role === "seller") {
+          router.push("/vendor/dashboard");
+        } else if (session?.user?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          // Customer
+          router.push("/dashboard");
+        }
+      }
 
     } catch (err) {
       setError(err.message);

@@ -10,30 +10,35 @@ export default function PublicLayoutClient({ children }) {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // 🚀 OPTIMIZATION: Lightweight redirect for authenticated users on public pages
-  // NextAuth callback handles most redirects automatically
-  // This is only a fallback for edge cases (e.g., manually visiting public URLs while logged in)
+  // 🚀 REDIRECT LOGIC: Protect public pages from sellers/admins
+  // - Customers login → NextAuth redirects to /dashboard automatically
+  // - Customers on refresh → stay on current page (no redirect)
+  // - Sellers/Admins → must be redirected away from public pages
+  // - Logged-out users → freely access all public pages
   useEffect(() => {
-    if (status === "loading") return; // Don't redirect while session is loading
+    if (status === "loading") return;
     
-    // Only redirect if user is authenticated AND on a public/guest page
-    // (not on login, register, etc. which have their own auth checks)
     if (session && status === "authenticated") {
       const role = session.user?.role;
       const currentPath = window.location.pathname;
       
-      // Skip redirect if already on protected route or login page
-      if (currentPath.includes("/vendor") || 
-          currentPath.includes("/admin") || 
-          currentPath.includes("/login") || 
-          currentPath.includes("/register")) {
-        return;
+      // 🔴 SELLERS & ADMINS: Redirect away from public pages (except auth pages)
+      if (role === "seller" || role === "admin") {
+        const isAuthPage = currentPath === "/login" || currentPath === "/register";
+        
+        if (!isAuthPage) {
+          // Redirect to their respective dashboards
+          const dashboard = role === "seller" ? "/vendor/dashboard" : "/admin/dashboard";
+          router.replace(dashboard);
+        }
       }
-
-      if (role === "seller") {
-        router.replace("/vendor/dashboard");
-      } else if (role === "customer") {
-        router.replace("/dashboard");
+      // 🟢 CUSTOMERS: Redirect only from auth pages (they logged in already)
+      else if (role === "customer") {
+        const isAuthPage = currentPath === "/login" || currentPath === "/register";
+        if (isAuthPage) {
+          router.replace("/dashboard");
+        }
+        // All other pages (/shops, /checkout, /orders, etc.) are allowed freely
       }
     }
   }, [session, status, router]);

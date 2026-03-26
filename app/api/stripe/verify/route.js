@@ -20,23 +20,33 @@ export async function POST(req) {
     }
 
     // 2. Extract Data & FIX ADDRESS MAPPING
-    const { userId, shopId, addressJSON, deliveryFee } = session.metadata;
-    const rawAddress = JSON.parse(addressJSON);
-
-    // ✅ THE FIX: Map 'coordinates' (Frontend) -> 'location' (Database Schema)
-    // This matches the logic you already have in your COD order API
-    const finalAddress = {
-        address: rawAddress.address,
-        city: rawAddress.city,
-        location: rawAddress.coordinates 
+    const { userId, shopId, addressJSON, deliveryFee, deliveryMode } = session.metadata;
+    
+    // ✅ Handle undefined or "undefined" string from Stripe metadata
+    let finalAddress = undefined;
+    
+    if (addressJSON && addressJSON !== "undefined") {
+      try {
+        const rawAddress = JSON.parse(addressJSON);
+        // Map 'coordinates' (Frontend) -> 'location' (Database Schema)
+        finalAddress = {
+          address: rawAddress.address,
+          city: rawAddress.city,
+          location: rawAddress.coordinates 
             ? { lat: rawAddress.coordinates.lat, lng: rawAddress.coordinates.lng }
             : undefined
-    };
+        };
+      } catch (parseError) {
+        console.warn("Address JSON parse warning:", parseError);
+        // If parsing fails, proceed without address (pickup mode)
+        finalAddress = undefined;
+      }
+    }
     
     // Check if order already exists (Idempotency)
     const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
     if (existingOrder) {
-        return NextResponse.json({ success: true, orderId: existingOrder._id });
+        return NextResponse.json({ success: true, orderId: existingOrder._id.toString() });
     }
 
     // 3. Calculate Commission
@@ -87,10 +97,11 @@ export async function POST(req) {
         paymentMethod: "online",
         isPaid: true,
         total: totalAmount,
-        deliveryFee: parseFloat(deliveryFee),
+        deliveryFee: parseFloat(deliveryFee) || 0,
+        deliveryMode: deliveryMode || "pickup",
         
-        // ✅ Use the fixed address object
-        deliveryAddress: finalAddress, 
+        // ✅ Use the fixed address object (will be undefined for pickup)
+        deliveryAddress: finalAddress || undefined, 
         
         stripeSessionId: sessionId,
         commissionDeducted: true, 
@@ -107,7 +118,7 @@ export async function POST(req) {
         }))
     });
 
-    return NextResponse.json({ success: true, orderId: newOrder._id });
+    return NextResponse.json({ success: true, orderId: newOrder._id.toString() });
 
   } catch (error) {
     console.error("Verify Error:", error);
