@@ -14,6 +14,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// SEO Metadata
+export const metadata = {
+  title: "My Orders | Martly - Order History & Tracking",
+  description: "View and track all your orders. Check delivery status, order details, and re-order items.",
+  robots: "noindex, follow",
+};
+
 export default function MyOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);

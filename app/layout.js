@@ -13,8 +13,47 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "MartLy | Marketplace",
-  description: "Buy and sell from local stores with ShopSync",
+  title: "Martly - Local Marketplace | Shop Online from Near You",
+  description: "Discover and shop from verified local stores. Fast delivery, great prices, and thousands of products. Order online from your favorite local merchants.",
+  keywords: "online shopping, local stores, marketplace, delivery, buy online, ecommerce",
+  authors: [{ name: "Martly" }],
+  metadataBase: new URL("https://martly.me"),
+  openGraph: {
+    title: "Martly - Local Marketplace | Shop Online",
+    description: "Shop from thousands of local stores with fast delivery",
+    url: "https://martly.me",
+    siteName: "Martly",
+    locale: "en_PK",
+    type: "website",
+    images: [
+      {
+        url: "https://martly.me/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Martly Marketplace",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Martly - Local Marketplace",
+    description: "Shop from local stores with fast delivery",
+    creator: "@martly",
+    images: ["https://martly.me/og-image.png"],
+  },
+  robots: "index, follow",
+  viewport: "width=device-width, initial-scale=1",
+  themeColor: "#000000",
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 

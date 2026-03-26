@@ -11,6 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import AddressSelector from "@/components/AddressSelector"; // Reusing your existing modal trigger if needed
 
+export const metadata = {
+  title: "Browse Shops & Stores | Martly Marketplace",
+  description: "Browse and discover local shops near you. Find groceries, pharmacy, bakery and more. Compare prices and order online with fast delivery.",
+  openGraph: {
+    title: "Browse Shops & Stores | Martly",
+    description: "Shop from verified local merchants near your location",
+    type: "website",
+  },
+};
+
 export default function ShopsListingPage() {
   const { selectedAddress, loading: addressLoading } = useAddress(); 
   const [shops, setShops] = useState([]);

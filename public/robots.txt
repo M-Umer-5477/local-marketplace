@@ -1,0 +1,34 @@
+# Martly Marketplace robots.txt
+# Allow search engines to crawl your site
+
+User-agent: *
+Allow: /
+Allow: /shops
+Allow: /shops/*
+Disallow: /admin
+Disallow: /vendor/dashboard
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /orders
+Disallow: /api
+Disallow: /auth
+Disallow: /*.json$
+Disallow: /?search=
+Disallow: /?filter=
+
+# Allow specific bots
+User-agent: Googlebot
+Allow: /
+Allow: /shops
+Allow: /shops/*
+
+User-agent: Bingbot
+Allow: /
+Allow: /shops
+Allow: /shops/*
+
+# Crawl delay recommendations
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://martly.me/sitemap.xml
