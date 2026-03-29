@@ -339,7 +339,7 @@ export default function MyShopPage() {
                 </div>
 
                 {/* Hidden Inputs (We need these to submit the form, but User edits via Map) */}
-                <div className="grid grid-cols-2 gap-4 hidden">
+                <div className="grid grid-cols-2 gap-4">
                   <Input type="number" step="any" {...register("latitude")} />
                   <Input type="number" step="any" {...register("longitude")} />
                 </div>

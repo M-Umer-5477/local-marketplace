@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { MapPin, Plus, Check, Loader2, ArrowLeft, Home, Briefcase, Map } from "lucide-react";
-import LocationPicker from "@/components/maps/LocationPicker"; 
+import { MapPin, Plus, Check, Loader2, ArrowLeft, Home, Briefcase, Map, LogIn } from "lucide-react";
+import LocationPicker from "@/components/maps/LocationPicker";
+import CheckoutAuthModal from "@/components/auth/CheckoutAuthModal"; 
 
-export default function AddressSelector() {
+export default function AddressSelector({ compact = false }) {
   const { data: session, status } = useSession();
   const { addresses, selectedAddress, selectAddress, fetchAddresses, loading } = useAddress();
   
@@ -75,12 +76,45 @@ export default function AddressSelector() {
     }
   };
 
-  // If not logged in, show a simple prompt
+  // If not logged in, show premium login prompt
   if (status !== "authenticated") {
+    if (compact) {
+      // Navbar version - compact
+      return (
+        <CheckoutAuthModal>
+          <Button 
+            variant="outline" 
+            className="gap-2 border-primary/20 hover:bg-primary/5 transition-all text-xs whitespace-nowrap"
+          >
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            <span>Login</span>
+          </Button>
+        </CheckoutAuthModal>
+      );
+    }
+    
+    // Full version for other pages
     return (
-      <Button variant="ghost" className="gap-2 text-muted-foreground" onClick={() => toast.info("Please login to set your delivery address.")}>
-        <MapPin className="h-4 w-4" /> Login to set address
-      </Button>
+      <CheckoutAuthModal>
+        <div className="w-full max-w-[300px]">
+          <Button 
+            className="w-full h-auto py-4 px-4 bg-linear-to-br from-primary/90 to-primary hover:from-primary hover:to-primary/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg border border-primary/20 group"
+          >
+            <div className="flex items-center gap-3 w-full">
+              <div className="p-2 rounded-lg bg-white/10 group-hover:bg-white/15 transition-colors">
+                <MapPin className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col items-start flex-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider opacity-90">Set Delivery</span>
+                <span className="text-sm font-bold leading-tight">Login to continue</span>
+              </div>
+              <div className="p-1.5 rounded-full bg-white/10 group-hover:bg-white/15 transition-colors">
+                <LogIn className="h-4 w-4 text-white" />
+              </div>
+            </div>
+          </Button>
+        </div>
+      </CheckoutAuthModal>
     );
   }
 
@@ -95,15 +129,28 @@ export default function AddressSelector() {
         if (!open) setView("list"); // Reset view when closing
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5 transition-all max-w-[250px] justify-start">
-          <MapPin className="h-4 w-4 text-primary shrink-0" />
-          <div className="flex flex-col items-start overflow-hidden">
-            <span className="text-[10px] text-muted-foreground font-semibold leading-tight uppercase tracking-wider">Delivering to</span>
-            <span className="text-sm font-bold truncate w-full leading-tight">
-              {selectedAddress ? `${selectedAddress.label} - ${selectedAddress.city}` : "Select Address"}
-            </span>
-          </div>
-        </Button>
+        {compact ? (
+          // Navbar version - compact
+          <Button 
+            variant="outline" 
+            className="gap-2 border-primary/20 hover:bg-primary/5 transition-all text-xs whitespace-nowrap"
+          >
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            <span className="hidden sm:inline">{selectedAddress?.label || "Address"}</span>
+            <span className="sm:hidden">📍</span>
+          </Button>
+        ) : (
+          // Full version for other pages
+          <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5 transition-all max-w-[250px] justify-start">
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            <div className="flex flex-col items-start overflow-hidden">
+              <span className="text-[10px] text-muted-foreground font-semibold leading-tight uppercase tracking-wider">Delivering to</span>
+              <span className="text-sm font-bold truncate w-full leading-tight">
+                {selectedAddress ? `${selectedAddress.label} - ${selectedAddress.city}` : "Select Address"}
+              </span>
+            </div>
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent 

@@ -145,7 +145,7 @@ export default function SingleShopPage() {
             alt="Cover" 
             className={`w-full h-full object-cover ${!isOpen ? "grayscale" : ""}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-6">
@@ -364,7 +364,7 @@ function ProductCard({ product, quantity, onAdd, onRemove, isShopOpen }) {
         className={`bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col cursor-pointer ${isExpanded ? "ring-2 ring-primary/30" : ""} ${isOutOfStock ? "opacity-70" : ""}`}
       >
         {/* IMAGE SECTION */}
-        <div className="relative h-40 w-full bg-white overflow-hidden flex-shrink-0">
+        <div className="relative h-40 w-full bg-white overflow-hidden shrink-0">
           <img 
             src={imageSrc} 
             alt={product.name} 

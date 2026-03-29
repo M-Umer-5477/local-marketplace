@@ -77,7 +77,7 @@ export default function MainNavbar() {
           </Link>
 
           <div className="hidden md:flex">
-             <AddressSelector />
+             <AddressSelector compact />
           </div>
         </div>
 
@@ -238,7 +238,7 @@ export default function MainNavbar() {
                  
                  <div className="bg-muted/40 p-3.5 rounded-lg border border-border/50 mb-6 transition-colors duration-200">
                     <p className="text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wider">📍 Delivering To</p>
-                    <AddressSelector />
+                    <AddressSelector compact />
                  </div>
                  
                  <div className="flex flex-col gap-1 flex-1">

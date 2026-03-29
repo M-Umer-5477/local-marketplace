@@ -149,7 +149,7 @@ if (isLoading) {
       </div>
 
       {/* Performance Score Card */}
-      <Card className="border-blue-200 dark:border-blue-900/50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
+      <Card className="border-blue-200 dark:border-blue-900/50 bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
