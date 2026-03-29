@@ -19,12 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// SEO Metadata
-export const metadata = {
-  title: "My Dashboard | Martly - Track Your Orders",
-  description: "View your orders, saved addresses, and account information. Track deliveries and manage your account.",
-  robots: "noindex, follow",
-};
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import AddressSelector from "@/components/AddressSelector";

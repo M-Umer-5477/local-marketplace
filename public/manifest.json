@@ -1,0 +1,17 @@
+{
+  "name": "Martly - Local Marketplace",
+  "short_name": "Martly",
+  "description": "Shop from verified local stores with fast delivery",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -15,16 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from "@/components/ui/skeleton"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
-// SEO Metadata
-export const metadata = {
-  title: "Martly - Shop from Local Stores | Online Marketplace",
-  description: "Your daily shopping made easy. Browse local shops, compare prices, and get fast delivery. Order groceries, pharmacy, bakery items and more online.",
-  openGraph: {
-    title: "Martly - Local Shopping Marketplace",
-    description: "Shop from verified local stores with fast delivery",
-    type: "website",
-  },
-};
 
 // --- Main App Component ---
 export default function LandingPage() {

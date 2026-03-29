@@ -129,7 +129,7 @@ import { Loader2, MapPin, Search } from "lucide-react"; // 🚨 ADDED Search ico
 
 const containerStyle = {
   width: "100%",
-  height: "350px",
+  height: "250px",
   borderRadius: "12px",
 };
 
@@ -155,11 +155,20 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
   
   // 🚨 NEW: Autocomplete State
   const [autocomplete, setAutocomplete] = useState(null);
+  // 🚨 NEW: Map Reference for smooth panning
+  const [mapRef, setMapRef] = useState(null);
 
   // Function to Get Text Address from Coordinates
   const fetchAddress = async (lat, lng) => {
     try {
-      if (!window.google) return;
+      // ✅ FIXED: Ensure Geocoder is loaded before using it
+      if (!window.google?.maps?.Geocoder) {
+        console.warn("Geocoder not ready yet, will retry...");
+        // Retry after 300ms if not ready
+        setTimeout(() => fetchAddress(lat, lng), 300);
+        return;
+      }
+      
       const geocoder = new window.google.maps.Geocoder();
       const response = await geocoder.geocode({ location: { lat, lng } });
       
@@ -181,6 +190,9 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
 
   // --- AUTO DETECT LOCATION ---
   useEffect(() => {
+    // ✅ FIXED: Only run after Google Maps API is loaded
+    if (!isLoaded) return;
+
     // Only fetch if no default position was provided
     if (navigator.geolocation && !defaultPosition?.lat) {
       navigator.geolocation.getCurrentPosition(
@@ -191,18 +203,19 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
           };
           setCenter(userPos);
           setMarkerPos(userPos);
-          setTimeout(() => fetchAddress(userPos.lat, userPos.lng), 500);
+          // Increased delay to ensure Geocoder is ready
+          setTimeout(() => fetchAddress(userPos.lat, userPos.lng), 800);
         },
         () => {
           console.log("Location denied, using default");
           setAddress("Default Location (Gujrat)");
-          fetchAddress(gujratPos.lat, gujratPos.lng);
+          setTimeout(() => fetchAddress(gujratPos.lat, gujratPos.lng), 800);
         }
       );
     } else if (defaultPosition?.lat) {
-        fetchAddress(defaultPosition.lat, defaultPosition.lng);
+        setTimeout(() => fetchAddress(defaultPosition.lat, defaultPosition.lng), 800);
     }
-  }, []);
+  }, [isLoaded, defaultPosition]);
 
   const onMarkerDragEnd = useCallback((e) => {
     const newLat = e.latLng.lat();
@@ -228,6 +241,12 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
         // 1. Move the map and the pin
         setCenter(newPos);
         setMarkerPos(newPos);
+        
+        // 🚨 IMPROVED: Smooth animation using map ref
+        if (mapRef) {
+          mapRef.panTo(newPos);
+          mapRef.setZoom(15);
+        }
 
         // 2. Set the address instantly from the search result
         const newAddress = place.formatted_address || place.name;
@@ -243,6 +262,11 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
     }
   };
 
+  // 🚨 NEW: Capture map reference on load
+  const onMapLoad = (mapInstance) => {
+    setMapRef(mapInstance);
+  };
+
   if (!isLoaded) return (
     <div className="h-[350px] w-full flex items-center justify-center bg-muted border rounded-xl">
       <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
@@ -251,27 +275,27 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
   );
 
   return (
-    <div className="space-y-3">
-      <div className="border rounded-xl overflow-hidden shadow-sm relative">
-        
-        {/* 🚨 NEW: Floating Search Bar */}
-        <div className="absolute top-4 left-4 right-12 z-10 sm:right-4">
-            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-                <div className="relative w-full max-w-sm mx-auto sm:mx-0 sm:max-w-md">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400 z-20" />
-                    <input
-                        type="text"
-                        placeholder="Search area, street, or city..."
-                        className="w-full h-10 pl-10 pr-4 text-sm rounded-full shadow-lg border-0 bg-white/95 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
-                    />
-                </div>
-            </Autocomplete>
-        </div>
+    <div className="space-y-2 relative">
+      {/* Search Bar for location autocomplete */}
+      <div className="relative z-50">
+        <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 z-20 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search area, street, city..."
+              className="w-full h-9 pl-10 pr-4 text-sm rounded-full shadow-lg border-0 bg-white/95 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+            />
+          </div>
+        </Autocomplete>
+      </div>
 
+      <div className="border rounded-lg overflow-hidden shadow-sm relative">
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}
           zoom={15}
+          onLoad={onMapLoad}
           options={{
             streetViewControl: false,
             mapTypeControl: false,
@@ -286,20 +310,28 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
           />
         </GoogleMap>
 
-        {/* Existing Location Pin Badge */}
-        <div className="absolute bottom-4 left-4 right-12 bg-white/95 backdrop-blur p-3 rounded-lg shadow-lg border text-sm z-10 sm:right-4 max-w-sm sm:max-w-none">
-           <p className="font-semibold text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-             <MapPin className="w-3 h-3 text-primary" /> Selected Location
+        {/* Location Pin Badge - More Compact */}
+        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur p-2 rounded-lg shadow-lg border text-xs z-10">
+           <p className="font-semibold text-[9px] text-muted-foreground uppercase flex items-center gap-1">
+             <MapPin className="w-3 h-3 text-primary" /> Location
            </p>
-           <p className="truncate text-gray-800 font-medium mt-0.5">
+           <p className="truncate text-gray-700 font-medium mt-1">
              {address}
            </p>
         </div>
       </div>
-      
-      <p className="text-xs text-muted-foreground text-center">
-        Tip: You can search for an area and then drag the pin for exact placement.
-      </p>
+
+      <style jsx>{`
+        :global(.pac-container) {
+          z-index: 9999 !important;
+          pointer-events: auto !important;
+        }
+        :global(.pac-item) {
+          cursor: pointer;
+          pointer-events: auto !important;
+          z-index: 9999 !important;
+        }
+      `}</style>
     </div>
   );
 }

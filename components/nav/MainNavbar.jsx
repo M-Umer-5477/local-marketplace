@@ -18,7 +18,8 @@ import {
   Store,
   Home,
   ShoppingBag,
-  UserPlus
+  UserPlus,
+  LogIn
 } from "lucide-react";
 
 // ShadCN UI Components
@@ -119,62 +120,77 @@ export default function MainNavbar() {
         {/* --- 3. RIGHT SECTION --- */}
         <div className="flex items-center gap-3">
           
-          <Link href="/checkout">
-            <Button variant="ghost" size="icon" className="relative transition-all duration-200 hover:bg-primary/10 rounded-lg">
-              <ShoppingCart className="h-5 w-5 text-muted-foreground transition-colors duration-200" />
-              {mounted && cartCount > 0 && (
-                <Badge className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full text-[10px] px-0 font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-pulse">
-                  {cartCount > 9 ? '9+' : cartCount}
-                </Badge>
-              )}
-            </Button>
-          </Link>
+          {session && (
+            <Link href="/checkout">
+              <Button variant="ghost" size="icon" className="relative transition-all duration-200 hover:bg-primary/10 rounded-lg">
+                <ShoppingCart className="h-5 w-5 text-muted-foreground transition-colors duration-200" />
+                {mounted && cartCount > 0 && (
+                  <Badge className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full text-[10px] px-0 font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-pulse">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+          )}
 
           <div className="hidden md:flex">
              <ModeToggle />
           </div>
 
+          {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center gap-2">
             {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative gap-2 px-2 transition-all duration-200 hover:bg-primary/10 rounded-lg">
-                    <Avatar className="h-8 w-8 border border-primary/20 transition-all duration-200">
-                      <AvatarImage src={session.user?.image} alt={session.user?.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{getInitials(session.user?.name)}</AvatarFallback>
-                    </Avatar>
+              <>
+                <Link href="/checkout">
+                  <Button variant="ghost" size="icon" className="relative transition-all duration-200 hover:bg-primary/10 rounded-lg">
+                    <ShoppingCart className="h-5 w-5 text-muted-foreground transition-colors duration-200" />
+                    {mounted && cartCount > 0 && (
+                      <Badge className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full text-[10px] px-0 font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-pulse">
+                        {cartCount > 9 ? '9+' : cartCount}
+                      </Badge>
+                    )}
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold leading-none">{session.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {session.user?.role === 'customer' && (
-                    <Link href={"/dashboard"}>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative gap-2 px-2 transition-all duration-200 hover:bg-primary/10 rounded-lg">
+                      <Avatar className="h-8 w-8 border border-primary/20 transition-all duration-200">
+                        <AvatarImage src={session.user?.image} alt={session.user?.name} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{getInitials(session.user?.name)}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-semibold leading-none">{session.user?.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {session.user?.role === 'customer' && (
+                      <Link href={"/dashboard"}>
+                        <DropdownMenuItem className="cursor-pointer gap-2">
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Dashboard</span>
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
+                    <Link href={"/orders"}>
                       <DropdownMenuItem className="cursor-pointer gap-2">
-                        <LayoutDashboard className="h-4 w-4" />
-                        <span>Dashboard</span>
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>My Orders</span>
                       </DropdownMenuItem>
                     </Link>
-                  )}
-                  <Link href={"/orders"}>
-                    <DropdownMenuItem className="cursor-pointer gap-2">
-                      <ShoppingBag className="h-4 w-4" />
-                      <span>My Orders</span>
+                   
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-red-600 cursor-pointer gap-2" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
                     </DropdownMenuItem>
-                  </Link>
-                 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600 cursor-pointer gap-2" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
               <div className="flex items-center gap-2">
                 <CheckoutAuthModal>
@@ -190,6 +206,15 @@ export default function MainNavbar() {
               </div>
             )}
           </div>
+
+          {/* Mobile Auth Section - Show single compact sign in button on mobile when not logged in */}
+          {!session && (
+            <CheckoutAuthModal>
+              <Button size="icon" variant="ghost" className="md:hidden transition-all duration-200 hover:bg-primary/10 rounded-lg">
+                <LogIn className="h-5 w-5 text-muted-foreground transition-colors duration-200" />
+              </Button>
+            </CheckoutAuthModal>
+          )}
 
           {/* --- 4. MOBILE MENU --- */}
           <div className="md:hidden flex items-center">

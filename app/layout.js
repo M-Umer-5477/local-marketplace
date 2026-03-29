@@ -42,8 +42,6 @@ export const metadata = {
     images: ["https://martly.me/og-image.png"],
   },
   robots: "index, follow",
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#000000",
   formatDetection: {
     telephone: true,
     email: true,
@@ -56,6 +54,11 @@ export const metadata = {
   manifest: "/manifest.json",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#000000",
+};
 
 export default function RootLayout({ children }) {
   return (

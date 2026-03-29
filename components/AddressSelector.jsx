@@ -106,7 +106,16 @@ export default function AddressSelector() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent 
+        className="sm:max-w-md"
+        onPointerDownOutside={(e) => {
+          // 🚨 FIXED: Prevent dialog from closing when clicking on autocomplete suggestions
+          const target = e.target;
+          if (target?.closest?.('.pac-container') || target?.closest?.('.pac-item')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {view === "add" && (
