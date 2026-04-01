@@ -39,6 +39,7 @@ export default function OrderDetailsPage() {
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeElapsed, setTimeElapsed] = useState(0);
 
   /* ------------------- FETCH ORDER --------------------- */
   useEffect(() => {
@@ -56,6 +57,93 @@ export default function OrderDetailsPage() {
     if (params.id) fetchOrder();
   }, [params.id]);
 
+  /* ------------------- AUTO-POLLING (5s refresh) --------------------- */
+  useEffect(() => {
+    if (!order && !params.id) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/customer/order/${params.id}`);
+        const data = await res.json();
+        if (data.success && data.order) {
+          setOrder(data.order);
+        }
+      } catch (e) {
+        console.error("Auto-sync failed:", e);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [params.id]);
+
+  /* ------------------- TIME TRACKER (updates every second) --------------------- */
+  useEffect(() => {
+    // Stop tracking time after order is completed
+    const isCompleted = ["Delivered", "Picked_Up", "Cancelled"].includes(order?.orderStatus);
+    if (isCompleted || !order?.statusUpdatedAt && !order?.confirmedAt) return;
+
+    const interval = setInterval(() => {
+      const lastUpdate = new Date(order.statusUpdatedAt || order.confirmedAt);
+      const now = new Date();
+      const diff = Math.floor((now - lastUpdate) / 1000 / 60);
+      setTimeElapsed(diff);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [order?.statusUpdatedAt, order?.confirmedAt, order?.orderStatus]);
+
+  /* ------------------- ETA CALCULATION --------------------- */
+  const getETA = () => {
+    if (!order?.confirmedAt) return null;
+    const prepTimes = {
+      Pending: 0,
+      Confirmed: parseInt(order.estimatedPrepTime) || 15,
+      Preparing: parseInt(order.estimatedPrepTime) || 15,
+      Out_for_Delivery: 0,
+      Delivered: 0,
+    };
+    const confirmedTime = new Date(order.confirmedAt);
+    const etaMinutes = prepTimes[order.orderStatus] || 15;
+    const etaTime = new Date(confirmedTime.getTime() + etaMinutes * 60000);
+    return etaTime;
+  };
+
+  const formatETA = (etaDate) => {
+    // Don't show ETA if order is completed
+    const isCompleted = ["Delivered", "Picked_Up", "Cancelled"].includes(order?.orderStatus);
+    if (isCompleted) return null;
+    if (!etaDate) return null;
+    
+    // Only show ETA during active preparation phases
+    if (!["Confirmed", "Preparing", "Out_for_Delivery", "Ready_for_Pickup"].includes(order?.orderStatus)) {
+      return null;
+    }
+    
+    const now = new Date();
+    const diffMs = etaDate - now;
+    const diffMins = Math.ceil(diffMs / 60000);
+    if (diffMins <= 0) return "Ready now";
+    if (diffMins === 1) return "Ready in 1 min";
+    return `Ready in ${diffMins} mins • ${etaDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  };
+
+  /* ------------------- PREPARATION MILESTONES --------------------- */
+  const PREPARATION_MILESTONES = [
+    { id: "order_received", label: "Order Received", icon: CheckCircle2 },
+    { id: "items_checking", label: "Checking Items", icon: Package },
+    { id: "packing", label: "Packing", icon: Package },
+    { id: "quality_check", label: "Quality Check", icon: CheckCircle2 },
+  ];
+
+  const getMilestoneProgress = () => {
+    if (order.orderStatus === "Pending") return 0;
+    if (order.orderStatus === "Confirmed") return 1;
+    if (order.orderStatus === "Preparing") return Math.min(timeElapsed, 3);
+    if (["Out_for_Delivery", "Ready_for_Pickup"].includes(order.orderStatus)) return 4;
+    if (["Delivered", "Picked_Up"].includes(order.orderStatus)) return 4;
+    return 0;
+  };
+
   if (loading)
     return (
       <div className="h-screen flex items-center justify-center">
@@ -70,6 +158,8 @@ export default function OrderDetailsPage() {
         <Button onClick={() => router.push("/")}>Go Home</Button>
       </div>
     );
+
+  const milestoneProgress = getMilestoneProgress();
 
   /* ---------------------------------------------------------
      PICKUP vs DELIVERY LOGIC
@@ -128,8 +218,18 @@ export default function OrderDetailsPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-2xl text-primary">{getMainStatusTitle()}</CardTitle>
-                  <CardDescription>
-                    Placed on {formatDate(order.createdAt)}
+                  <CardDescription className="mt-2 space-y-1">
+                    <div>Placed on {formatDate(order.createdAt)}</div>
+                    {formatETA(getETA()) && (
+                      <div className="text-blue-600 font-medium flex items-center gap-1">
+                        ⏱️ {formatETA(getETA())}
+                      </div>
+                    )}
+                    {order.statusUpdatedAt && order.orderStatus !== "Pending" && !["Delivered", "Picked_Up", "Cancelled"].includes(order.orderStatus) && (
+                      <div className="text-xs text-muted-foreground">
+                        {order.orderStatus.replace(/_/g, " ")} for {timeElapsed} min{timeElapsed !== 1 ? "s" : ""}
+                      </div>
+                    )}
                   </CardDescription>
                 </div>
                 <Badge variant={isCancelled ? "destructive" : "default"}>
@@ -140,44 +240,84 @@ export default function OrderDetailsPage() {
 
             <CardContent>
               {!isCancelled && (
-                <div className="relative flex justify-between items-center mt-6 mb-2">
-                  {/* BACK LINE */}
-                  <div className="absolute top-4 left-0 w-full h-1 bg-muted -z-10">
-                    <div
-                      className="h-full bg-primary transition-all duration-700"
-                      style={{
-                        width: `${(currentIndex / (STEPS.length - 1)) * 100}%`,
-                      }}
-                    />
+                <>
+                  <div className="relative flex justify-between items-center mt-6 mb-2">
+                    {/* BACK LINE */}
+                    <div className="absolute top-4 left-0 w-full h-1 bg-muted -z-10">
+                      <div
+                        className="h-full bg-primary transition-all duration-700"
+                        style={{
+                          width: `${(currentIndex / (STEPS.length - 1)) * 100}%`,
+                        }}
+                      />
+                    </div>
+
+                    {/* STEPS */}
+                    {STEPS.map((step, i) => {
+                      const Active = i <= currentIndex;
+                      const Current = i === currentIndex;
+                      const Icon = step.icon;
+
+                      return (
+                        <div key={step.id} className="flex flex-col items-center gap-2">
+                          <div
+                            className={`h-8 w-8 rounded-full flex items-center justify-center border-2
+                              ${Active ? "bg-primary border-primary text-white" : "bg-background border-muted text-muted-foreground"}
+                              ${Current ? "ring-4 ring-primary/20" : ""}
+                            `}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <span
+                            className={`text-xs font-medium hidden sm:block ${
+                              Active ? "text-foreground" : "text-muted-foreground"
+                            }`}
+                          >
+                            {step.label}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  {/* STEPS */}
-                  {STEPS.map((step, i) => {
-                    const Active = i <= currentIndex;
-                    const Current = i === currentIndex;
-                    const Icon = step.icon;
+                  {/* PREPARATION MILESTONES */}
+                  {["Confirmed", "Preparing"].includes(order.orderStatus) && (
+                    <div className="mt-8 pt-6 border-t">
+                      <p className="text-xs font-semibold text-muted-foreground mb-4 tracking-wide">PREPARATION PROGRESS</p>
+                      <div className="space-y-3">
+                        {PREPARATION_MILESTONES.map((milestone, i) => {
+                          const isCompleted = i <= milestoneProgress;
+                          const isCurrent = i === milestoneProgress;
+                          const MIcon = milestone.icon;
 
-                    return (
-                      <div key={step.id} className="flex flex-col items-center gap-2">
-                        <div
-                          className={`h-8 w-8 rounded-full flex items-center justify-center border-2
-                            ${Active ? "bg-primary border-primary text-white" : "bg-background border-muted text-muted-foreground"}
-                            ${Current ? "ring-4 ring-primary/20" : ""}
-                          `}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <span
-                          className={`text-xs font-medium hidden sm:block ${
-                            Active ? "text-foreground" : "text-muted-foreground"
-                          }`}
-                        >
-                          {step.label}
-                        </span>
+                          return (
+                            <div key={milestone.id} className="flex items-center gap-3">
+                              <div
+                                className={`h-6 w-6 rounded-full flex items-center justify-center border-2 transition-all ${
+                                  isCompleted
+                                    ? "bg-green-500 border-green-500 text-white"
+                                    : isCurrent
+                                    ? "bg-blue-50 border-blue-400 text-blue-600 animate-pulse"
+                                    : "bg-gray-100 border-gray-300 text-gray-400"
+                                }`}
+                              >
+                                <MIcon className="h-3 w-3" />
+                              </div>
+                              <span
+                                className={`text-sm font-medium ${
+                                  isCompleted ? "text-foreground" : isCurrent ? "text-blue-600" : "text-muted-foreground"
+                                }`}
+                              >
+                                {milestone.label}
+                              </span>
+                              {isCompleted && i < milestoneProgress && <span className="text-xs text-green-600 ml-auto">✓ Done</span>}
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

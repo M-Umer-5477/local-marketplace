@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 // This will generate metadata for individual shop pages
 export async function generateMetadata({ params }) {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/customer/shops/${params.id}`, {
+    const res = await fetch(`/api/customer/shops/${params.id}`, {
       cache: "revalidate",
       revalidateTime: 3600, // Revalidate every hour
     });

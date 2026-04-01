@@ -34,6 +34,8 @@ export default function SellerOrdersPage() {
   // Modals State
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToReturn, setOrderToReturn] = useState(null); // 🚨 NEW: For refused COD orders
+  const [orderToConfirm, setOrderToConfirm] = useState(null); // NEW: For ETA input
+  const [estimatedTime, setEstimatedTime] = useState("15"); // NEW: ETA input value
 
   // 1. Fetch Orders
   const fetchOrders = async () => {
@@ -56,19 +58,24 @@ export default function SellerOrdersPage() {
   }, []);
 
   // 2. Update Status Handler
-  const handleStatusUpdate = async (orderId, newStatus) => {
+  const handleStatusUpdate = async (orderId, newStatus, estimatedPrepTime = null) => {
     setUpdating(orderId);
     try {
+      const body = { orderId, status: newStatus };
+      if (estimatedPrepTime) {
+        body.estimatedPrepTime = parseInt(estimatedPrepTime);
+      }
+
       const res = await fetch("/api/vendor/orders", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, status: newStatus }),
+        body: JSON.stringify(body),
       });
 
       if (res.ok) {
         toast.success(`Order updated successfully`);
         setOrders((prev) => 
-          prev.map((o) => o._id === orderId ? { ...o, orderStatus: newStatus } : o)
+          prev.map((o) => o._id === orderId ? { ...o, orderStatus: newStatus, estimatedPrepTime: estimatedPrepTime || o.estimatedPrepTime } : o)
         );
       } else {
         toast.error("Update failed");
@@ -78,7 +85,9 @@ export default function SellerOrdersPage() {
     } finally {
       setUpdating(null);
       setOrderToCancel(null); 
-      setOrderToReturn(null); 
+      setOrderToReturn(null);
+      setOrderToConfirm(null);
+      setEstimatedTime("15");
     }
   };
 
@@ -118,8 +127,8 @@ export default function SellerOrdersPage() {
   };
 
   // 🚨 UPDATED FILTER: "Returned" moves to history automatically
-  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus));
-  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus));
+  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus)&& o.source !== "offline");
+  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus) && o.source !== "offline");
 
   if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
 
@@ -164,6 +173,7 @@ export default function SellerOrdersPage() {
                    onShare={shareWithRider}
                    onCancelRequest={() => setOrderToCancel(order)} 
                    onReturnRequest={() => setOrderToReturn(order)} // 🚨 Pass to new return modal
+                   onConfirmRequest={() => setOrderToConfirm(order)} // NEW: Open ETA modal
                  />
                ))}
              </div>
@@ -293,6 +303,65 @@ export default function SellerOrdersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* NEW: ETA MODAL */}
+      <Dialog open={!!orderToConfirm} onOpenChange={(open) => !open && setOrderToConfirm(null)}>
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[425px] mx-auto">
+          <DialogHeader>
+            <DialogTitle>Confirm Order & Set Preparation Time</DialogTitle>
+            <DialogDescription>
+              How many minutes until this order is ready?
+            </DialogDescription>
+          </DialogHeader>
+
+          {orderToConfirm && (
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+                <p className="text-sm font-medium text-blue-900 mb-2">Order Details</p>
+                <div className="text-xs sm:text-sm space-y-1 text-blue-800 break-words">
+                  <p className="font-bold">#{orderToConfirm._id.slice(-6).toUpperCase()}</p>
+                  <p className="line-clamp-2">{orderToConfirm.items.map(i => i.name).join(", ")}</p>
+                  <p className="font-bold text-lg">Rs. {orderToConfirm.total}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-sm font-medium block">Estimated Preparation Time</label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                  <input
+                    type="number"
+                    min="5"
+                    max="120"
+                    value={estimatedTime}
+                    onChange={(e) => setEstimatedTime(e.target.value)}
+                    className="flex-1 sm:flex-initial sm:w-20 px-3 py-2 border rounded-lg font-bold text-center text-base"
+                  />
+                  <span className="text-sm text-muted-foreground">minutes</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1 bg-gray-50 p-2 rounded">
+                  <p>💡 <strong>Range:</strong> 5-120 minutes (default 15)</p>
+                  <p className="text-blue-600 font-medium">👁️ Customer ETA: {new Date(new Date().getTime() + parseInt(estimatedTime || 15) * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setOrderToConfirm(null)} disabled={updating} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button 
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+              size="sm"
+              onClick={() => handleStatusUpdate(orderToConfirm._id, "Confirmed", estimatedTime)} 
+              disabled={updating}
+            >
+              {updating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Confirm Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
@@ -300,7 +369,7 @@ export default function SellerOrdersPage() {
 // -----------------------------------
 // ORDER CARD COMPONENT
 // -----------------------------------
-function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onReturnRequest }) {
+function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onReturnRequest, onConfirmRequest }) {
   const [showMap, setShowMap] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
@@ -429,7 +498,7 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
                     Reject
                 </Button>
 
-                <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700" onClick={() => onUpdate(order._id, "Confirmed")} disabled={updating}>
+                <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700" onClick={onConfirmRequest} disabled={updating}>
                     {updating ? <Loader2 className="animate-spin h-3 w-3"/> : "Accept"}
                 </Button>
              </div>

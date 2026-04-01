@@ -37,7 +37,7 @@ export async function PUT(req) {
   try {
     await db.connect();
     const session = await getServerSession(authOptions);
-    const { orderId, status } = await req.json();
+    const { orderId, status, estimatedPrepTime } = await req.json();
 
     if (!session || session.user.role !== "seller") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -53,6 +53,20 @@ export async function PUT(req) {
     const isCompleted = status === "Delivered" || status === "Picked_Up";
     const isCancelled = status === "Cancelled";
     const isReturned = status === "Returned"; // 🚨 NEW: Tracking the refused COD orders
+    const isConfirmed = status === "Confirmed"; // NEW: For setting ETA
+
+    // --- 📋 SET TIMESTAMPS ---
+    if (isConfirmed && !order.confirmedAt) {
+      order.confirmedAt = new Date();
+    }
+    
+    // Always update the time of last status change
+    order.statusUpdatedAt = new Date();
+
+    // --- ⏱️ SET ESTIMATED PREP TIME ---
+    if (isConfirmed && estimatedPrepTime) {
+      order.estimatedPrepTime = parseInt(estimatedPrepTime);
+    }
 
     // --- ✅ 1. COD COMMISSION LOGIC (Existing) ---
     // Only deduct if completed AND not already deducted (COD Orders)
