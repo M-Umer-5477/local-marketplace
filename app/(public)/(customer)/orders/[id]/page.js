@@ -323,50 +323,50 @@ export default function OrderDetailsPage() {
           </Card>
 
           {/* ITEMS */}
-          <Card>
-            <CardHeader>
+          <Card className="flex flex-col">
+            <CardHeader className="shrink-0">
               <CardTitle className="flex gap-2">
                 <ShoppingBag className="h-5 w-5" /> Order Items
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[400px]">
-                <div className="space-y-4">
-                  {order.items.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center py-2 border-b last:border-0">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-muted h-12 w-12 rounded-md flex items-center justify-center text-xs text-muted-foreground">
+            <CardContent className="flex flex-col flex-1 min-h-0 gap-4">
+              <ScrollArea className="h-[300px] w-full flex-1 border rounded-md">
+                <div className="space-y-3 p-4">
+                  {order.items.filter(item => item.name !== "Delivery Fee").map((item, i) => (
+                    <div key={i} className="flex justify-between items-start gap-3 py-2 border-b last:border-0">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="bg-muted h-10 w-10 rounded-md flex items-center justify-center text-xs font-semibold shrink-0">
                           x{item.quantity}
                         </div>
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">Rs. {item.price}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">Rs. {item.price}</p>
                         </div>
                       </div>
-                      <p className="font-bold">Rs. {item.subtotal}</p>
+                      <p className="font-bold text-sm shrink-0">Rs. {item.subtotal}</p>
                     </div>
                   ))}
                 </div>
               </ScrollArea>
 
               {/* PRICE BOX */}
-              <div className="mt-6 bg-muted/30 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between text-sm">
+              <div className="shrink-0 bg-muted/30 p-4 rounded-lg space-y-2 mt-2 border">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>Rs. {order.total - order.deliveryFee}</span>
+                  <span className="font-medium">Rs. {(order.total - (order.deliveryFee || 0)).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Delivery Fee</span>
                   {isPickup ? (
-                    <span className="text-green-600 font-medium">Free (Pickup)</span>
+                    <span className="text-green-600 font-medium">Free</span>
                   ) : (
-                    <span>Rs. {order.deliveryFee}</span>
+                    <span className="font-medium">Rs. {(order.deliveryFee || 0).toFixed(2)}</span>
                   )}
                 </div>
                 <Separator />
-                <div className="flex justify-between font-bold text-lg pt-2">
+                <div className="flex justify-between font-bold text-base pt-2">
                   <span>Grand Total</span>
-                  <span className="text-primary">Rs. {order.total}</span>
+                  <span className="text-primary">Rs. {order.total.toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>

@@ -120,19 +120,6 @@ export default function MainNavbar() {
         {/* --- 3. RIGHT SECTION --- */}
         <div className="flex items-center gap-3">
           
-          {session && (
-            <Link href="/checkout">
-              <Button variant="ghost" size="icon" className="relative transition-all duration-200 hover:bg-primary/10 rounded-lg">
-                <ShoppingCart className="h-5 w-5 text-muted-foreground transition-colors duration-200" />
-                {mounted && cartCount > 0 && (
-                  <Badge className="absolute -top-1.5 -right-1.5 h-5 w-5 flex items-center justify-center rounded-full text-[10px] px-0 font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/30 animate-pulse">
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
-          )}
-
           <div className="hidden md:flex">
              <ModeToggle />
           </div>

@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 // This will generate metadata for individual shop pages
 export async function generateMetadata({ params }) {
   try {
-    const res = await fetch(`/api/customer/shops/${params.id}`, {
-      cache: "revalidate",
-      revalidateTime: 3600, // Revalidate every hour
+    const { id } = await params;
+    
+    const res = await fetch(`/api/customer/shops/${id}`, {
+      next: { revalidate: 3600 }, // Revalidate every hour
     });
 
     if (!res.ok) throw new Error("Shop not found");

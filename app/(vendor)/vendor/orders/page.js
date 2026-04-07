@@ -24,12 +24,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import LocationPicker from "@/components/maps/LocationPicker"; 
+import LocationPicker from "@/components/maps/LocationPicker";
+import OrderInvoice from "@/components/seller/OrderInvoice"; 
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(null); 
+  const [updating, setUpdating] = useState(null);
+  const [shopDetails, setShopDetails] = useState(null);
+  const [invoiceOrder, setInvoiceOrder] = useState(null); // For printing invoice
   
   // Modals State
   const [orderToCancel, setOrderToCancel] = useState(null);
@@ -53,8 +56,22 @@ export default function SellerOrdersPage() {
     }
   };
 
+  // 1b. Fetch Shop Details
+  const fetchShopDetails = async () => {
+    try {
+      const res = await fetch("/api/vendor/shop-details");
+      const data = await res.json();
+      if (data.success) {
+        setShopDetails(data.shop);
+      }
+    } catch (error) {
+      console.log("Could not fetch shop details");
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
+    fetchShopDetails();
   }, []);
 
   // 2. Update Status Handler
@@ -74,9 +91,18 @@ export default function SellerOrdersPage() {
 
       if (res.ok) {
         toast.success(`Order updated successfully`);
-        setOrders((prev) => 
-          prev.map((o) => o._id === orderId ? { ...o, orderStatus: newStatus, estimatedPrepTime: estimatedPrepTime || o.estimatedPrepTime } : o)
+        const updatedOrders = orders.map((o) => 
+          o._id === orderId 
+            ? { ...o, orderStatus: newStatus, estimatedPrepTime: estimatedPrepTime || o.estimatedPrepTime } 
+            : o
         );
+        setOrders(updatedOrders);
+        
+        // 🚨 NEW: Trigger invoice print when order is confirmed
+        if (newStatus === "Confirmed") {
+          const confirmedOrder = updatedOrders.find(o => o._id === orderId);
+          setInvoiceOrder(confirmedOrder);
+        }
       } else {
         toast.error("Update failed");
       }
@@ -213,6 +239,15 @@ export default function SellerOrdersPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Invoice Component - Prints automatically when order confirmed */}
+      {invoiceOrder && shopDetails && (
+        <OrderInvoice 
+          order={invoiceOrder} 
+          shopDetails={shopDetails}
+          onPrintComplete={() => setInvoiceOrder(null)}
+        />
+      )}
+
       {/* 🚨 MODAL 1: CANCEL ORDER (Reject at Pending state) */}
       <Dialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
         <DialogContent className="sm:max-w-[425px]">
@@ -317,7 +352,7 @@ export default function SellerOrdersPage() {
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
               <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
                 <p className="text-sm font-medium text-blue-900 mb-2">Order Details</p>
-                <div className="text-xs sm:text-sm space-y-1 text-blue-800 break-words">
+                <div className="text-xs sm:text-sm space-y-1 text-blue-800 wrap-break-word">
                   <p className="font-bold">#{orderToConfirm._id.slice(-6).toUpperCase()}</p>
                   <p className="line-clamp-2">{orderToConfirm.items.map(i => i.name).join(", ")}</p>
                   <p className="font-bold text-lg">Rs. {orderToConfirm.total}</p>
