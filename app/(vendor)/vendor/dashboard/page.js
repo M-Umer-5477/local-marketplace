@@ -308,41 +308,43 @@ if (isLoading) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         
         {/* Recent Orders Table */}
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 col-span-full md:col-span-full">
           <CardHeader>
             <CardTitle>Recent Orders</CardTitle>
             <CardDescription>Latest orders from your customers.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
              {data.liveOrders.length > 0 ? (
-                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Order ID</TableHead>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.liveOrders.map(order => (
-                            <TableRow key={order.id}>
-                                <TableCell className="font-medium">#{order.id}</TableCell>
-                                <TableCell>{order.customer}</TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className={order.type === 'Delivery' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-yellow-200 bg-yellow-50 text-yellow-700'}>
-                                        {order.type}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
-                                <TableCell className="text-right">
-                                    <Button size="sm" variant="ghost" onClick={() => handleQuickAccept(order.fullId)}>Accept</Button>
-                                </TableCell>
+                 <div className="min-w-full">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="hidden sm:table-cell">Order ID</TableHead>
+                                <TableHead className="hidden md:table-cell">Customer</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {data.liveOrders.map(order => (
+                                <TableRow key={order.id}>
+                                    <TableCell className="font-medium hidden sm:table-cell">#{order.id}</TableCell>
+                                    <TableCell className="hidden md:table-cell text-sm">{order.customer}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={`text-xs ${order.type === 'Delivery' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-yellow-200 bg-yellow-50 text-yellow-700'}`}>
+                                            {order.type}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right text-sm">{formatCurrency(order.total)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button size="sm" variant="ghost" className="text-xs" onClick={() => handleQuickAccept(order.fullId)}>Accept</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                 </div>
              ) : (
                 <div className="text-center py-8 text-muted-foreground">No new orders yet.</div>
              )}
@@ -355,27 +357,27 @@ if (isLoading) {
         </Card>
 
         {/* Order Status Breakdown & Low Stock Column */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3 col-span-full md:col-span-full space-y-4">
             
             {/* Order Status Breakdown */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Order Status Breakdown</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 md:p-6">
                     <div className="space-y-3">
                         {Object.entries(data.orderStatusBreakdown).filter(([_, count]) => count > 0).map(([status, count]) => {
                           const total = Object.values(data.orderStatusBreakdown).reduce((a, b) => a + b, 0);
                           const percentage = ((count / total) * 100).toFixed(0);
                           return (
-                            <div key={status} className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 flex-1">
-                                <Badge variant="outline" className="min-w-fit">{status}</Badge>
-                                <div className="flex-1 bg-muted rounded-full h-2">
+                            <div key={status} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <Badge variant="outline" className="min-w-fit text-xs sm:text-sm">{status.replace(/_/g, ' ')}</Badge>
+                                <div className="flex-1 bg-muted rounded-full h-2 min-w-10">
                                   <div className="bg-blue-600 h-2 rounded-full" style={{width: `${percentage}%`}}></div>
                                 </div>
                               </div>
-                              <span className="text-sm font-medium">{count} ({percentage}%)</span>
+                              <span className="text-sm font-medium whitespace-nowrap">{count} ({percentage}%)</span>
                             </div>
                           );
                         })}
@@ -386,16 +388,16 @@ if (isLoading) {
             {/* Low Stock Card */}
             <Card className="border-red-100 dark:border-red-900/50">
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center text-red-600">
-                        <AlertTriangle className="mr-2 h-4 w-4" /> Low Stock Alert
+                    <CardTitle className="flex items-center gap-2 text-red-600 text-sm sm:text-base">
+                        <AlertTriangle className="h-4 w-4 shrink-0" /> Low Stock Alert
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 p-4 md:p-6">
                     {data.lowStockItems.length > 0 ? (
                         data.lowStockItems.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-sm p-2 bg-muted/50 rounded-md">
-                                <span>{item.name}</span>
-                                <span className="font-bold text-red-500">{item.stock} {item.unit}</span>
+                            <div key={idx} className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded-md gap-2">
+                                <span className="truncate">{item.name}</span>
+                                <span className="font-bold text-red-500 whitespace-nowrap">{item.stock} {item.unit}</span>
                             </div>
                         ))
                     ) : (

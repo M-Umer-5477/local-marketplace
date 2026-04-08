@@ -31,7 +31,7 @@ const VendorSidebar = ({ isCollapsed }) => {
     <aside
       // UPDATED: bg-gray-50 -> bg-sidebar, added border-border
       className={cn(
-        "hidden md:flex flex-col h-[calc(100vh-4rem)] px-4 py-6 bg-background border-r border-border transition-all duration-300 ease-in-out",
+        "hidden md:fixed md:flex flex-col h-[calc(100vh-4rem)] top-16 left-0 px-4 py-6 bg-background border-r border-border transition-all duration-500 ease-in-out z-40 overflow-hidden",
         isCollapsed ? "w-20" : "w-64"
       )}
     >
@@ -42,7 +42,7 @@ const VendorSidebar = ({ isCollapsed }) => {
             href={link.href}
             className={cn(
               // Default link state: text-sidebar-foreground (high visibility)
-              "flex items-center gap-3 px-3 py-2 text-sidebar-foreground rounded-md transition-colors",
+              "flex items-center gap-3 px-3 py-2 text-sidebar-foreground rounded-md transition-all duration-500",
               
               // Hover state: Use accent colors for contrast
               "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",

@@ -23,7 +23,7 @@ export default function VendorLayoutClient({ session, children }) {
         {/* Main area: Sidebar + Content */}
         <div className="flex">
           <VendorSidebar isCollapsed={isCollapsed} />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+          <main className={`flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto transition-all duration-500 ${isCollapsed ? "md:ml-20" : "md:ml-64"}`}>
             {/* 👈 4. All children here can now use the useSeller() hook */}
             {children}
           </main>

@@ -3,6 +3,7 @@
 
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Bell,
@@ -13,6 +14,13 @@ import {
   PanelLeft,
   PanelRight,
   BadgePercent,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  ClipboardList,
+  Store,
+  BookUser,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,16 +34,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-// IMPORT THEME TOGGLE
 import { ModeToggle } from "@/components/mode-toggle";
+import { cn } from "@/lib/utils";
 
 
 const VendorHeader = ({ isCollapsed, onToggleSidebar, session }) => {
   
+  const pathname = usePathname();
   const user = session?.user;
-if (!user) return null;
+  if (!user) return null;
+  
   const getInitials = (name = "") =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase();
+
+  const vendorLinks = [
+    { href: "/vendor/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/vendor/manageProducts", label: "Manage Products", icon: Package },
+    { href: "/vendor/orders", label: "Online Orders", icon: ShoppingCart },
+    { href: "/vendor/pos", label: "Offline Checkout", icon: ClipboardList },
+    { href: "/vendor/khata", label: "Customer Khata", icon: BookUser },
+    { href: "/vendor/wallet", label: "Shop Wallet", icon: Wallet },
+    { href: "/vendor/myShop", label: "View My Shop", icon: Store },
+  ];
 
 
   return (
@@ -67,14 +87,34 @@ if (!user) return null;
               <span className="sr-only">Toggle Menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="sm:max-w-xs border-r border-border">
-            {/* SheetContent inherits bg-background and text-foreground automatically */}
-            <nav className="grid gap-6 text-lg font-medium">
-              <Link href="/vendor/dashboard" className="flex items-center gap-2 px-2 mb-4">
-                <BadgePercent className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold text-foreground">ShopSync</span>
-              </Link>
-              {/* Sidebar navigation links would typically go here */}
+          <SheetContent side="left" className="w-64 border-r border-border p-0">
+            {/* Header with brand */}
+            <div className="flex items-center gap-2 px-4 py-6">
+              <BadgePercent className="h-6 w-6 text-primary" />
+              <span className="text-lg font-bold text-foreground">MartLy</span>
+            </div>
+            
+            {/* Navigation links */}
+            <nav className="flex flex-col space-y-2 px-4">
+              {vendorLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-300",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </SheetContent>
         </Sheet>
