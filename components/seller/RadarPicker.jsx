@@ -88,7 +88,7 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
       
       {/* Floating Info Badge */}
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg border text-xs z-10 max-w-[200px]">
-         <p className="font-bold text-blue-700 mb-1 flex items-center gap-1">
+         <p className="font-bold text-primary mb-1 flex items-center gap-1">
             <Navigation className="w-3 h-3" /> Radar Active: {radius} KM
          </p>
          <p className="text-gray-600 leading-tight">

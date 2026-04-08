@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -11,181 +10,179 @@
   Mapping CSS variables to Tailwind utilities
 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-/* Base Variables (Light Mode - Zinc Theme)
-  Neutral, clean, professional.
-*/
+/* Base Variables (Light Mode - Saffron Market Theme - HSL Channels) */
 :root {
   --radius: 0.5rem;
 
-  --background: oklch(1 0 0);          /* Pure White */
-  --foreground: oklch(0.145 0 0);      /* Zinc 950 - Soft Black */
+  --background: 30 100% 98%;
+  --foreground: 22 40% 12%;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card: 0 0% 100%;
+  --card-foreground: 22 40% 12%;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover: 0 0% 100%;
+  --popover-foreground: 22 40% 12%;
 
-  --primary: oklch(0.145 0 0);         /* Zinc 950 - Black Button */
-  --primary-foreground: oklch(0.985 0 0); /* White Text */
+  --primary: 24 95% 53%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: oklch(0.97 0 0);        /* Zinc 100 - Light Gray */
-  --secondary-foreground: oklch(0.145 0 0);
+  --secondary: 28 100% 95%;
+  --secondary-foreground: 22 40% 12%;
 
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.448 0 0); /* Zinc 500 - Medium Gray */
+  --muted: 24 35% 93%;
+  --muted-foreground: 24 20% 35%;
 
-  --accent: oklch(0.97 0 0);           /* Zinc 100 - Hover state */
-  --accent-foreground: oklch(0.145 0 0);
+  --accent: 28 100% 91%;
+  --accent-foreground: 24 95% 53%;
 
-  --destructive: oklch(0.577 0.245 27.325); /* Red */
-  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: oklch(0.922 0 0);          /* Zinc 200 - Subtle border */
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.145 0 0);            /* Focus Ring */
+  --border: 29 25% 86%;
+  --input: 29 25% 86%;
+  --ring: 24 95% 53%;
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: 24 95% 53%;
+  --chart-2: 38 92% 50%;
+  --chart-3: 160 84% 39%;
+  --chart-4: 217 91% 60%;
+  --chart-5: 258 90% 66%;
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.145 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.145 0 0);
+  --sidebar: 30 100% 98%;
+  --sidebar-foreground: 22 40% 12%;
+  --sidebar-primary: 24 95% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 28 100% 95%;
+  --sidebar-accent-foreground: 22 40% 12%;
+  --sidebar-border: 29 25% 86%;
+  --sidebar-ring: 24 95% 53%;
 }
 
-/* Dark Mode Variables (Zinc Theme)
-  High contrast, rich dark gray (not pitch black), comfortable for reading.
-*/
+/* Dark Mode Variables (Saffron Market - HSL Channels) */
 .dark {
-  --background: oklch(0.09 0 0);       /* Zinc 950 - Deep Dark */
-  --foreground: oklch(0.985 0 0);      /* Zinc 50 - Off White */
+  --background: 20 27% 9%;
+  --foreground: 22 79% 95%;
 
-  --card: oklch(0.11 0 0);             /* Slightly lighter than bg */
-  --card-foreground: oklch(0.985 0 0);
+  --card: 22 35% 19%;
+  --card-foreground: 22 79% 95%;
 
-  --popover: oklch(0.11 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --popover: 22 35% 19%;
+  --popover-foreground: 22 79% 95%;
 
-  --primary: oklch(0.985 0 0);         /* White Button */
-  --primary-foreground: oklch(0.145 0 0); /* Black Text */
+  --primary: 24 95% 53%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: oklch(0.269 0 0);       /* Zinc 800 - Dark Gray */
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary: 20 29% 16%;
+  --secondary-foreground: 22 79% 95%;
 
-  --muted: oklch(0.269 0 0);
-  /* FIX: Increased luminance from 0.65 to 0.87 for high visibility on dark background */
-  --muted-foreground: oklch(0.87 0 0); 
+  --muted: 20 29% 16%;
+  --muted-foreground: 24 12% 58%;
 
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: 20 30% 21%;
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: oklch(0.269 0 0);          /* Solid Dark Border */
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.87 0 0);             /* Lighter focus ring */
+  --border: 25 23% 19%;
+  --input: 25 23% 19%;
+  --ring: 24 95% 53%;
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: 24 95% 53%;
+  --chart-2: 43 96% 56%;
+  --chart-3: 158 64% 52%;
+  --chart-4: 213 94% 68%;
+  --chart-5: 255 92% 76%;
 
-  --sidebar: oklch(0.11 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.87 0 0);
+  --sidebar: 20 27% 9%;
+  --sidebar-foreground: 22 79% 95%;
+  --sidebar-primary: 24 95% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 20 29% 16%;
+  --sidebar-accent-foreground: 22 79% 95%;
+  --sidebar-border: 25 23% 19%;
+  --sidebar-ring: 24 95% 53%;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   /* Ensure buttons are pointer by default */
   button:not([disabled]),
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
 }
+
 /* FORCE CLOUDINARY TO BE ON TOP */
 iframe[src*="cloudinary"] {
-    z-index: 100000 !important;
-    position: fixed !important; 
+  z-index: 100000 !important;
+  position: fixed !important;
 }
 
 .cloudinary-overlay {
-    z-index: 100000 !important;
+  z-index: 100000 !important;
 }
 
 /* Allow clicking outside the dialog */
 body[data-scroll-locked] {
-    padding-right: 0px !important; 
+  padding-right: 0px !important;
 }

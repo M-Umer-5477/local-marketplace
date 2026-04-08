@@ -238,7 +238,7 @@ export default function MyShopPage() {
               <CardContent className="space-y-6">
                 
                 {/* Minimum Order Amount */}
-                <div className="space-y-3 p-4 border rounded-lg bg-blue-50/30 dark:bg-blue-950/20 border-blue-200/50">
+                <div className="space-y-3 p-4 border rounded-lg bg-primary/5 border-primary/20">
                   <div className="flex items-start gap-3">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="min-order" className="text-base font-semibold">Minimum Order Amount</Label>
@@ -332,9 +332,9 @@ export default function MyShopPage() {
                     value={[deliveryRadius]}
                     onValueChange={(val) => setValue("deliveryRadius", val[0], { shouldDirty: true })}
                   />
-                  <div className="flex gap-2 items-start text-xs bg-blue-50 p-2 rounded text-blue-800">
+                  <div className="flex gap-2 items-start text-xs bg-primary/10 p-2 rounded text-primary">
                     <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                    <p>Moving this slider will shrink or grow the blue circle on the map above.</p>
+                    <p>Moving this slider will shrink or grow the primary circle on the map above.</p>
                   </div>
                 </div>
 

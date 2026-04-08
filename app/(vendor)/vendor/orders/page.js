@@ -350,9 +350,9 @@ export default function SellerOrdersPage() {
 
           {orderToConfirm && (
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
-                <p className="text-sm font-medium text-blue-900 mb-2">Order Details</p>
-                <div className="text-xs sm:text-sm space-y-1 text-blue-800 wrap-break-word">
+              <div className="bg-primary/5 p-3 sm:p-4 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium text-foreground mb-2">Order Details</p>
+                <div className="text-xs sm:text-sm space-y-1 text-muted-foreground wrap-break-word">
                   <p className="font-bold">#{orderToConfirm._id.slice(-6).toUpperCase()}</p>
                   <p className="line-clamp-2">{orderToConfirm.items.map(i => i.name).join(", ")}</p>
                   <p className="font-bold text-lg">Rs. {orderToConfirm.total}</p>
@@ -374,7 +374,7 @@ export default function SellerOrdersPage() {
                 </div>
                 <div className="text-xs text-muted-foreground space-y-1 bg-gray-50 p-2 rounded">
                   <p>💡 <strong>Range:</strong> 5-120 minutes (default 15)</p>
-                  <p className="text-blue-600 font-medium">👁️ Customer ETA: {new Date(new Date().getTime() + parseInt(estimatedTime || 15) * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                  <p className="text-primary font-medium">👁️ Customer ETA: {new Date(new Date().getTime() + parseInt(estimatedTime || 15) * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
                 </div>
               </div>
             </div>
@@ -415,14 +415,14 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
   const visibleItems = expanded ? order.items : order.items.slice(0, 2);
 
   return (
-    <Card className={`flex flex-col h-full shadow-sm hover:shadow-md transition-all border-l-4 ${isDelivery ? 'border-l-blue-500' : 'border-l-yellow-500'}`}>
+    <Card className={`flex flex-col h-full shadow-sm hover:shadow-md transition-all border-l-4 ${isDelivery ? 'border-l-cyan-500' : 'border-l-yellow-500'}`}>
       
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
            <div>
               <div className="flex items-center gap-2">
                  <CardTitle className="text-base">#{order._id.slice(-6).toUpperCase()}</CardTitle>
-                 <Badge variant="secondary" className={`text-[10px] h-5 px-1.5 ${isDelivery ? "bg-blue-100 text-blue-700" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"}`}>
+                 <Badge variant="secondary" className={`text-[10px] h-5 px-1.5 ${isDelivery ? "bg-cyan-100 text-cyan-700" : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"}`}>
                     {isDelivery ? "Delivery" : "Pickup"}
                  </Badge>
               </div>
@@ -430,7 +430,7 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
            </div>
            <Badge className={`text-[10px] px-2 h-5 ${
              order.orderStatus === "Pending" ? "bg-yellow-500 hover:bg-yellow-600" :
-             order.orderStatus === "Confirmed" ? "bg-blue-500 hover:bg-blue-600" :
+             order.orderStatus === "Confirmed" ? "bg-cyan-500 hover:bg-cyan-600" :
              "bg-green-600 hover:bg-green-700"
            }`}>
              {order.orderStatus.replace(/_/g, " ")}
@@ -469,7 +469,7 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
 
         {hasPin && (
             <div className="w-full">
-                <Button variant="outline" size="sm" className="w-full h-7 text-xs flex gap-2 border-dashed border-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => setShowMap(!showMap)}>
+                <Button variant="outline" size="sm" className="w-full h-7 text-xs flex gap-2 border-dashed border-cyan-200 text-cyan-700 hover:text-cyan-800 hover:bg-cyan-50" onClick={() => setShowMap(!showMap)}>
                     <MapPin className="w-3 h-3" /> {showMap ? "Hide Map" : "View Map Location"}
                 </Button>
                 {showMap && (

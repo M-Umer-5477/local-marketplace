@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
               </SelectContent>
             </Select>
             <Link href="/admin/verifications">
-                <Button className="shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white border-none">
+                <Button className="shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground border-none">
                     Review Applications
                 </Button>
             </Link>
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
         <Card className="border-l-4 border-l-blue-500 shadow-sm bg-card text-card-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Gross Merchandise Value</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Rs. {(stats?.grossVolume || 0)?.toLocaleString()}</div>
@@ -140,7 +140,7 @@ export default function AdminDashboardPage() {
         <Card className="border-l-4 border-l-purple-500 shadow-sm bg-card text-card-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Shops</CardTitle>
-            <Store className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <Store className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.activeShops}</div>
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
         <Card className="border-l-4 border-l-blue-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Wallet Health</CardTitle>
-            <Wallet className="h-4 w-4 text-blue-500" />
+            <Wallet className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between items-center py-2 border-b">

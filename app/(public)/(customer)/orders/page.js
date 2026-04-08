@@ -127,10 +127,10 @@ function OrderListItem({ order, isActive }) {
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending": return "bg-yellow-500 hover:bg-yellow-600";
-      case "Confirmed": return "bg-blue-500 hover:bg-blue-600";
+      case "Confirmed": return "bg-cyan-500 hover:bg-cyan-600";
       case "Preparing": return "bg-orange-500 hover:bg-orange-600";
-      case "Ready_for_Pickup": return "bg-orange-600 hover:bg-orange-700";
-      case "Out_for_Delivery": return "bg-purple-500 hover:bg-purple-600";
+      case "Ready_for_Pickup": return "bg-primary hover:bg-primary/90";
+      case "Out_for_Delivery": return "bg-primary hover:bg-primary/90";
       case "Delivered": return "bg-green-600 hover:bg-green-700";
       case "Cancelled": return "bg-red-500 hover:bg-red-600";
       case "Returned": return "bg-slate-600 hover:bg-slate-700"; // 🚨 NEW COLOR FOR RETURNED

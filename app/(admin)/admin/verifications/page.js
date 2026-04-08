@@ -180,7 +180,7 @@ export default function VerificationsPage() {
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 gap-2"
+                                className="text-primary hover:text-primary/80 hover:bg-primary/5 gap-2"
                                 onClick={() => setSelectedDoc(doc)}
                             >
                                 View <Eye className="h-3 w-3" />

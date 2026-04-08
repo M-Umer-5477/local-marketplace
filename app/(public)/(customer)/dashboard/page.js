@@ -89,10 +89,10 @@ export default function CustomerDashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending": return "bg-yellow-500 hover:bg-yellow-600";
-      case "Confirmed": return "bg-blue-500 hover:bg-blue-600";
+      case "Confirmed": return "bg-cyan-500 hover:bg-cyan-600";
       case "Preparing": return "bg-orange-500 hover:bg-orange-600";
       case "Ready_for_Pickup": return "bg-orange-600 hover:bg-orange-700";
-      case "Out_for_Delivery": return "bg-purple-500 hover:bg-purple-600";
+      case "Out_for_Delivery": return "bg-primary hover:bg-primary/90";
       case "Delivered": return "bg-green-600 hover:bg-green-700";
       case "Picked_Up": return "bg-green-600 hover:bg-green-700";
       case "Cancelled": return "bg-red-500 hover:bg-red-600";
@@ -137,7 +137,7 @@ export default function CustomerDashboard() {
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total Orders</p>
                   <p className="text-3xl font-bold mt-1">{totalOrders}</p>
                 </div>
-                <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
+                <div className="h-12 w-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
                   <Package className="h-6 w-6 text-blue-500" />
                 </div>
               </div>
@@ -426,7 +426,7 @@ export default function CustomerDashboard() {
               <>
                 {/* Status Breakdown */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                     <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">All Orders</p>
                     <p className="text-2xl font-bold text-blue-600 mt-2">{totalOrders}</p>
                   </div>

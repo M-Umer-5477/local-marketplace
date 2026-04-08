@@ -134,7 +134,7 @@ export default function AdminRefundsPage() {
             <CardTitle className="text-sm font-medium">Total Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">Rs. {stats.totalRefundValue?.toLocaleString() || 0}</div>
+            <div className="text-3xl font-bold text-primary">Rs. {stats.totalRefundValue?.toLocaleString() || 0}</div>
             <p className="text-xs text-muted-foreground">All refunds this period</p>
           </CardContent>
         </Card>
@@ -210,7 +210,7 @@ export default function AdminRefundsPage() {
                             {!order.isRefunded && (
                               <Button 
                                 size="sm" 
-                                className="bg-blue-600 hover:bg-blue-700"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                                 onClick={() => setSelectedOrder(order)}
                               >
                                 <CreditCard className="h-4 w-4 mr-1" /> Process
@@ -233,7 +233,7 @@ export default function AdminRefundsPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full">
+                <div className="p-2 bg-primary/10 text-primary rounded-full">
                     <ShieldAlert className="h-6 w-6" />
                 </div>
                 <DialogTitle>Process Refund</DialogTitle>
@@ -260,7 +260,7 @@ export default function AdminRefundsPage() {
                     </div>
                     <div className="flex justify-between text-base pt-3 border-t">
                         <span className="font-bold text-foreground">Refund Amount:</span>
-                        <span className="font-bold text-blue-600">Rs. {selectedOrder.total?.toLocaleString()}</span>
+                        <span className="font-bold text-primary">Rs. {selectedOrder.total?.toLocaleString()}</span>
                     </div>
                   </div>
               </div>
@@ -270,7 +270,7 @@ export default function AdminRefundsPage() {
             <Button variant="outline" onClick={() => setSelectedOrder(null)} disabled={!!processingId}>
               Cancel
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700" onClick={executeRefund} disabled={!!processingId}>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={executeRefund} disabled={!!processingId}>
               {processingId ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               {processingId ? "Processing..." : "Confirm & Mark as Refunded"}
             </Button>

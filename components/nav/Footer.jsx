@@ -53,7 +53,7 @@ export default function Footer() {
               </li>
             </ul>
             <div className="flex gap-3 pt-3">
-               <Facebook className="h-4 w-4 hover:text-blue-600 cursor-pointer" />
+               <Facebook className="h-4 w-4 hover:text-primary cursor-pointer transition-colors" />
                <Twitter className="h-4 w-4 hover:text-sky-500 cursor-pointer" />
                <Instagram className="h-4 w-4 hover:text-pink-600 cursor-pointer" />
             </div>

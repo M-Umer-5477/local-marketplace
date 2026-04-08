@@ -297,7 +297,7 @@ export default function OrderDetailsPage() {
                                   isCompleted
                                     ? "bg-green-500 border-green-500 text-white"
                                     : isCurrent
-                                    ? "bg-blue-50 border-blue-400 text-blue-600 animate-pulse"
+                                    ? "bg-primary/10 border-primary/40 text-primary animate-pulse"
                                     : "bg-gray-100 border-gray-300 text-gray-400"
                                 }`}
                               >
@@ -305,7 +305,7 @@ export default function OrderDetailsPage() {
                               </div>
                               <span
                                 className={`text-sm font-medium ${
-                                  isCompleted ? "text-foreground" : isCurrent ? "text-blue-600" : "text-muted-foreground"
+                                  isCompleted ? "text-foreground" : isCurrent ? "text-primary shadow-sm" : "text-muted-foreground"
                                 }`}
                               >
                                 {milestone.label}
@@ -407,27 +407,27 @@ export default function OrderDetailsPage() {
               )}
             </CardContent>
           </Card>
-          {/* SECURITY CARD */}
-<div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-6">
+{/* SECURITY CARD */}
+<div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mt-6">
   <div className="flex items-start gap-4">
-    <div className="bg-white p-3 rounded-full shadow-sm">
-      <ShieldCheck className="h-8 w-8 text-blue-600" />
+    <div className="bg-background p-3 rounded-full shadow-sm border border-primary/10 text-primary">
+      <ShieldCheck className="h-8 w-8" />
     </div>
     
     <div>
-      <h3 className="text-lg font-bold text-blue-900">Secure Delivery Code</h3>
-      <p className="text-sm text-blue-700 mt-1 mb-3">
+      <h3 className="text-lg font-bold text-foreground">Secure Delivery Code</h3>
+      <p className="text-sm text-muted-foreground mt-1 mb-3">
         For your security, the rider cannot mark this order as "Delivered" without this code. 
-        <span className="font-bold"> Do not share it until you receive your food.</span>
+        <span className="font-bold text-foreground"> Do not share it until you receive your food.</span>
       </p>
 
       <div className="flex items-center gap-3">
-        <div className="bg-white px-6 py-2 rounded-lg border-2 border-dashed border-blue-300">
-          <span className="text-3xl font-mono font-bold tracking-widest text-blue-800">
+        <div className="bg-background px-6 py-2 rounded-lg border-2 border-dashed border-primary/30 shadow-inner">
+          <span className="text-3xl font-mono font-black tracking-widest text-primary drop-shadow-sm">
             {order.orderPin || "----"}
           </span>
         </div>
-        <div className="text-xs text-blue-500 font-medium">
+        <div className="text-xs text-primary/70 font-bold uppercase tracking-wider">
           <Lock className="h-3 w-3 inline mr-1" />
           System Generated
         </div>

@@ -140,7 +140,7 @@ export default function StepReview({ data, prevStep }) {
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                     <span className="text-muted-foreground font-medium">Location:</span>
-                    <span className="col-span-2 flex items-center gap-1 text-xs text-blue-600">
+                    <span className="col-span-2 flex items-center gap-1 text-xs text-primary">
                         <MapPin className="h-3 w-3" />
                         {data.shopLocation ? "Coordinates Set" : "Not Set"}
                     </span>

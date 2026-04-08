@@ -105,7 +105,9 @@ if (isLoading) {
   const getPerformanceColor = (rating) => {
     switch(rating) {
       case "Excellent": return "text-green-600";
-      case "Good": return "text-blue-600";
+      case "Good": return "text-primary";
+      case "Average": return "text-yellow-600";
+      case "Poor": return "text-red-600";
       default: return "text-yellow-600";
     }
   };
@@ -113,7 +115,7 @@ if (isLoading) {
   // Chart Styling
   const chartAxisColor = resolvedTheme === 'dark' ? '#9ca3af' : '#4b5563'; 
   const chartGridColor = resolvedTheme === 'dark' ? '#374151' : '#e5e7eb'; 
-  const chartBarColor = '#2563eb'; // Primary Blue
+  const chartBarColor = 'hsl(var(--primary))'; // Primary Color
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-6 md:py-4 bg-background min-h-screen">
@@ -149,12 +151,12 @@ if (isLoading) {
       </div>
 
       {/* Performance Score Card */}
-      <Card className="border-blue-200 dark:border-blue-900/50 bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
+      <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-primary/10">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
-                <Star className="h-5 w-5 text-blue-600" /> Shop Performance Score
+                <Star className="h-5 w-5 text-primary" /> Shop Performance Score
               </CardTitle>
               <CardDescription>Your overall shop health and reliability</CardDescription>
             </div>
@@ -263,7 +265,9 @@ if (isLoading) {
           <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center gap-2">
-                <Plus className="h-8 w-8 text-blue-600" />
+                <div className="p-4 bg-muted/50 rounded-xl flex items-center justify-center">
+                  <Plus className="h-8 w-8 text-primary" />
+                </div>
                 <p className="font-medium text-sm">Add New Product</p>
               </div>
             </CardContent>
@@ -274,7 +278,9 @@ if (isLoading) {
           <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center gap-2">
-                <Package className="h-8 w-8 text-green-600" />
+                <div className="p-4 bg-muted/50 rounded-xl flex items-center justify-center">
+                  <Package className="h-8 w-8 text-primary" />
+                </div>
                 <p className="font-medium text-sm">Manage Inventory</p>
               </div>
             </CardContent>
@@ -285,7 +291,9 @@ if (isLoading) {
           <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center gap-2">
-                <Store className="h-8 w-8 text-purple-600" />
+                <div className="p-4 bg-muted/50 rounded-xl flex items-center justify-center">
+                  <Store className="h-8 w-8 text-primary" />
+                </div>
                 <p className="font-medium text-sm">View My Shop</p>
               </div>
             </CardContent>
@@ -296,7 +304,9 @@ if (isLoading) {
           <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center gap-2">
-                <LogOut className="h-8 w-8 text-orange-600" />
+                <div className="p-4 bg-muted/50 rounded-xl flex items-center justify-center">
+                  <LogOut className="h-8 w-8 text-primary" />
+                </div>
                 <p className="font-medium text-sm">Withdraw Earnings</p>
               </div>
             </CardContent>
@@ -332,7 +342,7 @@ if (isLoading) {
                                     <TableCell className="font-medium hidden sm:table-cell">#{order.id}</TableCell>
                                     <TableCell className="hidden md:table-cell text-sm">{order.customer}</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className={`text-xs ${order.type === 'Delivery' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-yellow-200 bg-yellow-50 text-yellow-700'}`}>
+                                        <Badge variant="outline" className={`text-xs ${order.type === 'Delivery' ? 'border-primary/20 bg-primary/5 text-primary' : 'border-yellow-200 bg-yellow-50 text-yellow-700'}`}>
                                             {order.type}
                                         </Badge>
                                     </TableCell>
@@ -374,7 +384,7 @@ if (isLoading) {
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <Badge variant="outline" className="min-w-fit text-xs sm:text-sm">{status.replace(/_/g, ' ')}</Badge>
                                 <div className="flex-1 bg-muted rounded-full h-2 min-w-10">
-                                  <div className="bg-blue-600 h-2 rounded-full" style={{width: `${percentage}%`}}></div>
+                                  <div className="bg-primary h-2 rounded-full shadow-sm" style={{width: `${percentage}%`}}></div>
                                 </div>
                               </div>
                               <span className="text-sm font-medium whitespace-nowrap">{count} ({percentage}%)</span>
