@@ -103,7 +103,7 @@ export default function CustomerDashboard() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* ===== HEADER SECTION ===== */}
-      <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-b border-primary/10 sticky top-0 z-40">
+      <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-b border-primary/10">
         <div className="container mx-auto px-4 py-6 md:py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>

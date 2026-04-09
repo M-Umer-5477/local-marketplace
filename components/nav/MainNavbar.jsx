@@ -7,11 +7,11 @@ import { useCart } from "@/context/cartContext";
 import { ModeToggle } from "@/components/mode-toggle"; 
 import CheckoutAuthModal from "@/components/auth/CheckoutAuthModal";
 import AddressSelector from "@/components/AddressSelector";
+import MartLyIcon from "@/components/ui/MartlyIcon";
 
 // Icons
 import { 
   Menu, 
-  BadgePercent, 
   ShoppingCart, 
   LogOut, 
   LayoutDashboard,
@@ -68,9 +68,7 @@ export default function MainNavbar() {
         {/* --- LEFT SECTION: Logo & Address --- */}
         <div className="flex items-center gap-4 md:gap-8">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight transition-all duration-200 hover:opacity-80">
-            <div className="bg-primary/10 p-1.5 rounded-lg transition-colors duration-200">
-                <BadgePercent className="h-5 w-5 text-primary" />
-            </div>
+            <MartLyIcon className="w-8 h-8" />
             <span className="bg-linear-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
               Martly
             </span>
@@ -216,9 +214,7 @@ export default function MainNavbar() {
                  
                  <SheetHeader className="text-left mb-6">
                    <SheetTitle className="flex items-center gap-3 text-2xl font-bold">
-                      <div className="bg-primary/10 p-1.5 rounded-lg transition-colors duration-200">
-                        <BadgePercent className="h-6 w-6 text-primary"/>
-                      </div> 
+                      <MartLyIcon className="w-8 h-8" />
                       Martly
                    </SheetTitle>
                  </SheetHeader>

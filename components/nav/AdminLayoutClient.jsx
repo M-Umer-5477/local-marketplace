@@ -9,12 +9,12 @@ import {
   FileCheck, 
   Wallet, 
   LogOut, 
-  ShieldCheck,
   Banknote,
   
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle"; // Import the Toggle
+import MartLyIcon from "@/components/ui/MartlyIcon";
 
 export default function AdminLayoutClient({ children, user }) {
   const pathname = usePathname();
@@ -35,9 +35,7 @@ export default function AdminLayoutClient({ children, user }) {
         
         {/* Brand */}
         <div className="p-6 border-b border-border flex items-center gap-2">
-           <div className="bg-primary p-1.5 rounded-lg shadow-sm">
-             <ShieldCheck className="h-6 w-6 text-primary-foreground" />
-           </div>
+           <MartLyIcon className="w-8 h-8" />
            <div>
              <h1 className="font-bold text-lg tracking-tight text-foreground">MartLy</h1>
              <p className="text-xs text-muted-foreground">Admin Console</p>

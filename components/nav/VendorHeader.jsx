@@ -13,7 +13,6 @@ import {
   CreditCard,
   PanelLeft,
   PanelRight,
-  BadgePercent,
   LayoutDashboard,
   Package,
   ShoppingCart,
@@ -36,7 +35,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
-
+import MartLyIcon from "@/components/ui/MartlyIcon";
 
 const VendorHeader = ({ isCollapsed, onToggleSidebar, session }) => {
   
@@ -90,7 +89,7 @@ const VendorHeader = ({ isCollapsed, onToggleSidebar, session }) => {
           <SheetContent side="left" className="w-64 border-r border-border p-0">
             {/* Header with brand */}
             <div className="flex items-center gap-2 px-4 py-6">
-              <BadgePercent className="h-6 w-6 text-primary" />
+              <MartLyIcon className="h-8 w-8" />
               <span className="text-lg font-bold text-foreground">MartLy</span>
             </div>
             
@@ -121,7 +120,7 @@ const VendorHeader = ({ isCollapsed, onToggleSidebar, session }) => {
 
         {/* Brand name (ShopSync) */}
         <div className="flex items-center gap-2">
-          <BadgePercent className="h-6 w-6 text-primary" />
+          <MartLyIcon className="h-8 w-8" />
           {/* UPDATED: text-gray-800 -> text-foreground */}
           <span className="text-lg font-bold text-foreground">MartLy</span>
         </div>

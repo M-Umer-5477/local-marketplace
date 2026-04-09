@@ -1,6 +1,7 @@
 
 import Link from "next/link";
-import { Store, Facebook, Twitter, Instagram, Mail, Phone } from "lucide-react";
+import { Facebook, Twitter, Instagram, Mail, Phone } from "lucide-react";
+import MartLyIcon from "@/components/ui/MartlyIcon";
 
 export default function Footer() {
   return (
@@ -12,9 +13,7 @@ export default function Footer() {
          
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="bg-primary p-1 rounded-md">
-                <Store className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <MartLyIcon className="w-8 h-8" />
               <span className="font-bold text-lg tracking-tight">MartLy</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
