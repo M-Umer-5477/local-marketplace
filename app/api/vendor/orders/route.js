@@ -52,7 +52,8 @@ export async function PUT(req) {
     // Status definitions
     const isCompleted = status === "Delivered" || status === "Picked_Up";
     const isCancelled = status === "Cancelled";
-    const isReturned = status === "Returned"; // 🚨 NEW: Tracking the refused COD orders
+    const isReturned = status === "Returned"; // 🚨 Tracking refused COD orders
+    const isNotPickedUp = status === "Not_Picked_Up"; // 🚨 NEW: Tracking refused pickup orders
     const isConfirmed = status === "Confirmed"; // NEW: For setting ETA
 
     // --- 📋 SET TIMESTAMPS ---
@@ -89,8 +90,8 @@ export async function PUT(req) {
     }
 
     // --- 🚨 2. ONLINE PAYMENT REVERSAL LOGIC ---
-    // If order is paid online and vendor cancels it, we MUST take the earning back!
-    if (isCancelled && order.isPaid) {
+    // If order is paid online and vendor cancels it or it is refused/not picked up, we MUST take the earning back!
+    if ((isCancelled || isReturned || isNotPickedUp) && order.isPaid) {
         // Calculate the exact earning they received in stripe/verify route: (Total - Commission)
         const earningToReverse = order.total - (order.commissionAmount || 0);
 
@@ -111,8 +112,8 @@ export async function PUT(req) {
     }
 
     // --- 📦 3. INVENTORY RESTORATION LOGIC ---
-    // 🚨 UPDATED: If order is cancelled OR returned (refused at door), put stock back!
-    if (isCancelled || isReturned) {
+    // 🚨 UPDATED: If order is cancelled, returned, or not picked up, put stock back!
+    if (isCancelled || isReturned || isNotPickedUp) {
         for (const item of order.items) {
             // Find product and increment stock by the cancelled/returned quantity
             await Product.findByIdAndUpdate(item.productId, {

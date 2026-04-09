@@ -21,9 +21,10 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'all'; // all, pending, approved, rejected
 
+    const refundStatuses = ["Cancelled", "Returned", "Not_Picked_Up"];
     // Build filter
     let filter = {
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true
     };
 
@@ -41,13 +42,13 @@ export async function GET(req) {
 
     // Calculate statistics
     const pending = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true }
     });
 
     const approved = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: true
     });
@@ -57,7 +58,7 @@ export async function GET(req) {
     // Calculate pending refunds older than 3 days
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const overdueRefunds = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true },
       createdAt: { $lt: threeDaysAgo }
@@ -129,69 +130,3 @@ export async function PUT(req) {
     return NextResponse.json({ error: "Failed to process refund" }, { status: 500 });
   }
 }
-// import { NextResponse } from "next/server";
-// import db from "@/lib/db";
-// import Order from "@/models/order";
-// import { getServerSession } from "next-auth";
-// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
-// // 1. GET: Fetch all pending refunds
-// export async function GET(req) {
-//   try {
-//     await db.connect();
-//     const session = await getServerSession(authOptions);
-
-//     // Ensure only admins can access this
-//     if (!session || session.user.role !== "admin") {
-//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//     }
-
-//     // Find orders that are: Cancelled, Paid Online, and NOT yet refunded
-//     const pendingRefunds = await Order.find({
-//       orderStatus: "Cancelled",
-//       isPaid: true,
-//       isRefunded: { $ne: true } // We will add this flag when a refund is processed
-//     })
-//     .populate("shopId", "shopName")
-//     .populate("userId", "name email phone")
-//     .sort({ updatedAt: -1 });
-
-//     return NextResponse.json({ success: true, refunds: pendingRefunds }, { status: 200 });
-
-//   } catch (error) {
-//     console.error("Fetch Refunds Error:", error);
-//     return NextResponse.json({ error: "Server Error" }, { status: 500 });
-//   }
-// }
-
-// // 2. PUT: Process the refund
-// export async function PUT(req) {
-//   try {
-//     await db.connect();
-//     const session = await getServerSession(authOptions);
-
-//     if (!session || session.user.role !== "admin") {
-//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//     }
-
-//     const { orderId } = await req.json();
-
-//     const order = await Order.findById(orderId);
-//     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-
-//     // --- VIVA NOTE: STRIPE INTEGRATION ---
-//     // In a production app, you would call the Stripe API here:
-//     // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-//     // await stripe.refunds.create({ payment_intent: order.stripeSessionId });
-    
-//     // For Phase 1, we just update the database to mark it as resolved.
-//     order.isRefunded = true;
-//     await order.save();
-
-//     return NextResponse.json({ success: true, message: "Refund processed successfully" }, { status: 200 });
-
-//   } catch (error) {
-//     console.error("Process Refund Error:", error);
-//     return NextResponse.json({ error: "Failed to process refund" }, { status: 500 });
-//   }
-// }

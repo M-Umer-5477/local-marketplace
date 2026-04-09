@@ -38,6 +38,7 @@ export default function SellerOrdersPage() {
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToReturn, setOrderToReturn] = useState(null); // 🚨 NEW: For refused COD orders
   const [orderToConfirm, setOrderToConfirm] = useState(null); // NEW: For ETA input
+  const [orderToNotPickUp, setOrderToNotPickUp] = useState(null); // 🚨 NEW: For No-Show Pickups
   const [estimatedTime, setEstimatedTime] = useState("15"); // NEW: ETA input value
 
   // 1. Fetch Orders
@@ -112,6 +113,7 @@ export default function SellerOrdersPage() {
       setUpdating(null);
       setOrderToCancel(null); 
       setOrderToReturn(null);
+      setOrderToNotPickUp(null);
       setOrderToConfirm(null);
       setEstimatedTime("15");
     }
@@ -152,9 +154,9 @@ export default function SellerOrdersPage() {
     window.open(url, "_blank");
   };
 
-  // 🚨 UPDATED FILTER: "Returned" moves to history automatically
-  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus)&& o.source !== "offline");
-  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned"].includes(o.orderStatus) && o.source !== "offline");
+  // 🚨 UPDATED FILTER: "Returned" and "Not_Picked_Up" moves to history automatically
+  const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(o.orderStatus)&& o.source !== "offline");
+  const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(o.orderStatus) && o.source !== "offline");
 
   if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
 
@@ -199,6 +201,7 @@ export default function SellerOrdersPage() {
                    onShare={shareWithRider}
                    onCancelRequest={() => setOrderToCancel(order)} 
                    onReturnRequest={() => setOrderToReturn(order)} // 🚨 Pass to new return modal
+                   onNotPickUpRequest={() => setOrderToNotPickUp(order)} // 🚨 Pass to new no-show modal
                    onConfirmRequest={() => setOrderToConfirm(order)} // NEW: Open ETA modal
                  />
                ))}
@@ -218,7 +221,7 @@ export default function SellerOrdersPage() {
                         <div>
                             <div className="flex items-center gap-2">
                                 <span className="font-bold">#{order._id.slice(-6).toUpperCase()}</span>
-                                <Badge variant={['Cancelled', 'Returned'].includes(order.orderStatus) ? 'destructive' : 'outline'}>
+                                <Badge variant={['Cancelled', 'Returned', 'Not_Picked_Up'].includes(order.orderStatus) ? 'destructive' : 'outline'}>
                                     {order.orderStatus.replace(/_/g, " ")}
                                 </Badge>
                                 {order.isPaid ? (
@@ -338,6 +341,40 @@ export default function SellerOrdersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* 🚨 MODAL 3: NOT PICKED UP ORDER (Customer no-show) */}
+      <Dialog open={!!orderToNotPickUp} onOpenChange={(open) => !open && setOrderToNotPickUp(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2 text-slate-700">
+                <div className="p-2 rounded-full bg-slate-100">
+                    <Ban className="h-6 w-6" />
+                </div>
+                <DialogTitle>Customer No-Show (Not Picked Up)</DialogTitle>
+            </div>
+            
+            <DialogDescription className="text-sm">
+              Are you sure you want to mark this pickup order as <strong>Not Picked Up</strong>? 
+              <br/><br/>
+              <em>Note: The inventory stock for these items will automatically be restored in your shop. {orderToNotPickUp?.isPaid ? "Since this was paid online, the refund will also be forwarded." : ""}</em>
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setOrderToNotPickUp(null)} disabled={updating}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-slate-700 hover:bg-slate-800 text-white"
+              onClick={() => handleStatusUpdate(orderToNotPickUp._id, "Not_Picked_Up")} 
+              disabled={updating}
+            >
+              {updating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Confirm No-Show
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* NEW: ETA MODAL */}
       <Dialog open={!!orderToConfirm} onOpenChange={(open) => !open && setOrderToConfirm(null)}>
         <DialogContent className="w-full max-w-[95vw] sm:max-w-[425px] mx-auto">
@@ -404,7 +441,7 @@ export default function SellerOrdersPage() {
 // -----------------------------------
 // ORDER CARD COMPONENT
 // -----------------------------------
-function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onReturnRequest, onConfirmRequest }) {
+function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onReturnRequest, onNotPickUpRequest, onConfirmRequest }) {
   const [showMap, setShowMap] = useState(false);
   const [expanded, setExpanded] = useState(false);
   
@@ -574,7 +611,20 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
          )}
 
          {order.orderStatus === "Ready_for_Pickup" && (
-             <Button size="sm" className="w-full h-8 text-xs" onClick={() => onUpdate(order._id, "Picked_Up")} disabled={updating}>Confirm Picked Up</Button>
+             <div className="grid grid-cols-2 gap-2 w-full">
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 text-xs text-slate-600 border-slate-200 hover:bg-slate-50" 
+                    disabled={updating}
+                    onClick={onNotPickUpRequest} 
+                >
+                    No Show
+                </Button>
+                <Button size="sm" className="h-8 text-xs" onClick={() => onUpdate(order._id, "Picked_Up")} disabled={updating}>
+                    Picked Up
+                </Button>
+             </div>
          )}
 
       </CardFooter>

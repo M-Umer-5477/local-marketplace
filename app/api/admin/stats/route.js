@@ -43,7 +43,7 @@ export async function GET(request) {
     const financials = await Order.aggregate([
       { 
         $match: { 
-          orderStatus: { $nin: ["Cancelled", "Pending"] },
+          orderStatus: { $nin: ["Cancelled", "Returned", "Not_Picked_Up", "Pending"] },
           ...dateFilter
         } 
       },
@@ -59,16 +59,18 @@ export async function GET(request) {
 
     const financialStats = financials[0] || { totalGMV: 0, platformRevenue: 0, totalOrders: 0 };
 
+    const refundStatuses = ["Cancelled", "Returned", "Not_Picked_Up"];
+    
     // 3. Refund Statistics - Count pending vs approved
     const pendingRefundsCount = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true },
       ...dateFilter
     });
 
     const approvedRefundsCount = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: true,
       ...dateFilter
@@ -77,7 +79,7 @@ export async function GET(request) {
     const totalRefundsValue = await Order.aggregate([
       {
         $match: {
-          orderStatus: "Cancelled",
+          orderStatus: { $in: refundStatuses },
           isPaid: true,
           ...dateFilter
         }
@@ -93,7 +95,7 @@ export async function GET(request) {
     // Calculate overdue refunds (pending refunds older than 3 days)
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const overdueRefundsCount = await Order.countDocuments({
-      orderStatus: "Cancelled",
+      orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true },
       createdAt: { $lt: threeDaysAgo }
@@ -103,7 +105,7 @@ export async function GET(request) {
     const topSellers = await Order.aggregate([
       { 
         $match: { 
-          orderStatus: { $nin: ["Cancelled", "Pending"] },
+          orderStatus: { $nin: ["Cancelled", "Returned", "Not_Picked_Up", "Pending"] },
           ...dateFilter
         }
       },

@@ -31,7 +31,8 @@ const OrderSchema = new mongoose.Schema({
       "Out_for_Delivery", 
       "Ready_for_Pickup", 
       "Delivered",        
-      "Picked_Up",        
+      "Picked_Up",
+      "Not_Picked_Up",        
       "Cancelled",
       "Returned"
     ], 

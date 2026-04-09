@@ -1,23 +1,45 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function OrderInvoice({ order, shopDetails, onPrintComplete }) {
+  const hasPrinted = useRef(false);
 
   useEffect(() => {
-    if (order && shopDetails) {
+    if (order && shopDetails && !hasPrinted.current) {
+      hasPrinted.current = true;
       // Generate invoice HTML
       const invoiceHTML = generateInvoiceHTML(order, shopDetails);
       
-      // Create a blob and open in new tab
-      const blob = new Blob([invoiceHTML], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      
-      // Cleanup and notify completion
-      if (onPrintComplete) {
-        setTimeout(() => onPrintComplete(), 500);
-      }
+      // Use hidden iframe instead of opening a new tab
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "absolute";
+      iframe.style.width = "0px";
+      iframe.style.height = "0px";
+      iframe.style.left = "-9999px";
+      document.body.appendChild(iframe);
+
+      iframe.contentWindow.document.open();
+      iframe.contentWindow.document.write(invoiceHTML);
+      iframe.contentWindow.document.close();
+
+      // Wait for rendering before printing
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (e) {
+          console.error("Print dialog blocked or failed", e);
+        }
+        
+        // Cleanup after print dialog opens
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+          if (onPrintComplete) onPrintComplete();
+        }, 1000);
+      }, 500);
     }
   }, [order, shopDetails, onPrintComplete]);
 

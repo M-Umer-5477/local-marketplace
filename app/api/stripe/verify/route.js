@@ -20,7 +20,7 @@ export async function POST(req) {
     }
 
     // 2. Extract Data & FIX ADDRESS MAPPING
-    const { userId, shopId, addressJSON, deliveryFee, deliveryMode } = session.metadata;
+    const { userId, shopId, addressJSON, deliveryFee, deliveryMode, chunksCount } = session.metadata;
     
     // ✅ Handle undefined or "undefined" string from Stripe metadata
     let finalAddress = undefined;
@@ -48,6 +48,13 @@ export async function POST(req) {
     if (existingOrder) {
         return NextResponse.json({ success: true, orderId: existingOrder._id.toString() });
     }
+
+    // ✅ RECONSTRUCT ITEMS ARRAY FROM METADATA CHUNKS
+    let itemsJSON = "";
+    for(let i = 0; i < Number(chunksCount || 0); i++) {
+         itemsJSON += session.metadata[`chunk_${i}`];
+    }
+    const originalItems = itemsJSON ? JSON.parse(itemsJSON) : [];
 
     // 3. Calculate Commission
    // ... inside app/api/stripe/verify/route.js
@@ -108,15 +115,25 @@ export async function POST(req) {
         commissionAmount: commission,
         // orderPin: securePin, // Uncomment when ready for PIN
 
-        // Map Stripe Items to Order Items Schema
-        items: lineItems.data.map(i => ({
-            name: i.description,
-            quantity: i.quantity,
-            price: i.amount_total / 100 / i.quantity,
-            subtotal: i.amount_total / 100,
-            productId: "000000000000000000000000" // Dummy ID
+        // Map Original Items to Order Items Schema to preserve real productIds!
+        items: originalItems.map(i => ({
+            name: i.n,
+            quantity: i.q,
+            price: i.p,
+            subtotal: i.p * i.q,
+            productId: i.i,
+            image: i.img
         }))
     });
+
+    // 8. Decrement Stock NOW that the payment is successful!
+    for (const item of originalItems) {
+      if (item.i) {
+         await Product.findByIdAndUpdate(item.i, {
+            $inc: { stock: -item.q }
+         });
+      }
+    }
 
     return NextResponse.json({ success: true, orderId: newOrder._id.toString() });
 

@@ -82,7 +82,9 @@ export default function CustomerDashboard() {
   const completedOrders = orders.filter(o =>
     ["Delivered", "Picked_Up"].includes(o.orderStatus)
   ).length;
-  const cancelledOrders = orders.filter(o => o.orderStatus === "Cancelled").length;
+  const cancelledOrders = orders.filter(o => 
+    ["Cancelled", "Returned", "Not_Picked_Up"].includes(o.orderStatus)
+  ).length;
 
   const recentOrders = orders.slice(0, 3);
 
@@ -95,7 +97,9 @@ export default function CustomerDashboard() {
       case "Out_for_Delivery": return "bg-primary hover:bg-primary/90";
       case "Delivered": return "bg-green-600 hover:bg-green-700";
       case "Picked_Up": return "bg-green-600 hover:bg-green-700";
-      case "Cancelled": return "bg-red-500 hover:bg-red-600";
+      case "Cancelled": 
+      case "Returned":
+      case "Not_Picked_Up": return "bg-red-500 hover:bg-red-600";
       default: return "bg-gray-500";
     }
   };

@@ -112,7 +112,8 @@ export async function GET(req) {
       Delivered: 0,
       Picked_Up: 0,
       Cancelled: 0,
-      Returned: 0
+      Returned: 0,
+      Not_Picked_Up: 0
     };
 
     orderStatusBreakdown.forEach(status => {
@@ -125,7 +126,7 @@ export async function GET(req) {
     const totalOrders = Object.values(statusCounts).reduce((a, b) => a + b, 0);
     const deliveredOrders = statusCounts.Delivered + statusCounts.Picked_Up;
     const cancelledOrders = statusCounts.Cancelled;
-    const returnedOrders = statusCounts.Returned;
+    const returnedOrders = statusCounts.Returned + statusCounts.Not_Picked_Up;
 
     const fulfillmentRate = totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : 0;
     const cancellationRate = totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : 0;

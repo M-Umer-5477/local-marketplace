@@ -56,21 +56,31 @@ export async function POST(req) {
       });
     }
 
-    // 2. Create Stripe Session
+    // 2. Format Items JSON to bypass Stripe's 500 character metadata limit
+    const itemsData = items.map(i => ({ i: i.productId, q: i.quantity, p: i.price, n: i.name, img: i.image }));
+    const itemsJSON = JSON.stringify(itemsData);
+    const chunks = itemsJSON.match(/.{1,490}/g) || []; // Array of strings up to 490 length
+
+    const metadata = {
+        userId: session.user.id,
+        shopId: shopId,
+        addressJSON: deliveryAddress ? JSON.stringify(deliveryAddress) : "",
+        deliveryMode: deliveryMode || "pickup",
+        deliveryFee: deliveryFee || 0,
+        chunksCount: chunks.length
+    };
+    chunks.forEach((chunk, index) => {
+        metadata[`chunk_${index}`] = chunk;
+    });
+
+    // 3. Create Stripe Session
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
       success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/checkout`,
-      metadata: {
-        userId: session.user.id,
-        shopId: shopId,
-        // Only stringify the address if it exists, otherwise send empty string
-        addressJSON: deliveryAddress ? JSON.stringify(deliveryAddress) : "",
-        deliveryMode: deliveryMode || "pickup",
-        deliveryFee: deliveryFee || 0
-      },
+      metadata: metadata,
     });
 
     return NextResponse.json({ url: stripeSession.url });
