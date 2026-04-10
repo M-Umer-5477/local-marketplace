@@ -59,18 +59,22 @@ export async function POST(req) {
     // If it's a withdrawal, we deduct NOW. 
     // If Admin rejects later, we will add it back.
     if (type !== "Deposit") {
-        seller.walletBalance -= parseFloat(amount);
+        const updateDoc = {
+            $inc: { walletBalance: -parseFloat(amount) }
+        };
         
         // ✅ Save details for next time (Smart UX)
         if (bankDetails) {
-            seller.savedPayoutDetails = {
-                method,
-                bankName: bankDetails.bankName,
-                accountNumber: bankDetails.accountNumber,
-                accountTitle: bankDetails.accountTitle
+            updateDoc.$set = {
+                savedPayoutDetails: {
+                    method,
+                    bankName: bankDetails.bankName,
+                    accountNumber: bankDetails.accountNumber,
+                    accountTitle: bankDetails.accountTitle
+                }
             };
         }
-        await seller.save();
+        await Seller.findByIdAndUpdate(seller._id, updateDoc);
     }
 
     return NextResponse.json({ success: true, transaction: newTxn });

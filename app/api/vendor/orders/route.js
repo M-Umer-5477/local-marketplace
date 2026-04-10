@@ -111,6 +111,25 @@ export async function PUT(req) {
         });
     }
 
+    // --- 🔄 2.5 COD COMMISSION REFUND LOGIC ---
+    // If COD order was marked delivered (commission deducted) but now returned, refund it!
+    if ((isCancelled || isReturned || isNotPickedUp) && !order.isPaid && order.commissionDeducted) {
+        await Seller.findByIdAndUpdate(seller._id, {
+            $inc: { walletBalance: order.commissionAmount }
+        });
+
+        await Transaction.create({
+            seller: seller._id,
+            amount: order.commissionAmount,
+            type: "Credit", 
+            category: "Dues_Clearing",
+            description: `Commission Refund for Cancelled COD Order #${order._id.toString().slice(-6)}`,
+            status: "Completed"
+        });
+
+        order.commissionDeducted = false;
+    }
+
     // --- 📦 3. INVENTORY RESTORATION LOGIC ---
     // 🚨 UPDATED: If order is cancelled, returned, or not picked up, put stock back!
     if (isCancelled || isReturned || isNotPickedUp) {

@@ -19,12 +19,13 @@ export async function POST(req) {
     const seller = await Seller.findById(sellerId);
     if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
 
-    // 2. Get the exact amount they owe (e.g., -195 becomes 195)
-    const amountToClear = Math.abs(seller.walletBalance);
-
-    if (amountToClear === 0) {
-        return NextResponse.json({ error: "Seller has no debt" }, { status: 400 });
+    // 2. Ensure they actually have debt
+    if (seller.walletBalance >= 0) {
+        return NextResponse.json({ error: "Seller is not in debt" }, { status: 400 });
     }
+
+    // Get the exact amount they owe (e.g., -195 becomes 195)
+    const amountToClear = Math.abs(seller.walletBalance);
 
     // 3. Update Wallet (Reset to 0)
     // We add the positive amount: -195 + 195 = 0
