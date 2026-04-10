@@ -56,6 +56,17 @@ export async function PUT(req) {
     // Prepare update object
     let updateData = { ...body };
 
+    // 🛑 SECURITY PRECAUTION: Prevent Mass Assignment by scrubbing sensitive internal fields
+    delete updateData.walletBalance;
+    delete updateData.commissionRate;
+    delete updateData.role;
+    delete updateData.isVerified;
+    delete updateData.isActive;
+    delete updateData.cnic;
+    delete updateData.email;
+    delete updateData.transactions;
+    delete updateData.verificationStatus;
+
     // Handle GeoJSON logic
     // Frontend sends { latitude, longitude }, Backend saves { type: 'Point', coordinates: [lng, lat] }
     if (body.latitude && body.longitude) {

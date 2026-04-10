@@ -3,6 +3,7 @@ import db from '@/lib/db';
 import Product from '@/models/product';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import Seller from '@/models/seller';
 
 export async function GET(request) {
   try {
@@ -10,10 +11,14 @@ export async function GET(request) {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "seller") {
           return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    }
+
+    const seller = await Seller.findOne({ email: session.user.email });
+    if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
+    
+    const shopId = seller._id.toString();
 
     const { searchParams } = new URL(request.url);
-    const shopId = searchParams.get("shopId");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
@@ -56,9 +61,19 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     await db.connect();
+    
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "seller") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const seller = await Seller.findOne({ email: session.user.email });
+    if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
+    
+    const shopId = seller._id.toString();
 
     const body = await request.json();
-    const { shopId, name, description, price, category, stock, unit, barcode, imageUrl, isActive } = body;
+    const { name, description, price, category, stock, unit, barcode, imageUrl, isActive } = body;
 
     if (!shopId) {
       return NextResponse.json(

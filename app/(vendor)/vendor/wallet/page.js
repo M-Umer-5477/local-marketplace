@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, ArrowUpRight, ArrowDownLeft, History, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,27 +9,62 @@ import { toast } from "sonner";
 import PayDuesModal from "@/components/seller/PayDuesModal";
 import WithdrawModal from "@/components/seller/WithdrawModal";
 
-export default function WalletPage() {
+function WalletContent() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+  
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const sessionId = searchParams.get("session_id");
+
+  const fetchWallet = async () => {
+    try {
+      const res = await fetch("/api/vendor/wallet");
+      const json = await res.json();
+      if (json.success) setData(json.wallet);
+    } catch (err) {
+      toast.error("Failed to load wallet");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch Wallet Data
   useEffect(() => {
-    const fetchWallet = async () => {
-      try {
-        const res = await fetch("/api/vendor/wallet");
-        const json = await res.json();
-        if (json.success) setData(json.wallet);
-      } catch (err) {
-        toast.error("Failed to load wallet");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchWallet();
   }, []);
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary"/></div>;
+  // Verify Stripe Session if redirected back
+  useEffect(() => {
+    if (sessionId) {
+      setVerifying(true);
+      const verifyDues = async () => {
+        try {
+          const res = await fetch("/api/stripe/dues/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            toast.success("Dues cleared successfully!");
+            router.replace("/vendor/wallet");
+            fetchWallet(); // Reload balance
+          } else {
+            toast.error(data.error || "Failed to verify dues payment");
+          }
+        } catch (err) {
+          toast.error("Network error during verification");
+        } finally {
+          setVerifying(false);
+        }
+      };
+      verifyDues();
+    }
+  }, [sessionId, router]);
+
+  if (loading || verifying) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary"/></div>;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -137,5 +173,13 @@ export default function WalletPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary"/></div>}>
+      <WalletContent />
+    </Suspense>
   );
 }

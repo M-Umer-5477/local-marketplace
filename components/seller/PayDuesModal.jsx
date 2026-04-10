@@ -18,6 +18,25 @@ export default function PayDuesModal({ balance, onPaymentSuccess }) {
   
   const amountDue = Math.abs(balance);
 
+  const handleStripeCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/dues/checkout", {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || "Failed to initiate checkout");
+      }
+    } catch (err) {
+      toast.error("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -62,11 +81,23 @@ export default function PayDuesModal({ balance, onPaymentSuccess }) {
         </Button>
       </DialogTrigger>
       
-      <DialogContent>
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle>Clear Your Dues</DialogTitle>
         </DialogHeader>
         
+        <div className="space-y-4 pt-2">
+           <Button onClick={handleStripeCheckout} disabled={loading} type="button" className="w-full bg-indigo-600 hover:bg-indigo-700">
+               {loading ? <Loader2 className="animate-spin mr-2" /> : "Pay Instantly via Card (Stripe)"}
+           </Button>
+        </div>
+        
+        <div className="relative flex items-center py-2">
+            <div className="grow border-t border-gray-200"></div>
+            <span className="shrink-0 px-4 text-gray-500 text-sm">Or manual bank transfer</span>
+            <div className="grow border-t border-gray-200"></div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-yellow-50 p-3 rounded text-sm text-yellow-800 border border-yellow-200">
              Please send <b>Rs. {amountDue}</b> to <b>0300-1234567 (EasyPaisa)</b> and upload the proof below.

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import Product from '@/models/product';
+import Seller from '@/models/seller';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -13,16 +14,14 @@ export async function PUT(request, { params }) {
         if (!session || session.user.role !== "seller") {
               return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
             }
-    const body = await request.json();
-    const { shopId, ...updateData } = body;
+            
+    const seller = await Seller.findOne({ email: session.user.email });
+    if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
+    const shopId = seller._id.toString();
 
-    // 🧠 Validate shopId
-    if (!shopId) {
-      return NextResponse.json(
-        { error: 'Missing shopId. Unauthorized access.' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    // Safely remove shopId if it was sent by client to prevent overriding
+    const { shopId: bodyShopId, ...updateData } = body;
 
     // 🧠 Find the product
     const product = await Product.findById(id);
@@ -53,16 +52,14 @@ export async function DELETE(request, { params }) {
   try {
     await db.connect();
 
-    const { searchParams } = new URL(request.url);
-    const shopId = searchParams.get('shopId');
-
-    // 🧠 Validate shopId
-    if (!shopId) {
-      return NextResponse.json(
-        { error: 'Missing shopId. Unauthorized access.' },
-        { status: 400 }
-      );
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "seller") {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const seller = await Seller.findOne({ email: session.user.email });
+    if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
+    const shopId = seller._id.toString();
 
     const product = await Product.findById(id);
     if (!product) {
