@@ -20,8 +20,6 @@ import {
 export default function AdminRefundsPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
-  const [filteredRefunds, setFilteredRefunds] = useState([]);
   
   // Modal & Processing State
   const [selectedOrder, setSelectedOrder] = useState(null); 
@@ -30,11 +28,10 @@ export default function AdminRefundsPage() {
   const fetchRefunds = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/refunds?status=${filter}`);
+      const res = await fetch(`/api/admin/refunds`);
       const result = await res.json();
       if (result.success) {
         setData(result);
-        setFilteredRefunds(result.refunds);
       }
     } catch (error) {
       toast.error("Failed to load refunds");
@@ -45,7 +42,7 @@ export default function AdminRefundsPage() {
 
   useEffect(() => {
     fetchRefunds();
-  }, [filter]);
+  }, []);
 
   const executeRefund = async () => {
     if (!selectedOrder) return;
@@ -62,15 +59,7 @@ export default function AdminRefundsPage() {
 
       if (res.ok) {
         toast.success("Refund processed successfully!");
-        setFilteredRefunds((prev) => prev.filter((r) => r._id !== selectedOrder._id));
-        setData((prev) => ({
-          ...prev,
-          stats: {
-            ...prev.stats,
-            pending: prev.stats.pending - 1,
-            approved: prev.stats.approved + 1
-          }
-        }));
+        fetchRefunds(); // Refetch perfectly moves it to approved table natively
       } else {
         toast.error(result.error || "Failed to process refund");
       }
@@ -83,6 +72,8 @@ export default function AdminRefundsPage() {
   };
 
   const stats = data?.stats || {};
+  const pendingRefunds = data?.pendingRefunds || [];
+  const approvedRefunds = data?.approvedRefunds || [];
 
   return (
     <div className="space-y-8">
@@ -125,7 +116,7 @@ export default function AdminRefundsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{stats.approved || 0}</div>
-            <p className="text-xs text-muted-foreground">Processed this period</p>
+            <p className="text-xs text-muted-foreground">Processed entirely</p>
           </CardContent>
         </Card>
 
@@ -135,95 +126,130 @@ export default function AdminRefundsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">Rs. {stats.totalRefundValue?.toLocaleString() || 0}</div>
-            <p className="text-xs text-muted-foreground">All refunds this period</p>
+            <p className="text-xs text-muted-foreground">All refunds tracked</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs for filtering */}
+      {/* Tabs */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            Refund Requests
+            Refund Queue
           </CardTitle>
           <CardDescription>
-            Process refunds for cancelled orders. These customers paid via Stripe and are waiting for their refund.
+            Customers waiting for their Stripe refund due to cancelled/unpicked orders.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={filter} onValueChange={setFilter} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">All ({stats.total || 0})</TabsTrigger>
-              <TabsTrigger value="pending">Pending ({stats.pending || 0})</TabsTrigger>
-              <TabsTrigger value="approved">Approved ({stats.approved || 0})</TabsTrigger>
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="pending">Pending Action ({stats.pending || 0})</TabsTrigger>
+              <TabsTrigger value="approved">Processed Refunds ({stats.approved || 0})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={filter} className="mt-6">
-              {loading ? (
+            {loading ? (
                 <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-              ) : filteredRefunds.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl bg-muted/20">
-                  <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500 opacity-50" />
-                  <p className="font-medium text-lg">All caught up!</p>
-                  <p className="text-sm">No {filter === 'all' ? 'refunds' : filter + ' refunds'} right now.</p>
-                </div>
-              ) : (
-                <div className="border rounded-lg overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-muted/50">
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Shop</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRefunds.map((order) => (
-                        <TableRow key={order._id} className="hover:bg-muted/20">
-                          <TableCell className="font-medium">
-                            <Badge variant="outline">#{order._id.slice(-6).toUpperCase()}</Badge>
-                          </TableCell>
-                          <TableCell>{order.shopId?.shopName || "N/A"}</TableCell>
-                          <TableCell>
-                            <p className="text-sm font-medium">{order.userId?.name}</p>
-                            <p className="text-xs text-muted-foreground">{order.userId?.phone}</p>
-                          </TableCell>
-                          <TableCell className="font-bold text-primary">
-                            Rs. {order.total?.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            {order.isRefunded ? (
-                              <Badge className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-0">
-                                <CheckCircle className="h-3 w-3 mr-1" /> Approved
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="border-orange-200 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300">
-                                <Clock className="h-3 w-3 mr-1" /> Pending
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {!order.isRefunded && (
-                              <Button 
-                                size="sm" 
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                                onClick={() => setSelectedOrder(order)}
-                              >
-                                <CreditCard className="h-4 w-4 mr-1" /> Process
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </TabsContent>
+            ) : (
+                <>
+                    {/* PENDING TAB */}
+                    <TabsContent value="pending" className="mt-6">
+                        {pendingRefunds.length === 0 ? (
+                            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl bg-muted/20">
+                            <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500 opacity-50" />
+                            <p className="font-medium text-lg">All caught up!</p>
+                            <p className="text-sm">No pending refunds.</p>
+                            </div>
+                        ) : (
+                            <div className="border rounded-lg overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                <TableRow>
+                                    <TableHead>Order ID</TableHead>
+                                    <TableHead>Shop</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {pendingRefunds.map((order) => (
+                                    <TableRow key={order._id} className="hover:bg-muted/20">
+                                    <TableCell className="font-medium">
+                                        <Badge variant="outline">#{order._id.slice(-6).toUpperCase()}</Badge>
+                                    </TableCell>
+                                    <TableCell>{order.shopId?.shopName || "N/A"}</TableCell>
+                                    <TableCell>
+                                        <p className="text-sm font-medium">{order.userId?.name}</p>
+                                        <p className="text-xs text-muted-foreground">{order.userId?.phone}</p>
+                                    </TableCell>
+                                    <TableCell className="font-bold text-primary">
+                                        Rs. {order.total?.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button 
+                                            size="sm" 
+                                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                            onClick={() => setSelectedOrder(order)}
+                                        >
+                                            <CreditCard className="h-4 w-4 mr-1" /> Process
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    {/* APPROVED TAB */}
+                    <TabsContent value="approved" className="mt-6">
+                        {approvedRefunds.length === 0 ? (
+                            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl bg-muted/20">
+                            <p className="font-medium text-lg">No processed refunds found.</p>
+                            </div>
+                        ) : (
+                            <div className="border rounded-lg overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                <TableRow>
+                                    <TableHead>Order ID</TableHead>
+                                    <TableHead>Shop</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {approvedRefunds.map((order) => (
+                                    <TableRow key={order._id} className="hover:bg-muted/20">
+                                    <TableCell className="font-medium">
+                                        <Badge variant="outline">#{order._id.slice(-6).toUpperCase()}</Badge>
+                                    </TableCell>
+                                    <TableCell>{order.shopId?.shopName || "N/A"}</TableCell>
+                                    <TableCell>
+                                        <p className="text-sm font-medium">{order.userId?.name}</p>
+                                        <p className="text-xs text-muted-foreground">{order.userId?.phone}</p>
+                                    </TableCell>
+                                    <TableCell className="font-bold text-primary">
+                                        Rs. {order.total?.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-0">
+                                            <CheckCircle className="h-3 w-3 mr-1" /> Approved & Refunded
+                                        </Badge>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            </div>
+                        )}
+                    </TabsContent>
+                </>
+            )}
           </Tabs>
         </CardContent>
       </Card>
@@ -239,7 +265,7 @@ export default function AdminRefundsPage() {
                 <DialogTitle>Process Refund</DialogTitle>
             </div>
             <DialogDescription>
-              Please confirm that you have processed the refund in your Stripe dashboard before approving here.
+              Are you sure you want to process this refund? This will reverse the Stripe charge and notify the customer.
             </DialogDescription>
           </DialogHeader>
           
@@ -272,7 +298,7 @@ export default function AdminRefundsPage() {
             </Button>
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={executeRefund} disabled={!!processingId}>
               {processingId ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-              {processingId ? "Processing..." : "Confirm & Mark as Refunded"}
+              {processingId ? "Processing Stripe API..." : "Confirm & Refund via Stripe"}
             </Button>
           </DialogFooter>
         </DialogContent>

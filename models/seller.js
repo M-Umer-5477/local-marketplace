@@ -66,6 +66,7 @@ const sellerSchema = new mongoose.Schema({
   // --- WALLET & COMMISSION LOGIC (UPDATED) ---
   walletBalance: { type: Number, default: 0 }, // Negative = Seller owes Admin. Positive = Admin owes Seller.
   commissionRate: { type: Number, default: 10 }, // Percentage (e.g. 10%)
+  hasReceivedDebtWarning: { type: Boolean, default: false }, // Track if they were warned about Rs. 5000 debt
   
   // Internal Ledger (History of + and -)
   transactions: [

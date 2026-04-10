@@ -53,101 +53,85 @@ export async function GET(req) {
       return { $gte: start, $lte: end };
     };
 
-    // --- 1. KPIs Calculation ---
-    const todayOrders = await Order.find({
-      shopId,
-      createdAt: getTodayRange(),
-      orderStatus: { $ne: "Cancelled" }
-    });
+    // --- 1. KPIs Calculation (Daily Context Split) ---
+    const todayOrders = await Order.find({ shopId, createdAt: getTodayRange(), orderStatus: { $ne: "Cancelled" }});
+    const yesterdayOrders = await Order.find({ shopId, createdAt: getYesterdayRange(), orderStatus: { $ne: "Cancelled" }});
 
-    const yesterdayOrders = await Order.find({
-      shopId,
-      createdAt: getYesterdayRange(),
-      orderStatus: { $ne: "Cancelled" }
-    });
+    const todaySalesTotal = todayOrders.reduce((acc, o) => acc + o.total, 0);
+    const todaySalesOnline = todayOrders.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
+    const todaySalesOffline = todayOrders.filter(o => o.source === "offline").reduce((acc, o) => acc + o.total, 0);
 
-    const todaySales = todayOrders.reduce((acc, order) => acc + order.total, 0);
-    const yesterdaySales = yesterdayOrders.reduce((acc, order) => acc + order.total, 0);
-    const newOrdersCount = todayOrders.filter(o => o.orderStatus === "Pending").length;
-    
+    const yesterdaySales = yesterdayOrders.reduce((acc, o) => acc + o.total, 0);
+    const todaySalesChange = yesterdaySales > 0 ? ((todaySalesTotal - yesterdaySales) / yesterdaySales * 100).toFixed(1) : 0;
+
+    // Active Jobs (Online marketplace only)
     const pendingTasks = await Order.countDocuments({
       shopId,
+      source: "online",
       orderStatus: { $in: ["Confirmed", "Preparing", "Out_for_Delivery", "Ready_for_Pickup"] }
     });
-
-    // --- 1.5 Phase 1: Total Revenue & Comparison ---
-    const thisMonthOrders = await Order.find({
-      shopId,
-      createdAt: getThisMonthRange(),
-      orderStatus: { $ne: "Cancelled" }
+    
+    const newOrdersCount = await Order.countDocuments({
+        shopId,
+        source: "online",
+        orderStatus: "Pending"
     });
 
-    const lastMonthOrders = await Order.find({
-      shopId,
-      createdAt: getLastMonthRange(),
-      orderStatus: { $ne: "Cancelled" }
-    });
+    // --- 2. Monthly Revenue (Context Split) ---
+    const thisMonthOrders = await Order.find({ shopId, createdAt: getThisMonthRange(), orderStatus: { $ne: "Cancelled" }});
+    const lastMonthOrders = await Order.find({ shopId, createdAt: getLastMonthRange(), orderStatus: { $ne: "Cancelled" }});
 
-    const totalMonthRevenue = thisMonthOrders.reduce((acc, order) => acc + order.total, 0);
-    const lastMonthRevenue = lastMonthOrders.reduce((acc, order) => acc + order.total, 0);
+    const totalMonthRevenue = thisMonthOrders.reduce((acc, o) => acc + o.total, 0);
+    const monthOnlineRevenue = thisMonthOrders.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
+    const monthOfflineRevenue = thisMonthOrders.filter(o => o.source === "offline").reduce((acc, o) => acc + o.total, 0);
+
+    const lastMonthRevenue = lastMonthOrders.reduce((acc, o) => acc + o.total, 0);
     const monthRevenueChange = lastMonthRevenue > 0 ? ((totalMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : 0;
 
-    // --- 1.6 Phase 1: Order Status Breakdown ---
-    const orderStatusBreakdown = await Order.aggregate([
-      { $match: { shopId } },
-      {
-        $group: {
-          _id: "$orderStatus",
-          count: { $sum: 1 }
-        }
-      }
+    // --- 3. Omnichannel Breakdown (For Charts) ---
+    const onlineOrdersLifetime = await Order.countDocuments({ shopId, source: "online" });
+    const offlineOrdersLifetime = await Order.countDocuments({ shopId, source: "offline" });
+
+
+    // --- 4. Order Status Breakdown & Performance (ONLINE ONLY) ---
+    // We only judge performance (failure rates, completions) based on platform requests.
+    const onlineStatusBreakdown = await Order.aggregate([
+      { $match: { shopId, source: "online" } },
+      { $group: { _id: "$orderStatus", count: { $sum: 1 } } }
     ]);
 
     const statusCounts = {
-      Pending: 0,
-      Confirmed: 0,
-      Preparing: 0,
-      Out_for_Delivery: 0,
-      Ready_for_Pickup: 0,
-      Delivered: 0,
-      Picked_Up: 0,
-      Cancelled: 0,
-      Returned: 0,
-      Not_Picked_Up: 0
+      Pending: 0, Confirmed: 0, Preparing: 0, 
+      Out_for_Delivery: 0, Ready_for_Pickup: 0, 
+      Delivered: 0, Picked_Up: 0, Cancelled: 0, 
+      Returned: 0, Not_Picked_Up: 0
     };
 
-    orderStatusBreakdown.forEach(status => {
-      if (status._id in statusCounts) {
-        statusCounts[status._id] = status.count;
-      }
+    onlineStatusBreakdown.forEach(status => {
+      if (status._id in statusCounts) statusCounts[status._id] = status.count;
     });
 
-    // --- 1.7 Phase 1: Performance Score ---
-    const totalOrders = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+    const totalOnlineOrders = Object.values(statusCounts).reduce((a, b) => a + b, 0);
     const deliveredOrders = statusCounts.Delivered + statusCounts.Picked_Up;
     const cancelledOrders = statusCounts.Cancelled;
     const returnedOrders = statusCounts.Returned + statusCounts.Not_Picked_Up;
 
-    const fulfillmentRate = totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : 0;
-    const cancellationRate = totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(1) : 0;
+    const fulfillmentRate = totalOnlineOrders > 0 ? ((deliveredOrders / totalOnlineOrders) * 100).toFixed(1) : 0;
+    const cancellationRate = totalOnlineOrders > 0 ? ((cancelledOrders / totalOnlineOrders) * 100).toFixed(1) : 0;
 
-    // Simple performance score (0-100) based on fulfillment and cancellation
     const performanceScore = Math.max(0, 100 - (cancelledOrders * 5) - (returnedOrders * 3));
     const performanceRating = performanceScore >= 80 ? "Excellent" : performanceScore >= 60 ? "Good" : "Fair";
 
-    // --- 2. Live Incoming Orders (Pending) ---
-    const liveOrders = await Order.find({ shopId, orderStatus: "Pending" })
+    // --- 5. Live Incoming Orders (Online Only) ---
+    const liveOrders = await Order.find({ shopId, source: "online", orderStatus: "Pending" })
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate("userId", "name"); // Get customer name
+      .populate("userId", "name"); 
 
-    // --- 3. Low Stock Items (< 10 units) ---
-    const lowStockItems = await Product.find({ 
-      shopId, 
-      stock: { $lt: 10 } 
-    }).limit(5).select("name stock unit");
+    // --- 6. Low Stock Items (< 10 units) ---
+    const lowStockItems = await Product.find({ shopId, stock: { $lt: 10 } }).limit(5).select("name stock unit");
 
-    // --- 4. Weekly Sales Trend ---
+    // --- 7. Weekly Omnichannel Sales Trend ---
     const weeklySalesTrend = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
@@ -165,27 +149,45 @@ export async function GET(req) {
         orderStatus: { $ne: "Cancelled" }
       }).lean();
 
-      const totalSales = daySales.reduce((acc, order) => acc + order.total, 0);
-      weeklySalesTrend.push({ day: dayName, sales: totalSales });
+      const onlineDaily = daySales.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
+      const offlineDaily = daySales.filter(o => o.source === "offline").reduce((acc, o) => acc + o.total, 0);
+
+      weeklySalesTrend.push({ 
+          day: dayName, 
+          onlineSales: onlineDaily,
+          offlineSales: offlineDaily,
+          totalSales: onlineDaily + offlineDaily 
+      });
     }
     
     return NextResponse.json({
       success: true,
       data: {
         kpis: {
-          todaySales,
-          todaySalesChange: yesterdaySales > 0 ? ((todaySales - yesterdaySales) / yesterdaySales * 100).toFixed(1) : 0,
+          todaySalesTotal,
+          todaySalesOnline,
+          todaySalesOffline,
+          todaySalesChange,
+          
+          totalMonthRevenue,
+          monthOnlineRevenue,
+          monthOfflineRevenue,
+          monthRevenueChange,
+          
           newOrders: newOrdersCount,
           pendingTasks,
           isOnline: seller.isShopOpen,
-          totalMonthRevenue,
-          monthRevenueChange
+        },
+        omniChannelDist: {
+            online: onlineOrdersLifetime,
+            offline: offlineOrdersLifetime
         },
         performanceScore: {
           score: performanceScore,
           rating: performanceRating,
           fulfillmentRate,
-          cancellationRate
+          cancellationRate,
+          totalScoredOrders: totalOnlineOrders
         },
         orderStatusBreakdown: statusCounts,
         liveOrders: liveOrders.map(o => ({

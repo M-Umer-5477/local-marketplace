@@ -4,6 +4,7 @@ import Order from "@/models/order";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Stripe from "stripe"; // ✅ IMPORT STRIPE
+import { sendEmail } from "@/lib/mailer";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -17,63 +18,37 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get query parameter for filtering
-    const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status') || 'all'; // all, pending, approved, rejected
-
     const refundStatuses = ["Cancelled", "Returned", "Not_Picked_Up"];
-    // Build filter
-    let filter = {
-      orderStatus: { $in: refundStatuses },
-      isPaid: true
-    };
-
-    if (status === 'pending') {
-      filter.isRefunded = { $ne: true };
-    } else if (status === 'approved') {
-      filter.isRefunded = true;
-    }
 
     // Fetch all matching refunds
-    const refunds = await Order.find(filter)
+    const allRefunds = await Order.find({
+      orderStatus: { $in: refundStatuses },
+      isPaid: true
+    })
       .populate("shopId", "shopName phone")
       .populate("userId", "name email phone")
       .sort({ updatedAt: -1 });
 
-    // Calculate statistics
-    const pending = await Order.countDocuments({
-      orderStatus: { $in: refundStatuses },
-      isPaid: true,
-      isRefunded: { $ne: true }
-    });
+    const pendingRefunds = allRefunds.filter(r => !r.isRefunded);
+    const approvedRefunds = allRefunds.filter(r => r.isRefunded);
 
-    const approved = await Order.countDocuments({
-      orderStatus: { $in: refundStatuses },
-      isPaid: true,
-      isRefunded: true
-    });
-
-    const totalRefundValue = refunds.reduce((acc, curr) => acc + (curr.total || 0), 0);
+    const totalRefundValue = allRefunds.reduce((acc, curr) => acc + (curr.total || 0), 0);
 
     // Calculate pending refunds older than 3 days
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    const overdueRefunds = await Order.countDocuments({
-      orderStatus: { $in: refundStatuses },
-      isPaid: true,
-      isRefunded: { $ne: true },
-      createdAt: { $lt: threeDaysAgo }
-    });
+    const overdueRefunds = pendingRefunds.filter(r => new Date(r.createdAt) < threeDaysAgo).length;
 
     return NextResponse.json({ 
       success: true, 
-      refunds,
+      pendingRefunds,
+      approvedRefunds,
       stats: {
-        total: refunds.length,
-        pending,
-        approved,
+        total: allRefunds.length,
+        pending: pendingRefunds.length,
+        approved: approvedRefunds.length,
         totalRefundValue,
         overdueRefunds,
-        averageProcessingTime: pending > 0 ? "2-3 days" : "N/A"
+        averageProcessingTime: pendingRefunds.length > 0 ? "2-3 days" : "N/A"
       }
     }, { status: 200 });
 
@@ -120,8 +95,41 @@ export async function PUT(req) {
     await Order.updateOne(
       { _id: orderId },
       {  isRefunded: true  },
-     
     );
+
+    // --- 📧 SEND EMAIL NOTIFICATIONS ---
+    const detailedOrder = await Order.findById(orderId).populate("userId").populate("shopId");
+    
+    if (detailedOrder) {
+        try {
+            // Customer Email
+            if (detailedOrder.userId?.email) {
+                const custSubject = "💰 Refund Issued - Martly Order #" + detailedOrder._id.toString().slice(-6);
+                const custHtml = `<div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #16a34a;">Refund Processed</h2>
+                    <p>Dear ${detailedOrder.userId.name || 'Customer'},</p>
+                    <p>A refund of <strong>Rs. ${detailedOrder.total}</strong> has been issued to your original payment method for order #${detailedOrder._id.toString().slice(-6)}.</p>
+                    <p>Please note that it may take 5-7 business days for your bank to process the funds.</p>
+                    <p>Thank you for shopping on Martly!</p>
+                </div>`;
+                await sendEmail(detailedOrder.userId.email, custSubject, custHtml);
+            }
+            
+            // Seller Email
+            if (detailedOrder.shopId?.email) {
+                const sellerSubject = "⚠️ Order Refunded - Martly Order #" + detailedOrder._id.toString().slice(-6);
+                const sellerHtml = `<div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #dc2626;">Order Refunded</h2>
+                    <p>Dear ${detailedOrder.shopId.shopName},</p>
+                    <p>A customer refund was successfully processed via Stripe for order #${detailedOrder._id.toString().slice(-6)}.</p>
+                    <p>Any necessary ledger adjustments were applied automatically when the order was cancelled/refused.</p>
+                </div>`;
+                await sendEmail(detailedOrder.shopId.email, sellerSubject, sellerHtml);
+            }
+        } catch (emailErr) {
+            console.error("Failed to send refund emails:", emailErr);
+        }
+    }
 
     return NextResponse.json({ success: true, message: "Refund processed successfully via Stripe" }, { status: 200 });
 

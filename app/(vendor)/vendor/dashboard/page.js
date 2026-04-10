@@ -26,7 +26,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function SellerDashboardPage() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [dateRange, setDateRange] = useState("all");
   const { resolvedTheme } = useTheme();
   const router = useRouter();
 
@@ -57,7 +56,7 @@ export default function SellerDashboardPage() {
     setData(prev => ({ ...prev, kpis: { ...prev.kpis, isOnline } }));
     
     try {
-       await fetch("/api/seller/myshop", {
+       await fetch("/api/vendor/myShop", {
          method: "PUT",
          body: JSON.stringify({ isShopOpen: isOnline })
        });
@@ -127,19 +126,6 @@ if (isLoading) {
           <p className="text-muted-foreground">Overview of your shop's performance.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
-          {/* Date Range Selector */}
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="7days">Last 7 days</SelectItem>
-              <SelectItem value="30days">Last 30 days</SelectItem>
-              <SelectItem value="all">All time</SelectItem>
-            </SelectContent>
-          </Select>
-          
           {/* Store Status */}
           <div className="flex items-center gap-2">
             <span className={`text-sm font-bold ${data.kpis.isOnline ? 'text-green-600' : 'text-red-500'}`}>
@@ -156,9 +142,9 @@ if (isLoading) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" /> Shop Performance Score
+                <Star className="h-5 w-5 text-primary" /> Online Performance Score
               </CardTitle>
-              <CardDescription>Your overall shop health and reliability</CardDescription>
+              <CardDescription>Metrics based exclusively on your marketplace orders</CardDescription>
             </div>
             <div className="text-right">
               <div className={`text-4xl font-bold ${getPerformanceColor(data.performanceScore.rating)}`}>
@@ -187,24 +173,29 @@ if (isLoading) {
         {/* Today's Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Daily Gross Revenue</CardTitle>
             <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(data.kpis.todaySales)}</div>
-            <div className="flex items-center gap-1 text-xs">
-              {data.kpis.todaySalesChange >= 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                  <span className="text-green-600">+{data.kpis.todaySalesChange}%</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="h-3 w-3 text-red-500" />
-                  <span className="text-red-600">{data.kpis.todaySalesChange}%</span>
-                </>
-              )}
-              <span className="text-muted-foreground">from yesterday</span>
+            <div className="text-2xl font-bold">{formatCurrency(data.kpis.todaySalesTotal)}</div>
+            <div className="flex flex-col gap-1 mt-1">
+              <div className="flex items-center gap-1 text-xs">
+                {data.kpis.todaySalesChange >= 0 ? (
+                  <>
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                    <span className="text-green-600">+{data.kpis.todaySalesChange}%</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                    <span className="text-red-600">{data.kpis.todaySalesChange}%</span>
+                  </>
+                )}
+                <span className="text-muted-foreground">vs yesterday</span>
+              </div>
+              <div className="text-[10px] text-muted-foreground font-medium bg-muted w-fit px-2 py-0.5 rounded-full">
+                Online: {formatCurrency(data.kpis.todaySalesOnline)} | POS: {formatCurrency(data.kpis.todaySalesOffline)}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -212,24 +203,29 @@ if (isLoading) {
         {/* Monthly Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Monthly Gross Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(data.kpis.totalMonthRevenue)}</div>
-            <div className="flex items-center gap-1 text-xs">
-              {data.kpis.monthRevenueChange >= 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                  <span className="text-green-600">+{data.kpis.monthRevenueChange}%</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="h-3 w-3 text-red-500" />
-                  <span className="text-red-600">{data.kpis.monthRevenueChange}%</span>
-                </>
-              )}
-              <span className="text-muted-foreground">vs last month</span>
+            <div className="flex flex-col gap-1 mt-1">
+              <div className="flex items-center gap-1 text-xs">
+                {data.kpis.monthRevenueChange >= 0 ? (
+                  <>
+                    <TrendingUp className="h-3 w-3 text-green-500" />
+                    <span className="text-green-600">+{data.kpis.monthRevenueChange}%</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="h-3 w-3 text-red-500" />
+                    <span className="text-red-600">{data.kpis.monthRevenueChange}%</span>
+                  </>
+                )}
+                <span className="text-muted-foreground">vs last month</span>
+              </div>
+              <div className="text-[10px] text-muted-foreground font-medium bg-muted w-fit px-2 py-0.5 rounded-full">
+                Online: {formatCurrency(data.kpis.monthOnlineRevenue)} | POS: {formatCurrency(data.kpis.monthOfflineRevenue)}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -237,24 +233,24 @@ if (isLoading) {
         {/* Active Orders */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
-            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium pr-4">Active Online Orders</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.kpis.pendingTasks}</div>
-            <p className="text-xs text-muted-foreground">Orders needing attention</p>
+            <p className="text-xs text-muted-foreground">Platform orders active</p>
           </CardContent>
         </Card>
         
         {/* New Requests */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Requests</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium pr-4">Pending Online Requests</CardTitle>
+            <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.kpis.newOrders}</div>
-            <p className="text-xs text-muted-foreground">Pending confirmation</p>
+            <p className="text-xs text-muted-foreground">Platform confirmation needed</p>
           </CardContent>
         </Card>
       </div>
@@ -423,7 +419,8 @@ if (isLoading) {
             {/* Sales Chart */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">Weekly Sales</CardTitle>
+                    <CardTitle className="text-base">Weekly Omnichannel Sales</CardTitle>
+                    <CardDescription>Daily gross revenue across both channels</CardDescription>
                 </CardHeader>
                 <CardContent className="pl-0">
                     <div className="h-[250px] w-full">
@@ -433,10 +430,12 @@ if (isLoading) {
                                 <XAxis dataKey="day" stroke={chartAxisColor} fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip 
                                     cursor={{fill: 'transparent'}}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    formatter={(value) => formatCurrency(value)}
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: resolvedTheme === 'dark' ? '#1f2937' : '#fff' }}
+                                    formatter={(value, name) => [formatCurrency(value), name === 'onlineSales' ? 'Online' : 'POS Store']}
                                 />
-                                <Bar dataKey="sales" fill={chartBarColor} radius={[4, 4, 0, 0]} barSize={30} />
+                                <Legend iconType="circle" />
+                                <Bar dataKey="onlineSales" stackId="a" name="Online Sales" fill={chartBarColor} radius={[0, 0, 4, 4]} />
+                                <Bar dataKey="offlineSales" stackId="a" name="POS Store Sales" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -446,28 +445,33 @@ if (isLoading) {
             {/* Order Type Distribution */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">Delivery vs Pickup</CardTitle>
+                    <CardTitle className="text-base">Omnichannel Distribution</CardTitle>
+                    <CardDescription>All-time percentage of platform vs physical orders</CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
                                 data={[
-                                    { name: 'Delivery', value: data.orderStatusBreakdown.Out_for_Delivery + data.orderStatusBreakdown.Delivered },
-                                    { name: 'Pickup', value: data.orderStatusBreakdown.Ready_for_Pickup + data.orderStatusBreakdown.Picked_Up }
+                                    { name: 'Online Marketplace', value: data.omniChannelDist.online },
+                                    { name: 'Physical Store (POS)', value: data.omniChannelDist.offline }
                                 ]}
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, value, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                label={({ name, percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ""}
                                 outerRadius={80}
                                 fill="#8884d8"
                                 dataKey="value"
                             >
-                                <Cell fill="#3b82f6" />
-                                <Cell fill="#8b5cf6" />
+                                <Cell fill={chartBarColor} title="Online" />
+                                <Cell fill="#f59e0b" title="Offline" />
                             </Pie>
-                            <Tooltip formatter={(value) => value.toLocaleString()} />
+                            <Tooltip 
+                                formatter={(value) => value.toLocaleString()}
+                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            />
+                            <Legend />
                         </PieChart>
                     </ResponsiveContainer>
                 </CardContent>

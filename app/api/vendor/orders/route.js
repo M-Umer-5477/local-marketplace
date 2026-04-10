@@ -4,6 +4,7 @@ import Order from "@/models/order";
 import Seller from "@/models/seller";
 import Product from "@/models/product"; 
 import Transaction from "@/models/transaction"; 
+import { sendEmail } from "@/lib/mailer";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -73,9 +74,9 @@ export async function PUT(req) {
     // Only deduct if completed AND not already deducted (COD Orders)
     if (isCompleted && !order.commissionDeducted) {
         
-        await Seller.findByIdAndUpdate(seller._id, {
+        const updatedSeller = await Seller.findByIdAndUpdate(seller._id, {
             $inc: { walletBalance: -order.commissionAmount }
-        });
+        }, { new: true });
 
         await Transaction.create({
             seller: seller._id,
@@ -87,6 +88,26 @@ export async function PUT(req) {
         });
 
         order.commissionDeducted = true;
+
+        // --- 📧 DEBT WARNING TRIGGER (-5000 threshold) ---
+        if (updatedSeller.walletBalance <= -5000 && !updatedSeller.hasReceivedDebtWarning) {
+            updatedSeller.hasReceivedDebtWarning = true;
+            await updatedSeller.save();
+
+            try {
+                const subject = "⚠️ Urgent: Clear your platform dues - Martly";
+                const htmlMessage = `<div style="font-family: Arial, sans-serif; padding: 20px; border-left: 4px solid #dc2626; background-color: #fef2f2;">
+                    <h2 style="color: #dc2626;">Maximum Debt Reached</h2>
+                    <p>Dear ${updatedSeller.shopName},</p>
+                    <p>Your platform debt has exceeded <strong>Rs. 5,000</strong> due to accumulated Cash-on-Delivery commissions.</p>
+                    <p>Please clear your dues via the Wallet section in your Vendor Dashboard immediately to prevent platform suspension.</p>
+                    <p>Thank you.</p>
+                </div>`;
+                await sendEmail(updatedSeller.email, subject, htmlMessage);
+            } catch (err) {
+                console.error("Failed to send debt warning email", err);
+            }
+        }
     }
 
     // --- 🚨 2. ONLINE PAYMENT REVERSAL LOGIC ---

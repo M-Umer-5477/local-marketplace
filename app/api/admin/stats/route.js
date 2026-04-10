@@ -43,6 +43,7 @@ export async function GET(request) {
     const financials = await Order.aggregate([
       { 
         $match: { 
+          source: "online",
           orderStatus: { $nin: ["Cancelled", "Returned", "Not_Picked_Up", "Pending"] },
           ...dateFilter
         } 
@@ -61,8 +62,8 @@ export async function GET(request) {
 
     const refundStatuses = ["Cancelled", "Returned", "Not_Picked_Up"];
     
-    // 3. Refund Statistics - Count pending vs approved
     const pendingRefundsCount = await Order.countDocuments({
+      source: "online",
       orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true },
@@ -70,6 +71,7 @@ export async function GET(request) {
     });
 
     const approvedRefundsCount = await Order.countDocuments({
+      source: "online",
       orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: true,
@@ -79,6 +81,7 @@ export async function GET(request) {
     const totalRefundsValue = await Order.aggregate([
       {
         $match: {
+          source: "online",
           orderStatus: { $in: refundStatuses },
           isPaid: true,
           ...dateFilter
@@ -95,6 +98,7 @@ export async function GET(request) {
     // Calculate overdue refunds (pending refunds older than 3 days)
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const overdueRefundsCount = await Order.countDocuments({
+      source: "online",
       orderStatus: { $in: refundStatuses },
       isPaid: true,
       isRefunded: { $ne: true },
@@ -105,6 +109,7 @@ export async function GET(request) {
     const topSellers = await Order.aggregate([
       { 
         $match: { 
+          source: "online",
           orderStatus: { $nin: ["Cancelled", "Returned", "Not_Picked_Up", "Pending"] },
           ...dateFilter
         }
@@ -134,9 +139,8 @@ export async function GET(request) {
 
     const walletStats = walletBreakdown[0] || { totalPayable: 0, totalReceivable: 0 };
 
-    // 6. Order trends by status (respects date filter)
     const orderTrends = await Order.aggregate([
-      { $match: dateFilter || {} },
+      { $match: { source: "online", ...dateFilter } },
       { $group: { _id: "$orderStatus", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);

@@ -34,7 +34,8 @@ export async function POST(req) {
 
     // 4. Update Seller Wallet (CREDIT the paid amount to zero the negative balance)
     await Seller.findByIdAndUpdate(sellerId, {
-        $inc: { walletBalance: numericAmount }
+        $inc: { walletBalance: numericAmount },
+        $set: { hasReceivedDebtWarning: false }
     });
 
     // 5. Log Transaction

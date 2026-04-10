@@ -23,7 +23,6 @@ export default function AdminLayoutClient({ children, user }) {
     { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Seller Verifications", href: "/admin/verifications", icon: FileCheck },
     { name: "Active Shops", href: "/admin/shops", icon: Users },
-    { name: "Billing Verification", href: "/admin/billing", icon: Banknote },
     { name: "Financials & Debt", href: "/admin/finance", icon: Wallet },
     { name: "Pending Refunds", href: "/admin/refunds", icon: Banknote },
   ];

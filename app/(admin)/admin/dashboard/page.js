@@ -40,8 +40,8 @@ export default function AdminDashboardPage() {
       {/* Header with Date Filter */}
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h2>
-          <p className="text-muted-foreground">Welcome back, Super Admin. Here is your financial pulse.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Marketplace Overview</h2>
+          <p className="text-muted-foreground">Welcome back, Super Admin. Here is your pure marketplace pulse.</p>
         </div>
         <div className="flex gap-2">
             <Select value={range} onValueChange={setRange}>
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
         {/* Revenue Card */}
         <Card className="border-l-4 border-l-green-500 shadow-sm bg-card text-card-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Platform Profit</CardTitle>
+            <CardTitle className="text-sm font-medium">Marketplace Profit</CardTitle>
             <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
           </CardHeader>
           <CardContent>
@@ -115,12 +115,12 @@ export default function AdminDashboardPage() {
         {/* GMV Card */}
         <Card className="border-l-4 border-l-blue-500 shadow-sm bg-card text-card-foreground">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gross Merchandise Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Marketplace GMV</CardTitle>
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Rs. {(stats?.grossVolume || 0)?.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">{stats?.totalOrders} Completed Orders</p>
+            <p className="text-xs text-muted-foreground">{stats?.totalOrders} Online Orders</p>
           </CardContent>
         </Card>
 
@@ -176,16 +176,16 @@ export default function AdminDashboardPage() {
         {/* Wallet Health */}
         <Card className="border-l-4 border-l-blue-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Wallet Health</CardTitle>
+            <CardTitle className="text-sm font-medium">Platform Ledger (Wallet Health)</CardTitle>
             <Wallet className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-sm text-muted-foreground">We Owe Sellers</span>
+              <span className="text-sm text-muted-foreground">Platform Debt (Credits Issued)</span>
               <span className="font-bold text-orange-600">Rs. {(stats?.payableToSellers || 0)?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-sm text-muted-foreground">Sellers Owe Us</span>
+              <span className="text-sm text-muted-foreground">Platform Receivables (Outstanding Dues)</span>
               <span className="font-bold text-green-600">Rs. {(stats?.receivableFromSellers || 0)?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center py-2">

@@ -62,7 +62,7 @@ export async function POST(req) {
             let htmlMessage = "";
 
             if (action === "Approved") {
-                subject = "🎉 Congratulations! Your ShopSync Account is Approved";
+                subject = "🎉 Congratulations! Your Martly Account is Approved";
                 htmlMessage = `
                     <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                         <h2 style="color: #16a34a;">You are Live! 🚀</h2>
@@ -73,7 +73,7 @@ export async function POST(req) {
                     </div>
                 `;
             } else if (action === "Rejected") {
-                subject = "⚠️ Update on your ShopSync Application";
+                subject = "⚠️ Update on your Martly Application";
                 htmlMessage = `
                     <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
                         <h2 style="color: #dc2626;">Application Status</h2>
