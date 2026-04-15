@@ -9,7 +9,11 @@ import {
   Search,
   MapPin,
   Calendar,
-  Download
+  Download,
+  AlertOctagon,
+  RefreshCw,
+  RefreshCcw,
+  RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -17,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   Dialog,
@@ -26,18 +31,22 @@ import {
 } from "@/components/ui/dialog";
 
 export default function VerificationsPage() {
-  const [sellers, setSellers] = useState([]);
+  const [data, setData] = useState({ pendingSellers: [], rejectedSellers: [] });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [selectedDoc, setSelectedDoc] = useState(null); 
 
   // 1. Fetch Pending Sellers
-  const fetchPending = async () => {
+  const fetchApplications = async () => {
+    setLoading(true);
     try {
       const res = await fetch("/api/admin/pending-sellers");
-      const data = await res.json();
-      if (data.success) {
-        setSellers(data.sellers);
+      const result = await res.json();
+      if (result.success) {
+        setData({
+            pendingSellers: result.pendingSellers || [],
+            rejectedSellers: result.rejectedSellers || []
+        });
       }
     } catch (error) {
       toast.error("Failed to load applications");
@@ -47,7 +56,7 @@ export default function VerificationsPage() {
   };
 
   useEffect(() => {
-    fetchPending();
+    fetchApplications();
   }, []);
 
   // 2. Handle Decision
@@ -59,15 +68,15 @@ export default function VerificationsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sellerId, action }),
       });
-      const data = await res.json();
+      const result = await res.json();
 
       if (res.ok) {
         toast.dismiss();
         toast.success(`Seller ${action} Successfully`);
-        setSellers((prev) => prev.filter((s) => s._id !== sellerId));
+        fetchApplications(); // Reload data nicely
       } else {
         toast.dismiss();
-        toast.error(data.error || "Operation failed");
+        toast.error(result.error || "Operation failed");
       }
     } catch (err) {
       toast.dismiss();
@@ -75,46 +84,28 @@ export default function VerificationsPage() {
     }
   };
 
-  const filteredSellers = sellers.filter(s => 
-    s.shopName.toLowerCase().includes(filter.toLowerCase()) || 
-    s.cnic.includes(filter)
-  );
+  const VerificationList = ({ sellersArray, isRejectedTab }) => {
+      const filteredSellers = sellersArray.filter(s => 
+        s.shopName.toLowerCase().includes(filter.toLowerCase()) || 
+        s.cnic.includes(filter)
+      );
 
-  if (loading) return <div className="h-[50vh] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+      if (filteredSellers.length === 0) {
+          return (
+            <div className="flex flex-col items-center justify-center py-20 bg-muted/20 dark:bg-muted/10 rounded-xl border border-dashed border-border mt-6">
+                <div className="bg-background p-4 rounded-full shadow-sm mb-4">
+                    {isRejectedTab ? <AlertOctagon className="h-8 w-8 text-orange-500 opacity-50" /> : <Check className="h-8 w-8 text-green-500 dark:text-green-400" />}
+                </div>
+                <h3 className="font-bold text-lg text-foreground">{isRejectedTab ? "No rejected applications" : "All Caught Up!"}</h3>
+                <p className="text-muted-foreground">{isRejectedTab ? "You have no rejected applications in your history." : "There are no pending applications right now."}</p>
+            </div>
+          );
+      }
 
-  return (
-    <div className="space-y-6">
-      
-      {/* Header & Filter */}
-      <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Seller Applications</h2>
-          <p className="text-muted-foreground">Review documents and approve new shops.</p>
-        </div>
-        <div className="relative w-full md:w-72">
-           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-           <Input 
-             placeholder="Search by Shop Name or CNIC..." 
-             className="pl-9 bg-background" 
-             value={filter}
-             onChange={(e) => setFilter(e.target.value)}
-           />
-        </div>
-      </div>
-
-      {/* List */}
-      {filteredSellers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-muted/20 dark:bg-muted/10 rounded-xl border border-dashed border-border">
-           <div className="bg-background p-4 rounded-full shadow-sm mb-4">
-             <Check className="h-8 w-8 text-green-500 dark:text-green-400" />
-           </div>
-           <h3 className="font-bold text-lg text-foreground">All Caught Up!</h3>
-           <p className="text-muted-foreground">There are no pending applications right now.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6">
+      return (
+        <div className="grid gap-6 mt-6">
           {filteredSellers.map((seller) => (
-            <Card key={seller._id} className="overflow-hidden border-l-4 border-l-orange-500 shadow-md hover:shadow-lg transition-all duration-300 bg-card">
+            <Card key={seller._id} className={`overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 bg-card ${isRejectedTab ? 'border-l-4 border-l-red-500 opacity-80' : 'border-l-4 border-l-orange-500'}`}>
               <CardContent className="p-6">
                 <div className="flex flex-col xl:flex-row gap-6">
                   
@@ -122,7 +113,7 @@ export default function VerificationsPage() {
                   <div className="flex-1 space-y-4">
                     <div className="flex items-start justify-between">
                        <div className="flex items-center gap-4">
-                          <Avatar className="h-16 w-16 border-2 border-background shadow-sm">
+                          <Avatar className={`h-16 w-16 border-2 border-background shadow-sm ${isRejectedTab && "grayscale"}`}>
                             <AvatarImage src={seller.shopLogo} />
                             <AvatarFallback className="font-bold text-lg bg-muted text-foreground">{seller.shopName.substring(0,2)}</AvatarFallback>
                           </Avatar>
@@ -130,6 +121,7 @@ export default function VerificationsPage() {
                             <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
                                 {seller.shopName}
                                 <Badge variant="secondary" className="text-xs font-normal">{seller.shopType}</Badge>
+                                {isRejectedTab && <Badge variant="destructive" className="text-[10px] ml-2">Rejected</Badge>}
                             </h3>
                             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                                 <MapPin className="h-3 w-3" /> {seller.shopAddress}
@@ -198,20 +190,35 @@ export default function VerificationsPage() {
 
                   {/* Right: Actions */}
                   <div className="flex flex-col justify-center gap-3 min-w-40 border-t xl:border-t-0 xl:border-l border-border pt-4 xl:pt-0 xl:pl-6">
-                    <p className="text-xs text-muted-foreground text-center mb-2">Make a decision</p>
-                    <Button 
-                      onClick={() => handleAction(seller._id, "Approved")} 
-                      className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white shadow-sm w-full h-11"
-                    >
-                      <Check className="mr-2 h-4 w-4" /> Approve Shop
-                    </Button>
-                    <Button 
-                      onClick={() => handleAction(seller._id, "Rejected")} 
-                      variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 w-full h-11"
-                    >
-                      <X className="mr-2 h-4 w-4" /> Reject
-                    </Button>
+                    {isRejectedTab ? (
+                        <>
+                        <p className="text-xs text-muted-foreground text-center mb-2">Re-evaluate</p>
+                        <Button 
+                            onClick={() => handleAction(seller._id, "Pending")} 
+                            variant="outline"
+                            className="bg-background hover:bg-muted w-full h-11 border-primary/20 text-primary"
+                        >
+                        <RotateCcw className="mr-2 h-4 w-4" /> Reset to Pending
+                        </Button>
+                        </>
+                    ) : (
+                        <>
+                        <p className="text-xs text-muted-foreground text-center mb-2">Make a decision</p>
+                        <Button 
+                        onClick={() => handleAction(seller._id, "Approved")} 
+                        className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white shadow-sm w-full h-11"
+                        >
+                        <Check className="mr-2 h-4 w-4" /> Approve Shop
+                        </Button>
+                        <Button 
+                        onClick={() => handleAction(seller._id, "Rejected")} 
+                        variant="outline"
+                        className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 w-full h-11"
+                        >
+                        <X className="mr-2 h-4 w-4" /> Reject
+                        </Button>
+                        </>
+                    )}
                   </div>
 
                 </div>
@@ -219,7 +226,55 @@ export default function VerificationsPage() {
             </Card>
           ))}
         </div>
-      )}
+      );
+  }
+
+  return (
+    <div className="space-y-6">
+      
+      {/* Header & Filter */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Seller Applications</h2>
+          <p className="text-muted-foreground">Review documents and approve new shops.</p>
+        </div>
+        
+        <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-72">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Search by Shop Name or CNIC..." 
+                    className="pl-9 bg-background" 
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                />
+            </div>
+            <Button variant="outline" size="icon" onClick={fetchApplications}>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+        </div>
+      </div>
+
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+            <TabsTrigger value="pending">Pending ({data.pendingSellers.length})</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected ({data.rejectedSellers.length})</TabsTrigger>
+        </TabsList>
+
+        {loading ? (
+             <div className="h-[40vh] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : (
+            <>
+                <TabsContent value="pending">
+                    <VerificationList sellersArray={data.pendingSellers} isRejectedTab={false} />
+                </TabsContent>
+                <TabsContent value="rejected">
+                    <VerificationList sellersArray={data.rejectedSellers} isRejectedTab={true} />
+                </TabsContent>
+            </>
+        )}
+      </Tabs>
+
 
       {/* --- DOCUMENT VIEWER DIALOG --- */}
       <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>

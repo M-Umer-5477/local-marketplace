@@ -14,15 +14,18 @@ export async function GET(req) {
             if (!session || session.user.role !== "admin") {
               return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
             }
-    // 2. Fetch all sellers where status is 'Pending' AND verification docs exist
+    // 2. Fetch all sellers where status is 'Pending' OR 'Rejected' AND verification docs exist
     // We sort by newest first
-    const pendingSellers = await Seller.find({ 
-      verificationStatus: "Pending",
+    const allApplications = await Seller.find({ 
+      verificationStatus: { $in: ["Pending", "Rejected"] },
       isVerified:"true",
       role: "seller" 
     }).sort({ createdAt: -1 });
 
-    return NextResponse.json({ success: true, sellers: pendingSellers }, { status: 200 });
+    const pendingSellers = allApplications.filter(s => s.verificationStatus === "Pending");
+    const rejectedSellers = allApplications.filter(s => s.verificationStatus === "Rejected");
+
+    return NextResponse.json({ success: true, pendingSellers, rejectedSellers }, { status: 200 });
 
   } catch (error) {
     console.error("Admin Fetch Error:", error);

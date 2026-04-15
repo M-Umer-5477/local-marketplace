@@ -40,13 +40,19 @@ export async function POST(req) {
     // ---------------------------------------------------------
     // 2. UPDATE STATUS
     // ---------------------------------------------------------
-    seller.verificationStatus = action;
-    
     if (action === "Approved") {
+        seller.verificationStatus = "Approved";
         seller.isActive = true; 
-        
     } else if (action === "Rejected") {
+        seller.verificationStatus = "Rejected";
         seller.isActive = false;
+    } else if (action === "Pending") {
+        seller.verificationStatus = "Pending";
+        seller.isActive = false;
+    } else if (action === "Suspended") {
+        seller.isActive = false;
+    } else if (action === "Restored") {
+        seller.isActive = true;
     }
 
     // Save to Database
@@ -79,7 +85,27 @@ export async function POST(req) {
                         <h2 style="color: #dc2626;">Application Status</h2>
                         <p>Dear <strong>${seller.fullName}</strong>,</p>
                         <p>Unfortunately, we could not approve your shop <strong>${seller.shopName}</strong> due to documentation issues.</p>
-                        <p>Please contact support.</p>
+                        <p>Please contact support for more details.</p>
+                    </div>
+                `;
+            } else if (action === "Suspended") {
+                subject = "🚨 Urgent: Your Shop has been Suspended";
+                htmlMessage = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #dc2626;">Account Suspended</h2>
+                        <p>Dear <strong>${seller.fullName}</strong>,</p>
+                        <p>Your shop <strong>${seller.shopName}</strong> has been suspended due to violations of platform policy or outstanding debts.</p>
+                        <p>Your storefront is no longer visible to customers. Please contact admin support immediately.</p>
+                    </div>
+                `;
+            } else if (action === "Restored") {
+                subject = "✅ Your Shop has been Restored!";
+                htmlMessage = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #16a34a;">Account Restored</h2>
+                        <p>Dear <strong>${seller.fullName}</strong>,</p>
+                        <p>Good news! Your shop <strong>${seller.shopName}</strong> has been fully restored and is live again.</p>
+                        <p>Thank you for resolving the outstanding issues.</p>
                     </div>
                 `;
             }
