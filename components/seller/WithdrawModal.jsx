@@ -37,6 +37,9 @@ export default function WithdrawModal({ balance, savedPayoutDetails, onSuccess }
     if (method === "Bank Transfer" && !bankName) {
       return toast.error("Please enter a Bank Name");
     }
+    if (Number(amount) < 500) {
+        return toast.error("Minimum withdrawal is Rs. 500");
+    }
     if (Number(amount) > balance) {
         return toast.error("Insufficient balance");
     }

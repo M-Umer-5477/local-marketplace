@@ -18,7 +18,7 @@ export async function GET(req) {
     // We sort by newest first
     const allApplications = await Seller.find({ 
       verificationStatus: { $in: ["Pending", "Rejected"] },
-      isVerified:"true",
+      isVerified: true,
       role: "seller" 
     }).sort({ createdAt: -1 });
 

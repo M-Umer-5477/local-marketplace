@@ -20,16 +20,21 @@ export async function POST(req) {
     const body = await req.json();
     const { amount, type, method, transactionId, proofImage, bankDetails } = body;
 
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+
     // 3. Find Seller
     const seller = await Seller.findOne({ email: session.user.email });
     if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
 
-    // --- 🛑 WITHDRAWAL SECURITY CHECKS ---
+    // WITHDRAWAL SECURITY CHECKS 
     if (type !== "Deposit") { // If it is a Withdrawal
-        if (seller.walletBalance < parseFloat(amount)) {
+        if (seller.walletBalance < numAmount) {
             return NextResponse.json({ error: "Insufficient wallet balance" }, { status: 400 });
         }
-        if (parseFloat(amount) < 500) {
+        if (numAmount < 500) {
              return NextResponse.json({ error: "Minimum withdrawal is Rs. 500" }, { status: 400 });
         }
     }
@@ -37,10 +42,10 @@ export async function POST(req) {
     // 4. Create Transaction
     const newTxn = await Transaction.create({
       seller: seller._id,
-      amount: parseFloat(amount),
+      amount: numAmount,
       // If Deposit (Paying Dues) -> Credit (Money In)
       // If Withdrawal -> Debit (Money Out)
-      type: type === "Deposit" ? "Credit" : "Debit", 
+      type: type === "Deposit" ? "Credit" : "Debit",
       
       category: type === "Deposit" ? "Dues_Clearing" : "Payout_Withdrawal",
       
@@ -56,12 +61,12 @@ export async function POST(req) {
         : `Withdrawal Request to ${bankDetails?.bankName} (${bankDetails?.accountNumber})`
     });
 
-    // --- ❄️ FREEZE FUNDS LOGIC ---
+    // --- FREEZE FUNDS LOGIC ---
     // If it's a withdrawal, we deduct NOW. 
     // If Admin rejects later, we will add it back.
     if (type !== "Deposit") {
         const updateDoc = {
-            $inc: { walletBalance: -parseFloat(amount) }
+            $inc: { walletBalance: -numAmount }
         };
         
         // ✅ Save details for next time (Smart UX)
@@ -87,7 +92,7 @@ export async function POST(req) {
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2 style="color: #ea580c;">Payout Request Needs Review</h2>
                     <p><strong>Shop:</strong> ${seller.shopName}</p>
-                    <p><strong>Amount Requested:</strong> Rs. ${parseFloat(amount)}</p>
+                    <p><strong>Amount Requested:</strong> Rs. ${numAmount}</p>
                     <p><strong>Payout Method:</strong> ${method}</p>
                     <br/>
                     <p>Please log in to the admin finance portal to review and approve/reject this request.</p>

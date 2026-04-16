@@ -41,7 +41,7 @@ export const authOptions = {
 
         return {
           id: account._id.toString(),
-          name: account.name,
+          name: account.name || account.fullName || account.shopName,
           email: account.email,
           role: account.role,
         };
