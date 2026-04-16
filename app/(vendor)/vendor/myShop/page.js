@@ -39,7 +39,13 @@ export default function MyShopPage() {
       shopBanner: "",
       latitude: 32.5731, // Default Gujrat Lat
       longitude: 74.1005, // Default Gujrat Lng
-      minimumOrderAmount: 0 // ✅ NEW: Minimum order amount
+      minimumOrderAmount: 0, // ✅ NEW: Minimum order amount
+      savedPayoutDetails: {
+        method: "EasyPaisa",
+        bankName: "",
+        accountNumber: "",
+        accountTitle: ""
+      }
     }
   });
 
@@ -69,6 +75,10 @@ export default function MyShopPage() {
           setValue("shopLogo", s.shopLogo || "");
           setValue("shopBanner", s.shopBanner || "");
           setValue("minimumOrderAmount", s.minimumOrderAmount || 0); // ✅ NEW
+          
+          if (s.savedPayoutDetails) {
+            setValue("savedPayoutDetails", s.savedPayoutDetails);
+          }
           
           // Set Coords (fallback to Gujrat if 0)
           if (data.data.latitude && data.data.longitude) {
@@ -149,12 +159,13 @@ export default function MyShopPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:w-fit h-auto mb-4 md:mb-0">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="location">Location</TabsTrigger>
             <TabsTrigger value="hours">Hours</TabsTrigger>
+            <TabsTrigger value="banking">Banking</TabsTrigger>
           </TabsList>
 
           {/* --- TAB 1: General --- */}
@@ -367,6 +378,49 @@ export default function MyShopPage() {
                     <Input type="time" className="pl-9" {...register("closingTime")} />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* --- TAB 6: Banking --- */}
+          <TabsContent value="banking" className="mt-6 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Banking & Payout Details</CardTitle>
+                <CardDescription>Setup where you want to receive your withdrawals.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Payment Method</Label>
+                    <Select 
+                      onValueChange={(val) => setValue("savedPayoutDetails.method", val, { shouldDirty: true })} 
+                      value={watch("savedPayoutDetails.method")}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select Method" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EasyPaisa">EasyPaisa</SelectItem>
+                        <SelectItem value="JazzCash">JazzCash</SelectItem>
+                        <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {watch("savedPayoutDetails.method") === "Bank Transfer" && (
+                    <div className="space-y-2">
+                        <Label>Bank Name</Label>
+                        <Input {...register("savedPayoutDetails.bankName")} placeholder="e.g. Meezan Bank, HBL" />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                     <Label>Account Number / IBAN</Label>
+                     <Input {...register("savedPayoutDetails.accountNumber")} placeholder="0300-1234567 or PK..." />
+                  </div>
+
+                  <div className="space-y-2">
+                     <Label>Account Title</Label>
+                     <Input {...register("savedPayoutDetails.accountTitle")} placeholder="e.g. Ali Khan" />
+                  </div>
               </CardContent>
             </Card>
           </TabsContent>

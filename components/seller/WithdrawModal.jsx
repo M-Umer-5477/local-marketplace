@@ -9,23 +9,33 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowDownLeft, Loader2 } from "lucide-react";
 
-export default function WithdrawModal({ balance, onSuccess }) {
+export default function WithdrawModal({ balance, savedPayoutDetails, onSuccess }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Form State
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState("EasyPaisa");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [accountTitle, setAccountTitle] = useState("");
+  const [method, setMethod] = useState(savedPayoutDetails?.method || "EasyPaisa");
+  const [bankName, setBankName] = useState(savedPayoutDetails?.bankName || "");
+  const [accountNumber, setAccountNumber] = useState(savedPayoutDetails?.accountNumber || "");
+  const [accountTitle, setAccountTitle] = useState(savedPayoutDetails?.accountTitle || "");
 
   // ✅ Auto-Fill from previous session
-  // You can pass this prop from the parent or fetch it here.
-  // For simplicity, we assume the user might type it once.
+  useEffect(() => {
+    if (savedPayoutDetails) {
+      if (savedPayoutDetails.method) setMethod(savedPayoutDetails.method);
+      if (savedPayoutDetails.bankName) setBankName(savedPayoutDetails.bankName);
+      if (savedPayoutDetails.accountNumber) setAccountNumber(savedPayoutDetails.accountNumber);
+      if (savedPayoutDetails.accountTitle) setAccountTitle(savedPayoutDetails.accountTitle);
+    }
+  }, [savedPayoutDetails]);
   
   const handleSubmit = async () => {
     if (!amount || !accountNumber || !accountTitle) {
       return toast.error("Please fill all fields");
+    }
+    if (method === "Bank Transfer" && !bankName) {
+      return toast.error("Please enter a Bank Name");
     }
     if (Number(amount) > balance) {
         return toast.error("Insufficient balance");
@@ -41,7 +51,7 @@ export default function WithdrawModal({ balance, onSuccess }) {
           amount: Number(amount),
           method,
           bankDetails: {
-              bankName: method, // e.g. "EasyPaisa"
+              bankName: method === "Bank Transfer" ? bankName : method, // e.g. "EasyPaisa"
               accountNumber,
               accountTitle
           }
@@ -106,6 +116,18 @@ export default function WithdrawModal({ balance, onSuccess }) {
                  <option value="Bank Transfer">Bank Transfer</option>
              </select>
           </div>
+
+          {/* Conditional Bank Name */}
+          {method === "Bank Transfer" && (
+            <div className="space-y-2">
+               <Label>Bank Name</Label>
+               <Input 
+                  placeholder="e.g. Meezan Bank, HBL" 
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+               />
+            </div>
+          )}
 
           {/* Account Details */}
           <div className="space-y-2">

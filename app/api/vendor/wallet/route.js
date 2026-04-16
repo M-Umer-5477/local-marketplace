@@ -16,7 +16,7 @@ export async function GET(req) {
 
     // 1. Fetch Seller (Just for Balance & Settings)
     const seller = await Seller.findOne({ email: session.user.email })
-      .select("walletBalance commissionRate bankDetails"); // We don't need 'transactions' array anymore
+      .select("walletBalance commissionRate savedPayoutDetails"); // We don't need 'transactions' array anymore
 
     if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
 
@@ -44,6 +44,7 @@ export async function GET(req) {
       wallet: {
         balance: seller.walletBalance,
         commissionRate: seller.commissionRate,
+        savedPayoutDetails: seller.savedPayoutDetails,
         history: history, 
         requests: requests 
       }

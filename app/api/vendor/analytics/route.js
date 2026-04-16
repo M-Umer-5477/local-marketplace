@@ -20,6 +20,25 @@ export async function GET(req) {
 
     const shopId = seller._id;
 
+    // --- Date Filter Logic ---
+    const { searchParams } = new URL(req.url);
+    const range = searchParams.get('range') || 'month';
+    
+    let dateFilter = {};
+    const now = new Date();
+    
+    if (range === 'today') {
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+      dateFilter = { createdAt: { $gte: today } };
+    } else if (range === 'week') {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      dateFilter = { createdAt: { $gte: weekAgo } };
+    } else if (range === 'month') {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dateFilter = { createdAt: { $gte: monthAgo } };
+    }
+
     // --- Helper: Get date range ---
     const getTodayRange = () => {
       const start = new Date();
@@ -53,33 +72,71 @@ export async function GET(req) {
       return { $gte: start, $lte: end };
     };
 
-    // --- 1. KPIs Calculation (Daily Context Split) ---
-    const todayOrders = await Order.find({ shopId, createdAt: getTodayRange(), orderStatus: { $ne: "Cancelled" }});
-    const yesterdayOrders = await Order.find({ shopId, createdAt: getYesterdayRange(), orderStatus: { $ne: "Cancelled" }});
+    // Calculate Weekly Date Ranges
+    const weeklyRanges = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      weeklyRanges.push({ i, date, nextDate, dayName });
+    }
 
+    // --- PARALLELIZE ALL QUERIES FOR MAX PERFORMANCE ---
+    const [
+      todayOrders,
+      yesterdayOrders,
+      pendingTasks,
+      newOrdersCount,
+      thisMonthOrders,
+      lastMonthOrders,
+      onlineOrdersLifetime,
+      offlineOrdersLifetime,
+      onlineStatusBreakdown,
+      liveOrders,
+      lowStockItems,
+      ...weeklySalesData
+    ] = await Promise.all([
+      Order.find({ shopId, createdAt: getTodayRange(), orderStatus: { $ne: "Cancelled" } }).lean(),
+      Order.find({ shopId, createdAt: getYesterdayRange(), orderStatus: { $ne: "Cancelled" } }).lean(),
+      Order.countDocuments({ shopId, source: "online", orderStatus: { $in: ["Confirmed", "Preparing", "Out_for_Delivery", "Ready_for_Pickup"] } }),
+      Order.countDocuments({ shopId, source: "online", orderStatus: "Pending" }),
+      Order.find({ shopId, ...dateFilter, orderStatus: { $ne: "Cancelled" } }).lean(),
+      Order.find({ shopId, createdAt: getLastMonthRange(), orderStatus: { $ne: "Cancelled" } }).lean(),
+      Order.countDocuments({ shopId, source: "online", ...dateFilter }),
+      Order.countDocuments({ shopId, source: "offline", ...dateFilter }),
+      Order.aggregate([
+        { $match: { shopId, source: "online", ...dateFilter } },
+        { $group: { _id: "$orderStatus", count: { $sum: 1 } } }
+      ]),
+      Order.find({ shopId, source: "online", orderStatus: "Pending" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("userId", "name")
+        .lean(),
+      Product.find({ shopId, stock: { $lt: 10 } })
+        .limit(5)
+        .select("name stock unit")
+        .lean(),
+      // 7. Weekly Omnichannel Sales Trend map
+      ...weeklyRanges.map(range => 
+         Order.find({
+            shopId,
+            createdAt: { $gte: range.date, $lt: range.nextDate },
+            orderStatus: { $ne: "Cancelled" }
+         }).lean()
+      )
+    ]);
+
+    // --- Process Output ---
     const todaySalesTotal = todayOrders.reduce((acc, o) => acc + o.total, 0);
     const todaySalesOnline = todayOrders.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
     const todaySalesOffline = todayOrders.filter(o => o.source === "offline").reduce((acc, o) => acc + o.total, 0);
 
     const yesterdaySales = yesterdayOrders.reduce((acc, o) => acc + o.total, 0);
     const todaySalesChange = yesterdaySales > 0 ? ((todaySalesTotal - yesterdaySales) / yesterdaySales * 100).toFixed(1) : 0;
-
-    // Active Jobs (Online marketplace only)
-    const pendingTasks = await Order.countDocuments({
-      shopId,
-      source: "online",
-      orderStatus: { $in: ["Confirmed", "Preparing", "Out_for_Delivery", "Ready_for_Pickup"] }
-    });
-    
-    const newOrdersCount = await Order.countDocuments({
-        shopId,
-        source: "online",
-        orderStatus: "Pending"
-    });
-
-    // --- 2. Monthly Revenue (Context Split) ---
-    const thisMonthOrders = await Order.find({ shopId, createdAt: getThisMonthRange(), orderStatus: { $ne: "Cancelled" }});
-    const lastMonthOrders = await Order.find({ shopId, createdAt: getLastMonthRange(), orderStatus: { $ne: "Cancelled" }});
 
     const totalMonthRevenue = thisMonthOrders.reduce((acc, o) => acc + o.total, 0);
     const monthOnlineRevenue = thisMonthOrders.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
@@ -88,18 +145,7 @@ export async function GET(req) {
     const lastMonthRevenue = lastMonthOrders.reduce((acc, o) => acc + o.total, 0);
     const monthRevenueChange = lastMonthRevenue > 0 ? ((totalMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : 0;
 
-    // --- 3. Omnichannel Breakdown (For Charts) ---
-    const onlineOrdersLifetime = await Order.countDocuments({ shopId, source: "online" });
-    const offlineOrdersLifetime = await Order.countDocuments({ shopId, source: "offline" });
-
-
-    // --- 4. Order Status Breakdown & Performance (ONLINE ONLY) ---
-    // We only judge performance (failure rates, completions) based on platform requests.
-    const onlineStatusBreakdown = await Order.aggregate([
-      { $match: { shopId, source: "online" } },
-      { $group: { _id: "$orderStatus", count: { $sum: 1 } } }
-    ]);
-
+    // Build Status counts map
     const statusCounts = {
       Pending: 0, Confirmed: 0, Preparing: 0, 
       Out_for_Delivery: 0, Ready_for_Pickup: 0, 
@@ -118,47 +164,21 @@ export async function GET(req) {
 
     const fulfillmentRate = totalOnlineOrders > 0 ? ((deliveredOrders / totalOnlineOrders) * 100).toFixed(1) : 0;
     const cancellationRate = totalOnlineOrders > 0 ? ((cancelledOrders / totalOnlineOrders) * 100).toFixed(1) : 0;
-
     const performanceScore = Math.max(0, 100 - (cancelledOrders * 5) - (returnedOrders * 3));
     const performanceRating = performanceScore >= 80 ? "Excellent" : performanceScore >= 60 ? "Good" : "Fair";
 
-    // --- 5. Live Incoming Orders (Online Only) ---
-    const liveOrders = await Order.find({ shopId, source: "online", orderStatus: "Pending" })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("userId", "name"); 
-
-    // --- 6. Low Stock Items (< 10 units) ---
-    const lowStockItems = await Product.find({ shopId, stock: { $lt: 10 } }).limit(5).select("name stock unit");
-
-    // --- 7. Weekly Omnichannel Sales Trend ---
-    const weeklySalesTrend = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
-
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-      
-      const daySales = await Order.find({
-        shopId,
-        createdAt: { $gte: date, $lt: nextDate },
-        orderStatus: { $ne: "Cancelled" }
-      }).lean();
-
+    // Build Weekly Sales Payload
+    const weeklySalesTrend = weeklyRanges.map((range, index) => {
+      const daySales = weeklySalesData[index];
       const onlineDaily = daySales.filter(o => o.source === "online").reduce((acc, o) => acc + o.total, 0);
       const offlineDaily = daySales.filter(o => o.source === "offline").reduce((acc, o) => acc + o.total, 0);
-
-      weeklySalesTrend.push({ 
-          day: dayName, 
+      return { 
+          day: range.dayName, 
           onlineSales: onlineDaily,
           offlineSales: offlineDaily,
           totalSales: onlineDaily + offlineDaily 
-      });
-    }
+      };
+    });
     
     return NextResponse.json({
       success: true,

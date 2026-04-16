@@ -150,7 +150,7 @@ function FeaturesSection() {
   return (
     <section className="py-24 relative overflow-hidden bg-background isolate">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,var(--color-primary)_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-[0.05] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_10%,transparent_100%)]"></div>
-      
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
@@ -168,8 +168,8 @@ function FeaturesSection() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-500 capitalize ${activeTab === tab
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
                   }`}
               >
                 For {tab}

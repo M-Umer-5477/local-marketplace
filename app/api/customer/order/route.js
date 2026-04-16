@@ -129,6 +129,7 @@ import db from "@/lib/db";
 import Order from "@/models/order";
 import Product from "@/models/product";
 import Seller from "@/models/seller"; // ✅ NEW: Needed to get commission rate
+import { sendEmail } from "@/lib/mailer";
 import { getServerSession } from "next-auth"; 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -245,6 +246,26 @@ export async function POST(req) {
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity }
       });
+    }
+
+    // --- 7. Notify Vendor ---
+    if (seller.email) {
+        try {
+            const subject = "📦 New Order Received! - Martly";
+            const html = `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #2563eb;">New Order #${newOrder._id.toString().slice(-6)}</h2>
+                    <p>Good news! You just received a new order.</p>
+                    <p><strong>Order Total:</strong> Rs. ${total}</p>
+                    <p><strong>Delivery Mode:</strong> ${deliveryMode.replace('_', ' ')}</p>
+                    <br/>
+                    <p>Please log in to your Vendor Dashboard to accept and prepare the order.</p>
+                </div>
+            `;
+            sendEmail(seller.email, subject, html); // Non-blocking
+        } catch (err) {
+            console.error("Failed to notify vendor of new order:", err);
+        }
     }
 
     return NextResponse.json({ success: true, orderId: newOrder._id }, { status: 201 });

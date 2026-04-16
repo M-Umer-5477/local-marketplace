@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import Transaction from "@/models/transaction";
 import Seller from "@/models/seller";
+import { sendEmail } from "@/lib/mailer";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -75,6 +76,27 @@ export async function POST(req) {
             };
         }
         await Seller.findByIdAndUpdate(seller._id, updateDoc);
+    }
+
+    // --- 📧 5. SEND ADMIN NOTIFICATION (Withdrawals only) ---
+    if (type !== "Deposit") {
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL || "admin@martly.me";
+            const subject = `💸 Pending Withdrawal Request - ${seller.shopName}`;
+            const html = `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #ea580c;">Payout Request Needs Review</h2>
+                    <p><strong>Shop:</strong> ${seller.shopName}</p>
+                    <p><strong>Amount Requested:</strong> Rs. ${parseFloat(amount)}</p>
+                    <p><strong>Payout Method:</strong> ${method}</p>
+                    <br/>
+                    <p>Please log in to the admin finance portal to review and approve/reject this request.</p>
+                </div>
+            `;
+            sendEmail(adminEmail, subject, html); // Non-blocking
+        } catch (err) {
+             console.error("Failed to notify admin of withdrawal request:", err);
+        }
     }
 
     return NextResponse.json({ success: true, transaction: newTxn });

@@ -3,7 +3,7 @@ import db from "@/lib/db";
 import Seller from "@/models/seller";
 import User from "@/models/user"; 
 import bcrypt from "bcryptjs";
-import sendVerificationEmail from "@/lib/mailer"; 
+import sendVerificationEmail, { sendEmail } from "@/lib/mailer"; 
 
 export async function POST(req) {
   try {
@@ -125,8 +125,28 @@ export async function POST(req) {
 
     await newSeller.save();
 
-    // --- 4. Send OTP ---
     await sendVerificationEmail(email, otp);
+
+    // --- 4.5. Send Admin Notification ---
+    try {
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@martly.me";
+        const subject = "🔔 New Vendor Registration - Martly";
+        const html = `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2 style="color: #2563eb;">New Vendor Pending Review</h2>
+                <p><strong>Shop Name:</strong> ${shopName}</p>
+                <p><strong>Owner:</strong> ${fullName}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <br/>
+                <p>Please log in to the admin portal to review their documents.</p>
+            </div>
+        `;
+        // Send email (non-blocking)
+        sendEmail(adminEmail, subject, html);
+    } catch (err) {
+        console.error("Failed to notify admin:", err);
+    }
 
     return NextResponse.json(
       {

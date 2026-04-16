@@ -46,15 +46,15 @@ export async function PUT(req) {
 
     // Verify Seller owns this order
     const seller = await Seller.findOne({ email: session.user.email });
-    const order = await Order.findOne({ _id: orderId, shopId: seller._id });
+    const order = await Order.findOne({ _id: orderId, shopId: seller._id }).populate("userId", "name email");
 
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     // Status definitions
     const isCompleted = status === "Delivered" || status === "Picked_Up";
     const isCancelled = status === "Cancelled";
-    const isReturned = status === "Returned"; // 🚨 Tracking refused COD orders
-    const isNotPickedUp = status === "Not_Picked_Up"; // 🚨 NEW: Tracking refused pickup orders
+    const isReturned = status === "Returned"; //  Tracking refused COD orders
+    const isNotPickedUp = status === "Not_Picked_Up"; //  NEW: Tracking refused pickup orders
     const isConfirmed = status === "Confirmed"; // NEW: For setting ETA
 
     // --- 📋 SET TIMESTAMPS ---
@@ -165,6 +165,57 @@ export async function PUT(req) {
     // Finally, Update Status
     order.orderStatus = status;
     await order.save();
+
+    // --- 📧 SEND CUSTOMER STATUS EMAIL ---
+    if (order.userId && order.userId.email) {
+        try {
+            let subject = `Order Update #${orderId.slice(-6)} - Martly`;
+            let statusMessage = "Your order status has been updated.";
+            let color = "#2563eb"; // Blue
+
+            switch(status) {
+                case "Confirmed":
+                    subject = `✅ Order Confirmed! Preparing your items - Martly`;
+                    statusMessage = `Great news! <strong>${seller.shopName}</strong> has accepted your order and is now preparing it.`;
+                    color = "#16a34a"; // Green
+                    if (estimatedPrepTime) statusMessage += `<br/>Estimated Prep Time: ${estimatedPrepTime} mins.`;
+                    break;
+                case "Ready_For_Pickup":
+                case "Out_For_Delivery":
+                    subject = `🛵 Your order is on the way! - Martly`;
+                    if(status === "Ready_For_Pickup") subject = `🛍️ Your order is ready for pickup! - Martly`;
+                    statusMessage = `Your order from <strong>${seller.shopName}</strong> is ${status.replace(/_/g, ' ').toLowerCase()}.`;
+                    color = "#eab308"; // Yellow
+                    break;
+                case "Delivered":
+                case "Picked_Up":
+                    subject = `🎉 Order Completed! - Martly`;
+                    statusMessage = `Your order from <strong>${seller.shopName}</strong> has been completed successfully. Thank you for shopping!`;
+                    color = "#16a34a"; // Green
+                    break;
+                case "Cancelled":
+                case "Returned":
+                case "Not_Picked_Up":
+                    subject = `❌ Order Cancelled/Failed - Martly`;
+                    statusMessage = `Unfortunately, your order from <strong>${seller.shopName}</strong> was marked as ${status.replace(/_/g, ' ')}. Please contact the shop if you have any questions.`;
+                    color = "#dc2626"; // Red
+                    break;
+            }
+
+            const html = `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border-top: 4px solid ${color};">
+                    <h2 style="color: ${color};">Order Update</h2>
+                    <p>Dear ${order.userId.name},</p>
+                    <p>${statusMessage}</p>
+                    <br/>
+                    <p>Track your full order history in the Martly App.</p>
+                </div>
+            `;
+            sendEmail(order.userId.email, subject, html); // Non-blocking
+        } catch (err) {
+             console.error("Failed to send customer status update email:", err);
+        }
+    }
 
     return NextResponse.json({ success: true, message: "Order updated successfully" }, { status: 200 });
 

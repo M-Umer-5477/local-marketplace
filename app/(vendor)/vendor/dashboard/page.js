@@ -26,13 +26,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function SellerDashboardPage() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [range, setRange] = useState("month");
   const { resolvedTheme } = useTheme();
   const router = useRouter();
 
   // 1. Fetch Real Data
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch("/api/vendor/analytics");
+      const res = await fetch(`/api/vendor/analytics?range=${range}`);
       const result = await res.json();
       if (result.success) {
         setData(result.data);
@@ -48,7 +49,7 @@ export default function SellerDashboardPage() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [range]);
 
   // 2. Handle Shop Status Toggle
   const handleStoreStatusChange = async (isOnline) => {
@@ -126,6 +127,19 @@ if (isLoading) {
           <p className="text-muted-foreground">Overview of your shop's performance.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+          {/* Range Selector */}
+          <Select value={range} onValueChange={setRange}>
+             <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select Range" />
+             </SelectTrigger>
+             <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+             </SelectContent>
+          </Select>
+
           {/* Store Status */}
           <div className="flex items-center gap-2">
             <span className={`text-sm font-bold ${data.kpis.isOnline ? 'text-green-600' : 'text-red-500'}`}>
@@ -200,10 +214,10 @@ if (isLoading) {
           </CardContent>
         </Card>
 
-        {/* Monthly Revenue */}
+        {/* Filtered Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Gross Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Filtered Gross Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

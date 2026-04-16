@@ -45,7 +45,7 @@ export default function Footer() {
             <h3 className="font-semibold text-sm mb-3">Contact</h3>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li className="flex items-center gap-2">
-                <Mail className="h-3 w-3" /> support@martly.me
+                <Mail className="h-3 w-3" /> admin.martly@gmail.com
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-3 w-3" /> +92 300 1234567

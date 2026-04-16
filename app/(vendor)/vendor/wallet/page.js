@@ -93,9 +93,10 @@ function WalletContent() {
 />
               ) : (
                 <WithdrawModal 
-       balance={data?.balance} 
-       onSuccess={() => window.location.reload()} 
-    />
+                   balance={data?.balance} 
+                   savedPayoutDetails={data?.savedPayoutDetails}
+                   onSuccess={() => window.location.reload()} 
+                />
               )}
             </div>
           </div>
