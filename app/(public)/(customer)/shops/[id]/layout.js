@@ -1,18 +1,14 @@
 import { notFound } from "next/navigation";
+import db from "@/lib/db";
+import Seller from "@/models/seller";
 
 // This will generate metadata for individual shop pages
 export async function generateMetadata({ params }) {
   try {
     const { id } = await params;
     
-    const res = await fetch(`/api/customer/shops/${id}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
-
-    if (!res.ok) throw new Error("Shop not found");
-
-    const data = await res.json();
-    const shop = data.shop;
+    await db.connect();
+    const shop = await Seller.findById(id).select("shopName shopDescription shopBanner shopLogo shopType").lean();
 
     if (!shop) notFound();
 
@@ -22,7 +18,7 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: `${shop.shopName} | Martly Marketplace`,
         description: shop.shopDescription || "Shop online at this local store",
-        type: "business.business",
+        type: "website",
         images: [
           {
             url: shop.shopBanner || "https://martly.me/og-image.png",

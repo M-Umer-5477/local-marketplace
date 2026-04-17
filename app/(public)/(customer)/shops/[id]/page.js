@@ -156,7 +156,7 @@ export default function SingleShopPage() {
             
             <div className="h-24 w-24 md:h-32 md:w-32 rounded-2xl border-4 border-background bg-white shadow-xl overflow-hidden shrink-0">
                <img 
-                 src={shop.shopLogo || "https://via.placeholder.com/150"} 
+                 src={shop.shopLogo || "https://placehold.co/150/f97316/white?text=Shop"} 
                  alt="Logo" 
                  className={`w-full h-full object-cover ${!isOpen ? "grayscale" : ""}`}
                />
@@ -181,7 +181,7 @@ export default function SingleShopPage() {
                          {shop.totalReviews > 0 && <span className="text-primary hover:underline text-sm ml-1">({shop.totalReviews} reviews)</span>}
                        </button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent aria-describedby={undefined} className="sm:max-w-[500px]">
                       <DialogHeader>
                         <DialogTitle>Customer Reviews</DialogTitle>
                       </DialogHeader>

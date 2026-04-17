@@ -197,7 +197,7 @@ const checkIsShopOpen = (shop) => {
 // --- 3. The Shop Card Component ---
 function ShopCard({ shop }) {
   const coverImage = shop.shopBanner || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800";
-  const logoImage = shop.shopLogo || "https://via.placeholder.com/100?text=Shop";
+  const logoImage = shop.shopLogo || "https://placehold.co/100/f97316/white?text=Shop";
   const isOpen = checkIsShopOpen(shop);
 
   const distance = shop.distance ? shop.distance.toFixed(1) : null;
