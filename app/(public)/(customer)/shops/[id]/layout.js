@@ -1,23 +1,36 @@
 import { notFound } from "next/navigation";
 import db from "@/lib/db";
 import Seller from "@/models/seller";
+import mongoose from "mongoose";
 
 // This will generate metadata for individual shop pages
 export async function generateMetadata({ params }) {
+  const { id } = await params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return { title: "Shop Not Found | Martly" };
+  }
+
+  let shop = null;
   try {
-    const { id } = await params;
-    
     await db.connect();
-    const shop = await Seller.findById(id).select("shopName shopDescription shopBanner shopLogo shopType").lean();
-
-    if (!shop) notFound();
-
+    shop = await Seller.findById(id).select("shopName shopDescription shopBanner shopLogo shopType").lean();
+  } catch (error) {
+    console.error("Error generating metadata:", error);
     return {
-      title: `${shop.shopName} - Order Online | Martly`,
-      description: `Shop at ${shop.shopName}. ${shop.shopDescription || "Browse products and order online."} Fast delivery available.`,
-      openGraph: {
-        title: `${shop.shopName} | Martly Marketplace`,
-        description: shop.shopDescription || "Shop online at this local store",
+      title: "Shop | Martly",
+      description: "Browse and shop from local stores",
+    };
+  }
+
+  if (!shop) notFound();
+
+  return {
+    title: `${shop.shopName} - Order Online | Martly`,
+    description: `Shop at ${shop.shopName}. ${shop.shopDescription || "Browse products and order online."} Fast delivery available.`,
+    openGraph: {
+      title: `${shop.shopName} | Martly Marketplace`,
+      description: shop.shopDescription || "Shop online at this local store",
         type: "website",
         images: [
           {
@@ -42,13 +55,6 @@ export async function generateMetadata({ params }) {
       },
       keywords: `${shop.shopName}, ${shop.shopType}, online shopping, order online, delivery`,
     };
-  } catch (error) {
-    console.error("Error generating metadata:", error);
-    return {
-      title: "Shop | Martly",
-      description: "Browse and shop from local stores",
-    };
-  }
 }
 
 export default function ShopLayout({ children }) {

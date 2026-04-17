@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import Seller from "@/models/seller";
 import Product from "@/models/product"; // Assuming you have this model
+import mongoose from "mongoose";
 
 export async function GET(req, { params }) {
   try {
     await db.connect();
     const { id } = await params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid shop ID" }, { status: 400 });
+    }
 
     // 1. Fetch Shop Details (excluding sensitive data)
     const shop = await Seller.findById(id).select("-password -cnic -verificationDocs");
