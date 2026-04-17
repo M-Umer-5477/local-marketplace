@@ -152,9 +152,9 @@ export default function SingleShopPage() {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-6">
-          <div className="flex flex-col md:flex-row items-end md:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
             
-            <div className="h-24 w-24 md:h-32 md:w-32 rounded-2xl border-4 border-background bg-white shadow-xl overflow-hidden shrink-0">
+            <div className="hidden sm:block h-24 w-24 md:h-32 md:w-32 rounded-2xl border-4 border-background bg-white shadow-xl overflow-hidden shrink-0">
                <img 
                  src={shop.shopLogo || "https://placehold.co/150/f97316/white?text=Shop"} 
                  alt="Logo" 
@@ -175,7 +175,7 @@ export default function SingleShopPage() {
               <div className="flex flex-wrap items-center gap-4 text-sm md:text-base font-medium text-foreground/90">
                  <Dialog>
                     <DialogTrigger asChild>
-                       <button className="flex items-center gap-1 hover:bg-primary/5 px-2 py-1 -ml-2 rounded-md transition-colors">
+                       <button className="flex items-center gap-1 hover:bg-primary/5 p-1 sm:px-2 sm:py-1 -ml-1 sm:-ml-2 rounded-md transition-colors">
                          <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
                          <span className="font-bold">{shop.averageRating ? shop.averageRating.toFixed(1) : "New Shop"}</span>
                          {shop.totalReviews > 0 && <span className="text-primary hover:underline text-sm ml-1">({shop.totalReviews} reviews)</span>}
