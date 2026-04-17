@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 // --- HELPER: ROBUST Time Check Logic ---
@@ -51,6 +52,7 @@ export default function SingleShopPage() {
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [recentReviews, setRecentReviews] = useState([]);
   
   // --- STATE: Status & Location ---
   const [isOpen, setIsOpen] = useState(false); 
@@ -73,6 +75,7 @@ export default function SingleShopPage() {
           setProducts(data.products);
           setCategories(["All", ...data.categories]);
           setIsOpen(checkIsShopOpen(data.shop));
+          if (data.recentReviews) setRecentReviews(data.recentReviews);
         }
       } catch (error) {
         console.error("Error fetching shop:", error);
@@ -170,10 +173,52 @@ export default function SingleShopPage() {
               </div>
               
               <div className="flex flex-wrap items-center gap-4 text-sm md:text-base font-medium text-foreground/90">
-                 <div className="flex items-center gap-1">
-                   <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
-                   <span>4.8</span>
-                 </div>
+                 <Dialog>
+                    <DialogTrigger asChild>
+                       <button className="flex items-center gap-1 hover:bg-primary/5 px-2 py-1 -ml-2 rounded-md transition-colors">
+                         <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
+                         <span className="font-bold">{shop.averageRating ? shop.averageRating.toFixed(1) : "New Shop"}</span>
+                         {shop.totalReviews > 0 && <span className="text-primary hover:underline text-sm ml-1">({shop.totalReviews} reviews)</span>}
+                       </button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>Customer Reviews</DialogTitle>
+                      </DialogHeader>
+                      <ScrollArea className="max-h-[60vh] pr-4">
+                        <div className="space-y-4 mt-4">
+                          {recentReviews.length > 0 ? (
+                            recentReviews.map((review, i) => (
+                              <div key={i} className="p-4 bg-muted/30 border border-border rounded-xl">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-xs">
+                                      {review.userId?.name?.charAt(0) || "U"}
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-sm text-foreground">{review.userId?.name || "Customer"}</p>
+                                      <p className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star key={star} className={`h-3 w-3 ${star <= review.rating ? "text-orange-500 fill-orange-500" : "text-muted"}`} />
+                                    ))}
+                                  </div>
+                                </div>
+                                {review.feedback && <p className="text-sm mt-1 text-foreground/80 font-medium">"{review.feedback}"</p>}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-12 text-muted-foreground">
+                              <Star className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+                              <p className="font-medium">No reviews yet.</p>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </DialogContent>
+                 </Dialog>
                  
                  {/* Open/Close Time Info */}
                  <div className="flex items-center gap-1">
@@ -401,15 +446,6 @@ function ProductCard({ product, quantity, onAdd, onRemove, isShopOpen }) {
           >
             <div className="space-y-2.5">
               
-              {/* RATING */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
-                  <span className="text-xs font-semibold text-foreground">4.8</span>
-                </div>
-                <span className="text-xs text-muted-foreground">(128 reviews)</span>
-              </div>
-
               {/* CATEGORY & STOCK */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>

@@ -12,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Star, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 
 
@@ -40,6 +43,35 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeElapsed, setTimeElapsed] = useState(0);
+
+  // Review State
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const submitReview = async () => {
+    if (rating === 0) return toast.error("Please select a star rating first.");
+    try {
+      setIsSubmittingReview(true);
+      const res = await fetch(`/api/customer/order/${order._id}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, feedback }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Review submitted successfully!");
+        setOrder(prev => ({ ...prev, isReviewed: true, rating, feedback }));
+      } else {
+        toast.error(data.error || "Failed to submit review");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("An error occurred");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   /* ------------------- FETCH ORDER --------------------- */
   useEffect(() => {
@@ -407,34 +439,71 @@ export default function OrderDetailsPage() {
               )}
             </CardContent>
           </Card>
-{/* SECURITY CARD */}
-<div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mt-6">
-  <div className="flex items-start gap-4">
-    <div className="bg-background p-3 rounded-full shadow-sm border border-primary/10 text-primary">
-      <ShieldCheck className="h-8 w-8" />
-    </div>
-    
-    <div>
-      <h3 className="text-lg font-bold text-foreground">Secure Delivery Code</h3>
-      <p className="text-sm text-muted-foreground mt-1 mb-3">
-        For your security, the rider cannot mark this order as "Delivered" without this code. 
-        <span className="font-bold text-foreground"> Do not share it until you receive your food.</span>
-      </p>
-
-      <div className="flex items-center gap-3">
-        <div className="bg-background px-6 py-2 rounded-lg border-2 border-dashed border-primary/30 shadow-inner">
-          <span className="text-3xl font-mono font-black tracking-widest text-primary drop-shadow-sm">
-            {order.orderPin || "----"}
-          </span>
-        </div>
-        <div className="text-xs text-primary/70 font-bold uppercase tracking-wider">
-          <Lock className="h-3 w-3 inline mr-1" />
-          System Generated
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+          {/* RATING & FEEDBACK CARD */}
+          {(order.orderStatus === "Delivered" || order.orderStatus === "Picked_Up") && (
+            <Card className="border-orange-500/30 shadow-lg relative overflow-hidden mt-6">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Star className="w-32 h-32" />
+              </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-orange-600">
+                  <Star className="h-5 w-5 fill-current" /> 
+                  {order.isReviewed ? "Your Review" : "Rate Your Experience"}
+                </CardTitle>
+                <CardDescription>
+                  {order.isReviewed 
+                    ? "Thank you for sharing your feedback!" 
+                    : "How was your order? Your feedback helps the community."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {order.isReviewed ? (
+                  <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className={`h-5 w-5 ${star <= order.rating ? "text-orange-500 fill-orange-500" : "text-muted"}`} />
+                      ))}
+                    </div>
+                    {order.feedback && (
+                      <p className="text-sm italic text-muted-foreground flex gap-2">
+                        <MessageSquare className="h-4 w-4 shrink-0 mt-0.5" />"{order.feedback}"
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button 
+                          key={star} 
+                          onClick={() => setRating(star)}
+                          className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                        >
+                          <Star className={`h-8 w-8 ${star <= rating ? "text-orange-500 fill-orange-500" : "text-muted-foreground stroke-muted-foreground opacity-30"}`} />
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <Textarea 
+                      placeholder="Tell us what you liked (or what could be better)..."
+                      className="resize-none h-24"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                    />
+                    
+                    <Button 
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white" 
+                      onClick={submitReview}
+                      disabled={isSubmittingReview || rating === 0}
+                    >
+                      {isSubmittingReview ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Submit Review
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
           {/* SHOP INFO */}
           <Card>
             <CardHeader>
@@ -465,6 +534,8 @@ export default function OrderDetailsPage() {
               )}
             </CardContent>
           </Card>
+
+
         </div>
       </div>
     </div>

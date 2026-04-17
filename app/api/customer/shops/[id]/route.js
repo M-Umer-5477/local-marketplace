@@ -22,11 +22,25 @@ export async function GET(req, { params }) {
     // (Creates a list like ["Grocery", "Drinks", "Snacks"] dynamically)
     const categories = [...new Set(products.map(p => p.category))];
 
+    // 4. Fetch Recent Reviews
+    // We only need a few latest reviews to show on the shop page.
+    // Instead of importing the whole Order model at the top if it's already there or importing it now.
+    const mongoose = require("mongoose");
+    const OrderModel = mongoose.models.Order || mongoose.model("Order");
+    const User = mongoose.models.User || mongoose.model("User");
+    
+    const recentReviews = await OrderModel.find({ shopId: id, isReviewed: true })
+      .select("rating feedback userId createdAt")
+      .populate({ path: "userId", select: "name", model: User })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
     return NextResponse.json({ 
       success: true, 
       shop, 
       products, 
-      categories 
+      categories,
+      recentReviews
     });
 
   } catch (error) {

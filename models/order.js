@@ -43,6 +43,11 @@ const OrderSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   isRefunded: { type: Boolean, default: false }, // NEW FIELD to track refunds
   
+  // --- REVIEWS & FEEDBACK ---
+  isReviewed: { type: Boolean, default: false },
+  rating: { type: Number, min: 1, max: 5 },
+  feedback: { type: String },
+
   // ✅ NEW FIELD: Required for Stripe Verification API
   stripeSessionId: { 
     type: String ,

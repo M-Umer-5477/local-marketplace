@@ -63,6 +63,11 @@ const sellerSchema = new mongoose.Schema({
   payoutStatus: { type: String, default: "Unverified" },
   isActive: { type: Boolean, default: false },
   
+  // --- RATINGS & REVIEWS ---
+  averageRating: { type: Number, default: 0 },
+  totalReviews: { type: Number, default: 0 },
+
+  
   // --- WALLET & COMMISSION LOGIC (UPDATED) ---
   walletBalance: { type: Number, default: 0 }, // Negative = Seller owes Admin. Positive = Admin owes Seller.
   commissionRate: { type: Number, default: 10 }, // Percentage (e.g. 10%)

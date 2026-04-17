@@ -237,7 +237,7 @@ function ShopCard({ shop }) {
                     </h3>
                     <div className="flex items-center gap-1 text-xs font-semibold bg-secondary px-2 py-1 rounded shadow-sm">
                         <Star className="h-3 w-3 text-orange-400 fill-orange-400" />
-                        <span>4.8</span>
+                        <span>{shop.averageRating ? shop.averageRating.toFixed(1) : "New"}</span>
                     </div>
                 </div>
 
