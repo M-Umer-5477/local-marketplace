@@ -30,7 +30,6 @@ export async function GET(req, { params }) {
     // 4. Fetch Recent Reviews
     // We only need a few latest reviews to show on the shop page.
     // Instead of importing the whole Order model at the top if it's already there or importing it now.
-    const mongoose = require("mongoose");
     const OrderModel = mongoose.models.Order || mongoose.model("Order");
     const User = mongoose.models.User || mongoose.model("User");
     
