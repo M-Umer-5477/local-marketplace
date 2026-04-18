@@ -8,7 +8,7 @@ import User from "@/models/user";
 export async function GET(req, { params }) {
   try {
     await db.connect();
-    const { id } = params;
+    const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json({ error: "Invalid shop ID" }, { status: 400 });
