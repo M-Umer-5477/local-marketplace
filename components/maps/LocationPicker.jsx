@@ -1,139 +1,8 @@
-// "use client";
-// import { useState, useMemo, useEffect, useCallback } from "react";
-// import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
-// import { Loader2, MapPin } from "lucide-react";
-
-// const containerStyle = {
-//   width: "100%",
-//   height: "350px",
-//   borderRadius: "12px",
-// };
-
-// const LIBRARIES = ["places"];
-
-// export default function LocationPicker({ onLocationSelect, defaultPosition }) {
-//   const { isLoaded } = useJsApiLoader({
-//     id: "google-map-script",
-//     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY, 
-//     libraries: LIBRARIES, 
-//   });
-
-//   // Default Fallback: Gujrat, Pakistan
-//   const gujratPos = { lat: 32.5731, lng: 74.1005 };
-  
-//   // Use passed position OR fallback
-//   const initialPos = useMemo(() => defaultPosition || gujratPos, [defaultPosition]);
-  
-//   const [center, setCenter] = useState(initialPos);
-//   const [markerPos, setMarkerPos] = useState(initialPos);
-//   const [address, setAddress] = useState("Fetching location...");
-
-//   // Function to Get Text Address from Coordinates
-//   const fetchAddress = async (lat, lng) => {
-//     try {
-//       if (!window.google) return;
-//       const geocoder = new window.google.maps.Geocoder();
-//       const response = await geocoder.geocode({ location: { lat, lng } });
-      
-//       if (response.results[0]) {
-//         const formattedAddress = response.results[0].formatted_address;
-//         setAddress(formattedAddress);
-//         onLocationSelect({ lat, lng, address: formattedAddress });
-//       }
-//     } catch (error) {
-//       console.error("Geocoding error:", error);
-//       setAddress("Location pinned");
-//       onLocationSelect({ lat, lng, address: "" });
-//     }
-//   };
-
-//   // --- AUTO DETECT LOCATION ---
-//   useEffect(() => {
-//     // Only fetch if no default position was provided (i.e. it's null)
-//     if (navigator.geolocation && !defaultPosition?.lat) {
-//       navigator.geolocation.getCurrentPosition(
-//         (position) => {
-//           const userPos = {
-//             lat: position.coords.latitude,
-//             lng: position.coords.longitude,
-//           };
-//           setCenter(userPos);
-//           setMarkerPos(userPos);
-//           // Fetch address for the detected location
-//           setTimeout(() => fetchAddress(userPos.lat, userPos.lng), 500);
-//         },
-//         () => {
-//           console.log("Location denied, using default");
-//           setAddress("Default Location (Gujrat)");
-//           // If denied, update parent with the default Gujrat location
-//           fetchAddress(gujratPos.lat, gujratPos.lng);
-//         }
-//       );
-//     } else if (defaultPosition?.lat) {
-//         // If data existed (e.g. going back a step), fetch its address string
-//         fetchAddress(defaultPosition.lat, defaultPosition.lng);
-//     }
-//   }, []);
-
-//   const onMarkerDragEnd = useCallback((e) => {
-//     const newLat = e.latLng.lat();
-//     const newLng = e.latLng.lng();
-//     setMarkerPos({ lat: newLat, lng: newLng });
-//     fetchAddress(newLat, newLng); 
-//   }, []);
-
-//   if (!isLoaded) return (
-//     <div className="h-[350px] w-full flex items-center justify-center bg-muted border rounded-xl">
-//       <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
-//       <p className="ml-2 text-sm text-muted-foreground">Loading Map...</p>
-//     </div>
-//   );
-
-//   return (
-//     <div className="space-y-3">
-//       <div className="border rounded-xl overflow-hidden shadow-sm relative">
-//         <GoogleMap
-//           mapContainerStyle={containerStyle}
-//           center={center}
-//           zoom={15}
-//           options={{
-//             streetViewControl: false,
-//             mapTypeControl: false,
-//             fullscreenControl: false,
-//           }}
-//         >
-//           <Marker
-//             position={markerPos}
-//             draggable={true}
-//             onDragEnd={onMarkerDragEnd}
-//             animation={window.google?.maps?.Animation?.DROP}
-//           />
-//         </GoogleMap>
-
-//         <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg border text-sm z-10">
-//            <p className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-1">
-//              <MapPin className="w-3 h-3" /> Selected Location
-//            </p>
-//            <p className="truncate text-gray-800 font-medium mt-1">
-//              {address}
-//            </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from "@react-google-maps/api"; // 🚨 ADDED Autocomplete
-import { Loader2, MapPin, Search } from "lucide-react"; // 🚨 ADDED Search icon
+import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import { Loader2, MapPin, Search } from "lucide-react";
 
-const containerStyle = {
-  width: "100%",
-  height: "250px",
-  borderRadius: "12px",
-};
-
-// Places library is required for the Search Bar
 const LIBRARIES = ["places"];
 
 export default function LocationPicker({ onLocationSelect, defaultPosition }) {
@@ -152,16 +21,13 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
   const [center, setCenter] = useState(initialPos);
   const [markerPos, setMarkerPos] = useState(initialPos);
   const [address, setAddress] = useState("Fetching location...");
-  
-  // 🚨 NEW: Autocomplete State
   const [autocomplete, setAutocomplete] = useState(null);
-  // 🚨 NEW: Map Reference for smooth panning
   const [mapRef, setMapRef] = useState(null);
 
   // Function to Get Text Address from Coordinates
   const fetchAddress = async (lat, lng) => {
     try {
-      // ✅ FIXED: Ensure Geocoder is loaded before using it
+      // Ensure Geocoder is loaded before using it
       if (!window.google?.maps?.Geocoder) {
         console.warn("Geocoder not ready yet, will retry...");
         // Retry after 300ms if not ready
@@ -190,7 +56,7 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
 
   // --- AUTO DETECT LOCATION ---
   useEffect(() => {
-    // ✅ FIXED: Only run after Google Maps API is loaded
+    // Only run after Google Maps API is loaded
     if (!isLoaded) return;
 
     // Only fetch if no default position was provided
@@ -224,7 +90,7 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
     fetchAddress(newLat, newLng); 
   }, []);
 
-  // 🚨 NEW: Handle Search Bar Selection
+  // Handle Search Bar Selection
   const onLoad = (autocompleteInstance) => {
     setAutocomplete(autocompleteInstance);
   };
@@ -242,7 +108,7 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
         setCenter(newPos);
         setMarkerPos(newPos);
         
-        // 🚨 IMPROVED: Smooth animation using map ref
+        // Smooth animation using map ref
         if (mapRef) {
           mapRef.panTo(newPos);
           mapRef.setZoom(15);
@@ -262,13 +128,13 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
     }
   };
 
-  // 🚨 NEW: Capture map reference on load
+  // Capture map reference on load
   const onMapLoad = (mapInstance) => {
     setMapRef(mapInstance);
   };
 
   if (!isLoaded) return (
-    <div className="h-[350px] w-full flex items-center justify-center bg-muted border rounded-xl">
+    <div className="h-[200px] w-full flex items-center justify-center bg-muted border rounded-xl">
       <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
       <p className="ml-2 text-sm text-muted-foreground">Loading Map...</p>
     </div>
@@ -292,7 +158,7 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
 
       <div className="border rounded-lg overflow-hidden shadow-sm relative">
         <GoogleMap
-          mapContainerStyle={containerStyle}
+          mapContainerStyle={{ width: "100%", height: "200px", borderRadius: "8px" }}
           center={center}
           zoom={15}
           onLoad={onMapLoad}

@@ -167,9 +167,9 @@ export default function AddressSelector({ compact = false }) {
       </DialogTrigger>
 
       <DialogContent 
-        className="sm:max-w-md"
+        className={`${view === 'add' ? 'sm:max-w-lg' : 'sm:max-w-md'} max-h-[85vh] !flex !flex-col overflow-hidden`}
         onPointerDownOutside={(e) => {
-          // 🚨 FIXED: Prevent dialog from closing when clicking on autocomplete suggestions
+          // Prevent dialog from closing when clicking on autocomplete suggestions
           const target = e.target;
           if (target?.closest?.('.pac-container') || target?.closest?.('.pac-item')) {
             e.preventDefault();
@@ -229,7 +229,7 @@ export default function AddressSelector({ compact = false }) {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1 min-h-0">
              {/* The Add Address Form */}
              <LocationPicker onLocationSelect={handleLocationSelect} />
              
