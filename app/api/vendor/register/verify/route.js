@@ -12,6 +12,11 @@ export async function POST(req) {
     if (!seller) return NextResponse.json({ error: "Seller not found" }, { status: 404 });
     if (seller.isVerified) return NextResponse.json({ message: "Already verified" }, { status: 200 });
 
+    // Check OTP Expiry
+    if (seller.verificationExpires && seller.verificationExpires < new Date()) {
+        return NextResponse.json({ error: "OTP has expired. Please submit your application again to get a new code." }, { status: 400 });
+    }
+
     // Validate OTP
     if (seller.verificationToken !== otp.toString()) {
         return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });

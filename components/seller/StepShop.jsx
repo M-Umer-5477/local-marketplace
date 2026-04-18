@@ -103,6 +103,7 @@ export default function StepShop({ nextStep, prevStep, data }) {
                   <SelectItem value="General">General</SelectItem>
                   <SelectItem value="Pharmacy">Pharmacy</SelectItem>
                   <SelectItem value="Bakery">Bakery</SelectItem>
+                  <SelectItem value="Vegetable">Vegetable & Fruits</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>

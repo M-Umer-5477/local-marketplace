@@ -1,8 +1,18 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const CartContext = createContext(null);
 
@@ -17,6 +27,9 @@ export function CartProvider({ children }) {
     shopName: "",
     items: [],
   });
+
+  // --- Shop-switch confirmation state ---
+  const [shopSwitchPending, setShopSwitchPending] = useState(null);
 
   // Wait for NextAuth (important for signup auto-login)
   const isUserReady = status !== "loading" && (session === null || session?.user);
@@ -79,22 +92,22 @@ export function CartProvider({ children }) {
       localStorage.setItem("cartOwner", session.user.email);
     } else {
       // Guest mode: keep cartOwner empty
-      // localStorage.removeItem("cartOwner"); // optional: only if you want pure guest
     }
   }, [cart, session?.user?.email, isInitialized]);
 
   // ---------- ACTIONS ----------
   const addToCart = (product, shop) => {
+    // If the cart has items from a different shop, show confirmation dialog
     if (cart.shopId && cart.shopId !== shop._id) {
-      const confirmClear = window.confirm(
-        `Your cart contains items from ${cart.shopName}. Clear it to start a new order from ${shop.shopName}?`
-      );
-      if (confirmClear) {
-        clearCart();
-      }
+      setShopSwitchPending({ product, shop });
       return;
     }
 
+    addItemDirectly(product, shop);
+  };
+
+  // Internal: directly add an item without shop-switch checks
+  const addItemDirectly = useCallback((product, shop) => {
     setCart((prev) => {
       const existing = prev.items.find((i) => i.productId === product._id);
       let newItems;
@@ -127,7 +140,29 @@ export function CartProvider({ children }) {
         items: newItems,
       };
     });
-  };
+  }, []);
+
+  // Confirm shop switch: clear cart then add the pending item
+  const confirmShopSwitch = useCallback(() => {
+    if (!shopSwitchPending) return;
+    const { product, shop } = shopSwitchPending;
+    
+    // Clear cart first, then add the new item
+    setCart({ shopId: null, shopName: "", items: [] });
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("myAppCart");
+      localStorage.removeItem("cartOwner");
+    }
+    
+    setShopSwitchPending(null);
+    
+    // Add the new item after clearing
+    setTimeout(() => addItemDirectly(product, shop), 0);
+  }, [shopSwitchPending, addItemDirectly]);
+
+  const cancelShopSwitch = useCallback(() => {
+    setShopSwitchPending(null);
+  }, []);
 
   const updateQuantity = (productId, delta) => {
     setCart((prev) => {
@@ -178,6 +213,26 @@ export function CartProvider({ children }) {
       }}
     >
       {children}
+
+      {/* Shop-switch confirmation dialog */}
+      <AlertDialog open={!!shopSwitchPending} onOpenChange={(open) => !open && cancelShopSwitch()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Switch shop?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your cart contains items from <strong>{cart.shopName}</strong>. 
+              Adding this item will clear your current cart and start a new order 
+              from <strong>{shopSwitchPending?.shop?.shopName}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep current cart</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmShopSwitch}>
+              Clear & switch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CartContext.Provider>
   );
 }

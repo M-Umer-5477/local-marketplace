@@ -18,8 +18,10 @@ export async function POST(req) {
       cnic,
       shopName,
       shopType,
+      shopDescription,
       shopAddress,
       shopLocation,
+      shopLogo,
       shopBanner,
       verificationDocs,
     } = body;
@@ -83,8 +85,10 @@ export async function POST(req) {
             existingSeller.password = hashedPassword;
             existingSeller.shopName = shopName;
             existingSeller.shopType = shopType;
+            existingSeller.shopDescription = shopDescription || "";
             existingSeller.shopAddress = shopAddress;
             existingSeller.shopLocation = formattedLocation;
+            existingSeller.shopLogo = shopLogo || "";
             existingSeller.shopBanner = shopBanner;
             existingSeller.verificationDocs = verificationDocs;
             
@@ -112,8 +116,10 @@ export async function POST(req) {
       cnic,
       shopName,
       shopType,
+      shopDescription: shopDescription || "",
       shopAddress,
       shopLocation: formattedLocation, 
+      shopLogo: shopLogo || "",
       shopBanner,
       verificationDocs,
       verificationToken: otp, 

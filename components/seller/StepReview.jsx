@@ -20,6 +20,7 @@ export default function StepReview({ data, prevStep }) {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   // 1. Submit Registration Data
   const handleSubmit = async () => {
@@ -36,7 +37,7 @@ export default function StepReview({ data, prevStep }) {
       
       const result = await res.json();
 
-      if (!res.ok) throw new Error(result.error || "Submission failed");
+      if (!res.ok) throw new Error(result.message || "Submission failed");
 
       // Success: Open OTP Modal
       toast.success("Application Submitted!", {
@@ -74,6 +75,36 @@ export default function StepReview({ data, prevStep }) {
         toast.error("Verification failed");
     } finally {
         setVerifying(false);
+    }
+  };
+
+  // 3. Handle Resend OTP
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    try {
+      // Re-submit the same registration data — the API overwrites the unverified record and sends a new OTP
+      const res = await fetch("/api/vendor/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        toast.success("New OTP sent!", { description: "Check your email for the new code." });
+        setOtp("");
+        // Start 60-second cooldown
+        setResendCooldown(60);
+        const timer = setInterval(() => {
+          setResendCooldown((prev) => {
+            if (prev <= 1) { clearInterval(timer); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        toast.error(result.message || "Failed to resend OTP");
+      }
+    } catch (err) {
+      toast.error("Failed to resend OTP. Please try again.");
     }
   };
 
@@ -238,6 +269,19 @@ export default function StepReview({ data, prevStep }) {
             <Button onClick={handleVerifyOtp} className="w-full" disabled={verifying || otp.length < 6}>
                 {verifying ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Verify & Finish"}
             </Button>
+
+            <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground mb-1">Didn't receive the code?</p>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0}
+                    className="text-xs h-auto py-1"
+                >
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
+                </Button>
+            </div>
         </DialogContent>
       </Dialog>
 

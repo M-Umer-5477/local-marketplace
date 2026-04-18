@@ -7,7 +7,7 @@ const sellerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true, unique: true },
   password: { type: String, required: true, select: false },
-  cnic: { type: String, required: true },
+  cnic: { type: String, required: true, unique: true },
   role: { type: String, default: "seller" },
 
   // --- Shop Details ---
@@ -95,7 +95,6 @@ const sellerSchema = new mongoose.Schema({
   verificationToken: { type: String },
   verificationExpires: { type: Date },
 
-  createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 // --- Indexes ---
@@ -104,7 +103,7 @@ sellerSchema.index({ shopLocation: "2dsphere" });
 sellerSchema.index(
   { createdAt: 1 },
   {
-    expireAfterSeconds: 3600,
+    expireAfterSeconds: 86400, // 24 hours — gives sellers enough time to complete registration
     partialFilterExpression: { isVerified: false }
   }
 );

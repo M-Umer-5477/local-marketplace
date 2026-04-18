@@ -68,7 +68,7 @@ export default function LandingPage() {
 // ============================================================
 function HeroSection() {
   return (
-    <section className="relative pt-20 pb-28 md:pt-24 md:pb-36 overflow-hidden isolate">
+    <section className="relative pt-20 pb-28 md:pt-14 md:pb-36 overflow-hidden isolate">
       {/* Background Pattern */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,var(--color-primary)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-primary)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.04] dark:opacity-[0.06]"></div>
       {/* Gradient Blobs */}
@@ -404,14 +404,14 @@ function SellerSection() {
               </div>
 
               {/* Dashboard Preview */}
-              <div className="mt-8 rounded-xl border border-border/50 overflow-hidden bg-muted/30">
+              {/* <div className="mt-8 rounded-xl border border-border/50 overflow-hidden bg-muted/30">
                 <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/40 bg-muted/50">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-400/70"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/70"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-green-400/70"></div>
                   <span className="text-[10px] text-muted-foreground ml-2 font-medium">vendor dashboard</span>
                 </div>
-                <div className="p-4">
+                {/* <div className="p-4">
                   <Image
                     src="/assets/dp.png"
                     alt="MartLy Vendor Dashboard Preview"
@@ -420,8 +420,8 @@ function SellerSection() {
                     className="w-full h-auto rounded-lg object-cover"
                     priority
                   />
-                </div>
-              </div>
+                </div> 
+            </div> */}
             </div>
           </div>
         </div>

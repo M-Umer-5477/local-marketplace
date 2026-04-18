@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
 import { Loader2, MapPin, Search } from "lucide-react";
 
@@ -24,35 +24,56 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
   const [autocomplete, setAutocomplete] = useState(null);
   const [mapRef, setMapRef] = useState(null);
 
+  // Tracks the latest geocode request — stale responses are discarded
+  const geocodeRequestId = useRef(0);
+  // Store onLocationSelect in a ref so fetchAddress doesn't need it as a dependency
+  const onLocationSelectRef = useRef(onLocationSelect);
+  onLocationSelectRef.current = onLocationSelect;
+
   // Function to Get Text Address from Coordinates
-  const fetchAddress = async (lat, lng) => {
+  const fetchAddress = useCallback(async (lat, lng) => {
+    // Increment request ID — any in-flight request with an older ID will be ignored
+    const currentRequestId = ++geocodeRequestId.current;
+
+    // Wait for Geocoder to be ready (max ~3 seconds)
+    let retries = 0;
+    while (!window.google?.maps?.Geocoder && retries < 10) {
+      await new Promise((r) => setTimeout(r, 300));
+      retries++;
+    }
+
+    if (!window.google?.maps?.Geocoder) {
+      console.warn("Geocoder never loaded");
+      return;
+    }
+
+    // If a newer request was made while we were waiting, bail out
+    if (currentRequestId !== geocodeRequestId.current) return;
+
     try {
-      // Ensure Geocoder is loaded before using it
-      if (!window.google?.maps?.Geocoder) {
-        console.warn("Geocoder not ready yet, will retry...");
-        // Retry after 300ms if not ready
-        setTimeout(() => fetchAddress(lat, lng), 300);
-        return;
-      }
-      
       const geocoder = new window.google.maps.Geocoder();
       const response = await geocoder.geocode({ location: { lat, lng } });
       
+      // Only apply if this is still the latest request
+      if (currentRequestId !== geocodeRequestId.current) return;
+
       if (response.results[0]) {
         const formattedAddress = response.results[0].formatted_address;
         setAddress(formattedAddress);
-        if (onLocationSelect) {
-            onLocationSelect({ lat, lng, address: formattedAddress });
+        if (onLocationSelectRef.current) {
+            onLocationSelectRef.current({ lat, lng, address: formattedAddress });
         }
       }
     } catch (error) {
+      // Only apply if still the latest request
+      if (currentRequestId !== geocodeRequestId.current) return;
       console.error("Geocoding error:", error);
       setAddress("Location pinned");
-      if (onLocationSelect) {
-          onLocationSelect({ lat, lng, address: "" });
+      if (onLocationSelectRef.current) {
+          onLocationSelectRef.current({ lat, lng, address: "" });
       }
     }
-  };
+  }, []);
 
   // --- AUTO DETECT LOCATION ---
   useEffect(() => {
@@ -69,26 +90,25 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
           };
           setCenter(userPos);
           setMarkerPos(userPos);
-          // Increased delay to ensure Geocoder is ready
-          setTimeout(() => fetchAddress(userPos.lat, userPos.lng), 800);
+          fetchAddress(userPos.lat, userPos.lng);
         },
         () => {
           console.log("Location denied, using default");
           setAddress("Default Location (Gujrat)");
-          setTimeout(() => fetchAddress(gujratPos.lat, gujratPos.lng), 800);
+          fetchAddress(gujratPos.lat, gujratPos.lng);
         }
       );
     } else if (defaultPosition?.lat) {
-        setTimeout(() => fetchAddress(defaultPosition.lat, defaultPosition.lng), 800);
+        fetchAddress(defaultPosition.lat, defaultPosition.lng);
     }
-  }, [isLoaded, defaultPosition]);
+  }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onMarkerDragEnd = useCallback((e) => {
     const newLat = e.latLng.lat();
     const newLng = e.latLng.lng();
     setMarkerPos({ lat: newLat, lng: newLng });
     fetchAddress(newLat, newLng); 
-  }, []);
+  }, [fetchAddress]);
 
   // Handle Search Bar Selection
   const onLoad = (autocompleteInstance) => {
@@ -103,6 +123,9 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
         const newLat = place.geometry.location.lat();
         const newLng = place.geometry.location.lng();
         const newPos = { lat: newLat, lng: newLng };
+
+        // Cancel any pending geocode from a previous pin
+        geocodeRequestId.current++;
 
         // 1. Move the map and the pin
         setCenter(newPos);
@@ -197,7 +220,8 @@ export default function LocationPicker({ onLocationSelect, defaultPosition }) {
           pointer-events: auto !important;
           z-index: 9999 !important;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 }
