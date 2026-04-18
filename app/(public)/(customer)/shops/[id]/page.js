@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Search, MapPin, Star, Clock, ShoppingBag, Plus, Minus, AlertTriangle, Navigation, Lock } from "lucide-react"; 
+import { Search, MapPin, Star, Clock, ShoppingBag, Plus, Minus, AlertTriangle, Navigation, Lock, Store } from "lucide-react"; 
 import { toast } from "sonner"; 
 import Link from "next/link";
 
@@ -110,112 +110,157 @@ export default function SingleShopPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       
-      {/* --- SECTION 1: Header --- */}
-      <div className="relative h-64 md:h-80 w-full overflow-hidden">
-        <div className="absolute inset-0">
+      {/* --- SECTION 1: Hero Banner --- */}
+      <div className="relative w-full">
+        {/* Banner Image */}
+        <div className="relative h-40 sm:h-52 md:h-64 w-full overflow-hidden">
           <img 
             src={shop.shopBanner || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80"} 
             alt="Cover" 
             className={`w-full h-full object-cover ${!isOpen ? "grayscale" : ""}`}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
-            
-            <div className="hidden sm:block h-24 w-24 md:h-32 md:w-32 rounded-2xl border-4 border-background bg-white shadow-xl overflow-hidden shrink-0">
-               <img 
-                 src={shop.shopLogo || "https://placehold.co/150/f97316/white?text=Shop"} 
-                 alt="Logo" 
-                 className={`w-full h-full object-cover ${!isOpen ? "grayscale" : ""}`}
-               />
-            </div>
-
-            <div className="flex-1 space-y-2 mb-1">
-              <div className="flex items-center gap-3">
-                 <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight drop-shadow-sm">
-                   {shop.shopName}
-                 </h1>
-                 <Badge className={isOpen ? "bg-green-600 hover:bg-green-600" : "bg-destructive"}>
-                   {isOpen ? "Open Now" : "Closed"}
-                 </Badge>
-              </div>
+        {/* Shop Info Card - overlaps the banner */}
+        <div className="relative container mx-auto px-4 -mt-16 sm:-mt-20 z-10">
+          <div className="bg-card border border-border rounded-2xl shadow-xl p-4 sm:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
               
-              <div className="flex flex-wrap items-center gap-4 text-sm md:text-base font-medium text-foreground/90">
-                 <Dialog>
-                    <DialogTrigger asChild>
-                       <button className="flex items-center gap-1 hover:bg-primary/5 p-1 sm:px-2 sm:py-1 -ml-1 sm:-ml-2 rounded-md transition-colors">
-                         <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
-                         <span className="font-bold">{shop.averageRating ? shop.averageRating.toFixed(1) : "New Shop"}</span>
-                         {shop.totalReviews > 0 && <span className="text-primary hover:underline text-sm ml-1">({shop.totalReviews} reviews)</span>}
-                       </button>
-                    </DialogTrigger>
-                    <DialogContent aria-describedby={undefined} className="sm:max-w-[500px]">
-                      <DialogHeader>
-                        <DialogTitle>Customer Reviews</DialogTitle>
-                      </DialogHeader>
-                      <ScrollArea className="max-h-[60vh] pr-4">
-                        <div className="space-y-4 mt-4">
-                          {recentReviews.length > 0 ? (
-                            recentReviews.map((review, i) => (
-                              <div key={i} className="p-4 bg-muted/30 border border-border rounded-xl">
-                                <div className="flex justify-between items-start mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-xs">
-                                      {review.userId?.name?.charAt(0) || "U"}
-                                    </div>
-                                    <div>
-                                      <p className="font-bold text-sm text-foreground">{review.userId?.name || "Customer"}</p>
-                                      <p className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-0.5">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star key={star} className={`h-3 w-3 ${star <= review.rating ? "text-orange-500 fill-orange-500" : "text-muted"}`} />
-                                    ))}
-                                  </div>
-                                </div>
-                                {review.feedback && <p className="text-sm mt-1 text-foreground/80 font-medium">"{review.feedback}"</p>}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-center py-12 text-muted-foreground">
-                              <Star className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
-                              <p className="font-medium">No reviews yet.</p>
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </DialogContent>
-                 </Dialog>
-                 
-                 {/* Open/Close Time Info */}
-                 <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{isOpen ? `Closes ${shop.closingTime}` : `Opens ${shop.openingTime}`}</span>
-                 </div>
+              {/* LEFT: Logo + Shop Identity */}
+              <div className="flex gap-4 sm:gap-5 flex-1 min-w-0">
+                {/* Logo */}
+                <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-xl sm:rounded-2xl border-2 border-border bg-white shadow-md overflow-hidden shrink-0">
+                  <img 
+                    src={shop.shopLogo || "https://placehold.co/150/f97316/white?text=Shop"} 
+                    alt="Logo" 
+                    className={`w-full h-full object-cover ${!isOpen ? "grayscale" : ""}`}
+                  />
+                </div>
 
-                 {/* Radar Info */}
-                 {distance !== null ? (
-                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${isDeliverable ? "bg-green-500/10 border-green-500/20 text-green-700" : "bg-red-500/10 border-red-500/20 text-red-700"}`}>
+                {/* Shop Details */}
+                <div className="flex-1 min-w-0">
+                  {/* Row 1: Name + Status Badge */}
+                  <div className="flex items-start gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground tracking-tight leading-tight truncate">
+                      {shop.shopName}
+                    </h1>
+                    <Badge className={`shrink-0 mt-0.5 sm:mt-1 ${isOpen ? "bg-green-600 hover:bg-green-600" : "bg-destructive"}`}>
+                      {isOpen ? "Open" : "Closed"}
+                    </Badge>
+                  </div>
+
+                  {/* Row 2: Meta info pills */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 sm:mt-3 text-sm text-muted-foreground">
+                    {/* Rating */}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+                          <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
+                          <span className="font-semibold text-foreground">{shop.averageRating ? shop.averageRating.toFixed(1) : "New"}</span>
+                          {shop.totalReviews > 0 && <span className="text-primary text-xs">({shop.totalReviews})</span>}
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent aria-describedby={undefined} className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Customer Reviews</DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="max-h-[60vh] pr-4">
+                          <div className="space-y-4 mt-4">
+                            {recentReviews.length > 0 ? (
+                              recentReviews.map((review, i) => (
+                                <div key={i} className="p-4 bg-muted/30 border border-border rounded-xl">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary text-xs">
+                                        {review.userId?.name?.charAt(0) || "U"}
+                                      </div>
+                                      <div>
+                                        <p className="font-bold text-sm text-foreground">{review.userId?.name || "Customer"}</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} className={`h-3 w-3 ${star <= review.rating ? "text-orange-500 fill-orange-500" : "text-muted"}`} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  {review.feedback && <p className="text-sm mt-1 text-foreground/80 font-medium">"{review.feedback}"</p>}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-12 text-muted-foreground">
+                                <Star className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+                                <p className="font-medium">No reviews yet.</p>
+                              </div>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </DialogContent>
+                    </Dialog>
+
+                    <span className="text-border hidden sm:inline">•</span>
+
+                    {/* Time */}
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{isOpen ? `Closes ${shop.closingTime}` : `Opens ${shop.openingTime}`}</span>
+                    </div>
+
+                    <span className="text-border hidden sm:inline">•</span>
+
+                    {/* Distance / Delivery */}
+                    {distance !== null ? (
+                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${isDeliverable ? "bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400" : "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400"}`}>
                         <Navigation className="h-3 w-3" />
-                        <span>{distance} km away</span>
-                    </div>
-                 ) : (
-                    <div className="flex items-center gap-1 bg-secondary px-2 py-0.5 rounded-full">
+                        <span>{distance} km</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs">
                         <MapPin className="h-3 w-3" />
-                        <span className="text-xs">Select address to view delivery range</span>
-                    </div>
-                 )}
+                        <span>Set address for delivery info</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {/* RIGHT: Quick Info Stats (visible on md+) */}
+              <div className="hidden md:flex items-center gap-3 shrink-0">
+                {/* Delivery Radius */}
+                <div className="flex flex-col items-center justify-center bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 min-w-[90px]">
+                  <Navigation className="h-4 w-4 text-primary mb-1" />
+                  <span className="text-lg font-bold text-foreground">{shop.deliveryRadius || 5} km</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Delivery</span>
+                </div>
+
+                {/* Min Order */}
+                {shop.minimumOrderAmount > 0 && (
+                  <div className="flex flex-col items-center justify-center bg-orange-500/5 border border-orange-500/10 rounded-xl px-4 py-3 min-w-[90px]">
+                    <ShoppingBag className="h-4 w-4 text-orange-500 mb-1" />
+                    <span className="text-lg font-bold text-foreground">Rs. {shop.minimumOrderAmount}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Min Order</span>
+                  </div>
+                )}
+
+                {/* Shop Type */}
+                {shop.shopType && (
+                  <div className="flex flex-col items-center justify-center bg-muted/50 border border-border rounded-xl px-4 py-3 min-w-[90px]">
+                    <Store className="h-4 w-4 text-muted-foreground mb-1" />
+                    <span className="text-sm font-bold text-foreground capitalize">{shop.shopType}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Category</span>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
       </div>
 
       {/* --- ALERTS SECTION --- */}
-      <div className="space-y-1">
+      <div className="space-y-1 mt-4">
           {/* 1. CLOSED WARNING */}
           {!isOpen && (
             <div className="bg-destructive/10 border-y border-destructive/20 p-4 animate-in slide-in-from-top-2">
