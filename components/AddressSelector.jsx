@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { MapPin, Plus, Check, Loader2, ArrowLeft, Home, Briefcase, Map, LogIn } from "lucide-react";
+import { MapPin, Plus, Check, Loader2, ArrowLeft, Home, Briefcase, Map, LogIn, ChevronDown } from "lucide-react";
 import LocationPicker from "@/components/maps/LocationPicker";
 import CheckoutAuthModal from "@/components/auth/CheckoutAuthModal"; 
 
@@ -84,10 +84,16 @@ export default function AddressSelector({ compact = false }) {
         <CheckoutAuthModal>
           <Button 
             variant="outline" 
-            className="gap-2 border-primary/20 hover:bg-primary/5 transition-all text-xs whitespace-nowrap"
+            className="h-auto py-1.5 px-3 gap-2.5 border-primary/20 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-xl group"
           >
-            <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span>Login</span>
+            <div className="p-1 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors shrink-0">
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[10px] font-semibold text-muted-foreground leading-tight">Deliver to</span>
+              <span className="text-xs font-bold text-foreground leading-tight">Set location</span>
+            </div>
+            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
           </Button>
         </CheckoutAuthModal>
       );
@@ -130,18 +136,25 @@ export default function AddressSelector({ compact = false }) {
     }}>
       <DialogTrigger asChild>
         {compact ? (
-          // Navbar version - compact
+          // Navbar version - compact, two-line
           <Button 
             variant="outline" 
-            className="gap-2 border-primary/20 hover:bg-primary/5 transition-all text-xs whitespace-nowrap"
+            className="h-auto py-1.5 px-3 gap-2.5 border-primary/20 hover:bg-primary/5 hover:border-primary/30 transition-all rounded-xl group max-w-[220px]"
           >
-            <MapPin className="h-4 w-4 text-primary shrink-0" />
-            <span className="hidden sm:inline">{selectedAddress?.label || "Address"}</span>
-            <span className="sm:hidden">📍</span>
+            <div className="p-1 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors shrink-0">
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <div className="flex flex-col items-start overflow-hidden">
+              <span className="text-[10px] font-semibold text-muted-foreground leading-tight">Deliver to</span>
+              <span className="text-xs font-bold text-foreground leading-tight truncate w-full">
+                {selectedAddress ? `${selectedAddress.label} · ${selectedAddress.city}` : "Select address"}
+              </span>
+            </div>
+            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
           </Button>
         ) : (
           // Full version for other pages
-          <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5 transition-all max-w-[250px] justify-start">
+          <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5 transition-all max-w-[250px] justify-start rounded-xl">
             <MapPin className="h-4 w-4 text-primary shrink-0" />
             <div className="flex flex-col items-start overflow-hidden">
               <span className="text-[10px] text-muted-foreground font-semibold leading-tight uppercase tracking-wider">Delivering to</span>
