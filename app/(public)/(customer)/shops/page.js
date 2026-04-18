@@ -9,9 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import AddressSelector from "@/components/AddressSelector"; // Reusing your existing modal trigger if needed
-
-
+import AddressSelector from "@/components/AddressSelector";
+import { checkIsShopOpen } from "@/lib/shopUtils";
 
 export default function ShopsListingPage() {
   const { selectedAddress, loading: addressLoading } = useAddress(); 
@@ -167,32 +166,6 @@ export default function ShopsListingPage() {
     </div>
   );
 }
-
-// --- HELPER: Check if Shop is Open based on Time ---
-const checkIsShopOpen = (shop) => {
-  if (shop.isShopOpen === false) return false;
-  if (!shop.openingTime || !shop.closingTime) return true;
-
-  try {
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const [openH, openM] = shop.openingTime.split(":").map(Number);
-      const [closeH, closeM] = shop.closingTime.split(":").map(Number);
-
-      if(isNaN(openH) || isNaN(closeH)) return true;
-
-      const startMinutes = openH * 60 + openM;
-      const endMinutes = closeH * 60 + closeM;
-
-      if (endMinutes > startMinutes) {
-        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
-      } else {
-        return currentMinutes >= startMinutes || currentMinutes < endMinutes;
-      }
-  } catch (e) {
-      return true;
-  }
-};
 
 // --- 3. The Shop Card Component ---
 function ShopCard({ shop }) {

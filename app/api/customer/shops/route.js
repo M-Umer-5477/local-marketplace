@@ -1,68 +1,8 @@
-
-// import { NextResponse } from "next/server";
-// import db from "@/lib/db";
-// import Seller from "@/models/seller";
-
-// export async function GET(req) {
-//   try {
-//     await db.connect();
-
-//     const { searchParams } = new URL(req.url);
-//     // We don't strictly need lat/lng here because frontend does the math,
-//     // but we keep them in params in case you want to enable server-side sorting later.
-//     // const lat = searchParams.get("lat"); 
-//     // const lng = searchParams.get("lng");
-    
-//     const category = searchParams.get("category");
-//     const search = searchParams.get("search");
-
-//     // 1. Build the Filter Query
-//     let query = { 
-//       isShopOpen: true,        // Only show open shops
-//       isActive: true,          // Only admin-approved shops
-//       verificationStatus: "Approved" 
-//     };
-
-//     // 2. Text Search (Case-insensitive)
-//     if (search) {
-//       query.shopName = { $regex: search, $options: "i" };
-//     }
-
-//     // 3. Category Filter
-//     if (category && category !== "All") {
-//       query.shopType = category;
-//     }
-
-//     // 4. Fetch Shops
-//     // We explicitly exclude heavy/private fields, but ensure 'shopLocation' and 'deliveryRadius' are sent.
-//     const shops = await Seller.find(query)
-//       .sort({ createdAt: -1 }) // Newest shops first (Frontend will re-sort by distance)
-//       .select("-password -cnic -verificationDocs -stripeAccountId -verificationToken");
-
-//     return NextResponse.json({ success: true, count: shops.length, shops });
-
-//   } catch (error) {
-//     console.error("Shop Fetch Error:", error);
-//     return NextResponse.json({ error: "Failed to fetch shops" }, { status: 500 });
-//   }
-// }
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import Seller from "@/models/seller";
+import { calculateDistance } from "@/lib/geo";
 
-// --- RADAR MATH IN THE BACKEND ---
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-  const R = 6371; // Earth radius in km
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; 
-};
 
 export async function GET(req) {
   try {

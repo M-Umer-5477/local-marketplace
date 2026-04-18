@@ -5,8 +5,11 @@ import { Search, MapPin, Star, Clock, ShoppingBag, Plus, Minus, AlertTriangle, N
 import { toast } from "sonner"; 
 import Link from "next/link";
 
+
 import { useCart } from "@/context/cartContext";
-import { useAddress } from "@/context/addressContext"; // ✅ IMPORT GLOBAL ADDRESS
+import { useAddress } from "@/context/addressContext";
+import { checkIsShopOpen } from "@/lib/shopUtils";
+import { calculateDistance } from "@/lib/geo";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,33 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-// --- HELPER: ROBUST Time Check Logic ---
-const checkIsShopOpen = (shop) => {
-  if (!shop) return false;
-  if (shop.isShopOpen === false) return false; 
-  if (!shop.openingTime || !shop.closingTime) return true; 
-
-  try {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const [openH, openM] = shop.openingTime.split(":").map(Number);
-    const [closeH, closeM] = shop.closingTime.split(":").map(Number);
-
-    if (isNaN(openH) || isNaN(closeH)) return true; // Safe fallback
-
-    const startMinutes = openH * 60 + (openM || 0);
-    const endMinutes = closeH * 60 + (closeM || 0);
-
-    if (endMinutes > startMinutes) {
-      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
-    } else {
-      return currentMinutes >= startMinutes || currentMinutes < endMinutes;
-    }
-  } catch (error) {
-    return true; // Safe fallback
-  }
-};
 
 export default function SingleShopPage() {
   const params = useParams(); 
@@ -92,20 +68,14 @@ export default function SingleShopPage() {
   useEffect(() => {
     if (!shop || !shop.shopLocation) return;
 
-    // ✅ If the user has an address set, calculate distance from that address
+    // If the user has an address set, calculate distance from that address
     if (selectedAddress && selectedAddress.location?.coordinates) {
         const userLat = selectedAddress.location.coordinates[1];
         const userLng = selectedAddress.location.coordinates[0];
         const shopLat = shop.shopLocation.coordinates[1];
         const shopLng = shop.shopLocation.coordinates[0];
         
-        const R = 6371; 
-        const dLat = (shopLat - userLat) * (Math.PI / 180);
-        const dLon = (shopLng - userLng) * (Math.PI / 180);
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(userLat * (Math.PI/180)) * Math.cos(shopLat * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const dist = parseFloat((R * c).toFixed(1));
+        const dist = parseFloat(calculateDistance(userLat, userLng, shopLat, shopLng)?.toFixed(1));
 
         setDistance(dist);
         const radius = shop.deliveryRadius || 5; 
@@ -115,7 +85,7 @@ export default function SingleShopPage() {
         setDistance(null);
         setIsDeliverable(true);
     }
-  }, [shop, selectedAddress]); // ✅ Re-run if they change address in the header
+  }, [shop, selectedAddress]);
 
   // -- Filters --
   const filteredProducts = products.filter((p) => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ClearCartOnMount from "./ClearCartOnMount";
 import {
-  Loader2, CheckCircle2, Package, Truck, Store, MapPin, Phone, ArrowLeft, ShoppingBag
+  Loader2, CheckCircle2, Package, Truck, Store, MapPin, Phone, ArrowLeft, ShoppingBag, XCircle, RotateCcw
 } from "lucide-react";
 import { ShieldCheck, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,7 @@ export default function OrderDetailsPage() {
   /* ------------------- TIME TRACKER (updates every second) --------------------- */
   useEffect(() => {
     // Stop tracking time after order is completed
-    const isCompleted = ["Delivered", "Picked_Up", "Cancelled"].includes(order?.orderStatus);
+    const isCompleted = ["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(order?.orderStatus);
     if (isCompleted || !order?.statusUpdatedAt && !order?.confirmedAt) return;
 
     const interval = setInterval(() => {
@@ -142,7 +142,7 @@ export default function OrderDetailsPage() {
 
   const formatETA = (etaDate) => {
     // Don't show ETA if order is completed
-    const isCompleted = ["Delivered", "Picked_Up", "Cancelled"].includes(order?.orderStatus);
+    const isCompleted = ["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(order?.orderStatus);
     if (isCompleted) return null;
     if (!etaDate) return null;
     
@@ -199,9 +199,21 @@ export default function OrderDetailsPage() {
 
   const isPickup = order.deliveryMode === "store_pickup";
   const isCancelled = order.orderStatus === "Cancelled";
+  const isReturned = order.orderStatus === "Returned";
+  const isNotPickedUp = order.orderStatus === "Not_Picked_Up";
+  const isTerminalFailure = isCancelled || isReturned || isNotPickedUp;
+
+  // For terminal failure states, show the full stepper as completed up to the last step
   const STEPS = isPickup ? PICKUP_STEPS : DELIVERY_STEPS;
 
-  const currentIndex = STEPS.findIndex((s) => s.id === order.orderStatus);
+  // If the order reached a terminal failure state, show progress up to where it failed
+  let currentIndex;
+  if (isReturned || isNotPickedUp) {
+    // These orders went through the full flow but ended badly — show stepper as complete
+    currentIndex = STEPS.length - 1;
+  } else {
+    currentIndex = STEPS.findIndex((s) => s.id === order.orderStatus);
+  }
 
   const formatDate = (d) =>
     new Date(d).toLocaleDateString() +
@@ -211,6 +223,8 @@ export default function OrderDetailsPage() {
   /* ------------------- STATUS TITLE --------------------- */
   function getMainStatusTitle() {
     if (isCancelled) return "Order Cancelled";
+    if (isReturned) return "Order Returned";
+    if (isNotPickedUp) return "Order Not Picked Up";
 
     if (isPickup) {
       if (order.orderStatus === "Ready_for_Pickup") return "Ready for Pickup";
@@ -244,7 +258,7 @@ export default function OrderDetailsPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* STATUS CARD */}
           <Card className="border-primary/20 shadow-md">
-            <div className={`h-2 w-full ${isCancelled ? "bg-red-500" : "bg-green-500"}`} />
+            <div className={`h-2 w-full ${isTerminalFailure ? "bg-red-500" : "bg-green-500"}`} />
 
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -257,21 +271,21 @@ export default function OrderDetailsPage() {
                         ⏱️ {formatETA(getETA())}
                       </div>
                     )}
-                    {order.statusUpdatedAt && order.orderStatus !== "Pending" && !["Delivered", "Picked_Up", "Cancelled"].includes(order.orderStatus) && (
+                    {order.statusUpdatedAt && order.orderStatus !== "Pending" && !["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(order.orderStatus) && (
                       <div className="text-xs text-muted-foreground">
                         {order.orderStatus.replace(/_/g, " ")} for {timeElapsed} min{timeElapsed !== 1 ? "s" : ""}
                       </div>
                     )}
                   </CardDescription>
                 </div>
-                <Badge variant={isCancelled ? "destructive" : "default"}>
+                <Badge variant={isTerminalFailure ? "destructive" : "default"}>
                   {order.orderStatus.replace(/_/g, " ")}
                 </Badge>
               </div>
             </CardHeader>
 
             <CardContent>
-              {!isCancelled && (
+              {!isTerminalFailure && (
                 <>
                   <div className="relative flex justify-between items-center mt-6 mb-2">
                     {/* BACK LINE */}

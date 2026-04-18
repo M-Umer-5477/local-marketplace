@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { 
   Loader2, Package, ChevronRight, Clock, MapPin, 
   Store, ShoppingBag, Calendar, AlertCircle, CheckCircle 
@@ -14,15 +15,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// SEO Metadata
-
 
 export default function MyOrdersPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect unauthenticated users
   useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
     const fetchOrders = async () => {
       try {
         const res = await fetch("/api/customer/order");
@@ -37,9 +46,9 @@ export default function MyOrdersPage() {
       }
     };
     fetchOrders();
-  }, []);
+  }, [status]);
 
-  if (loading) {
+  if (loading || status === "loading") {
     return (
       <div className="h-screen flex items-center justify-center">
         <Loader2 className="animate-spin h-8 w-8 text-primary" />
@@ -62,7 +71,7 @@ export default function MyOrdersPage() {
 
   // 🚨 ADDED "Returned" to move it to the past orders tab
   const pastOrders = orders.filter(o =>
-    ["Delivered", "Cancelled", "Picked_Up", "Returned"].includes(o.orderStatus)
+    ["Delivered", "Cancelled", "Picked_Up", "Returned", "Not_Picked_Up"].includes(o.orderStatus)
   );
 
   return (
@@ -133,7 +142,8 @@ function OrderListItem({ order, isActive }) {
       case "Out_for_Delivery": return "bg-primary hover:bg-primary/90";
       case "Delivered": return "bg-green-600 hover:bg-green-700";
       case "Cancelled": return "bg-red-500 hover:bg-red-600";
-      case "Returned": return "bg-slate-600 hover:bg-slate-700"; // 🚨 NEW COLOR FOR RETURNED
+      case "Returned": return "bg-slate-600 hover:bg-slate-700";
+      case "Not_Picked_Up": return "bg-amber-600 hover:bg-amber-700";
       default: return "bg-gray-500";
     }
   };

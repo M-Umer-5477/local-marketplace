@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 
 import { Loader2, MapPin, CreditCard, Banknote, ArrowLeft, ShoppingBag, Store, AlertTriangle } from "lucide-react";
+import { calculateDistance } from "@/lib/geo";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -36,29 +37,17 @@ export default function CheckoutPage() {
   const deliveryFee = deliveryMode === "home_delivery" ? 50 : 0;
   const grandTotal = cartTotal + deliveryFee;
 
-  // --- RADAR MATH IN CHECKOUT ---
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-    const R = 6371; 
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; 
-  };
-
   useEffect(() => {
     setMounted(true);
     
-    // Fetch the shop details to validate distance
+    // Fetch the specific shop's details to validate distance
     const fetchShop = async () => {
       if (!cart?.shopId) return;
       try {
-         const res = await fetch(`/api/customer/shops`);
+         const res = await fetch(`/api/customer/shops/${cart.shopId}`);
          const data = await res.json();
-         if (data.success) {
-            const currentShop = data.shops.find(s => s._id === cart.shopId);
-            setShopDetails(currentShop);
+         if (data.success && data.shop) {
+            setShopDetails(data.shop);
          }
       } catch (e) { console.error(e); }
     };
@@ -162,6 +151,7 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       if (res.ok) {
+        sessionStorage.setItem("orderJustPlaced", "true");
         toast.success("Order placed successfully!");
         router.push(`/orders/${data.orderId}`);
       } else {

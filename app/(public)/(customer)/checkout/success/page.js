@@ -105,8 +105,8 @@ function SuccessContent() {
             </div>
             
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-gray-900">Payment Successful!</h1>
-                <p className="text-gray-500">Your order has been confirmed. Redirecting...</p>
+                <h1 className="text-3xl font-bold text-foreground">Payment Successful!</h1>
+                <p className="text-muted-foreground">Your order has been confirmed. Redirecting...</p>
             </div>
 
             {orderId && (
