@@ -69,6 +69,8 @@ export async function POST(request) {
     const order = new Order({
       shopId,
       source: "offline",
+      deliveryMode: "store_pickup",
+      deliveryFee: 0,
       items,
       total: serverTotal,
       payments: finalPayment > 0 ? [{ amount: finalPayment, method: paymentMethod, note: "Initial payment" }] : [],

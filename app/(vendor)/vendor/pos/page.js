@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSeller } from "@/app/(vendor)/SellerContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Search, ScanLine } from "lucide-react"; 
+import OrderInvoice from "@/components/seller/OrderInvoice";
 
 export default function OfflineCheckoutPage() {
   const [barcode, setBarcode] = useState("");
@@ -25,6 +26,8 @@ export default function OfflineCheckoutPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [khataModal, setKhataModal] = useState(false);
+  const [shopDetails, setShopDetails] = useState(null);
+  const [invoiceOrder, setInvoiceOrder] = useState(null);
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
@@ -43,6 +46,22 @@ export default function OfflineCheckoutPage() {
 
   useEffect(() => {
     barcodeInputRef.current?.focus();
+  }, []);
+
+  const fetchShopDetails = async () => {
+    try {
+      const res = await fetch("/api/vendor/shop-details");
+      const data = await res.json();
+      if (data.success) {
+        setShopDetails(data.shop);
+      }
+    } catch {
+      // Keep POS flow unaffected if shop meta fetch fails.
+    }
+  };
+
+  useEffect(() => {
+    fetchShopDetails();
   }, []);
 
   // Fetch product search suggestions
@@ -208,9 +227,11 @@ export default function OfflineCheckoutPage() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
+        const createdOrder = await res.json();
         toast.success("Order completed!");
         setCart([]);
         setTotal(0);
+        setInvoiceOrder(createdOrder);
       } else {
         const err = await res.json().catch(() => ({ error: "Failed to create order" }));
         toast.error(err.error);
@@ -268,11 +289,13 @@ export default function OfflineCheckoutPage() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
+        const createdOrder = await res.json();
         toast.success("Saved to Khata!");
         setKhataModal(false);
         setCart([]);
         setTotal(0);
         setCustomer({ name: "", phone: "", initialPayment: "" });
+        setInvoiceOrder(createdOrder);
       } else {
         const err = await res.json().catch(() => ({ error: "Failed to save to Khata" }));
         toast.error(err.error);
@@ -287,7 +310,7 @@ export default function OfflineCheckoutPage() {
 
   // --- Render ---
   return (
-    <div className="max-w-5xl mx-auto p-4 relative space-y-4">
+    <div className="max-w-5xl mx-auto p-3 sm:p-4 relative space-y-4">
 
       {/* --- Page Title --- */}
       <div className="flex items-center gap-2 text-foreground">
@@ -301,15 +324,16 @@ export default function OfflineCheckoutPage() {
         <CardContent className="space-y-4 pt-6">
           {/* 🔍 Search */}
           <div className="flex flex-col gap-2 relative">
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
               <Input
                 placeholder="Scan Barcode"
                 ref={barcodeInputRef}
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="md:w-56"
               />
-              <div className="relative w-full">
+              <div className="relative w-full min-w-0">
                 <Input
                   placeholder="Search by Name"
                   value={searchTerm}
@@ -332,7 +356,7 @@ export default function OfflineCheckoutPage() {
                   </ul>
                 )}
               </div>
-              <Button onClick={() => handleSearch()} disabled={isAdding}>
+              <Button onClick={() => handleSearch()} disabled={isAdding} className="w-full md:w-auto">
                 {isAdding ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> "Adding..."</> : "Add"}
               </Button>
             </div>
@@ -415,12 +439,13 @@ export default function OfflineCheckoutPage() {
 
           {/* 💰 Totals */}
           {/* FIX: border-t -> border-t border-border */}
-          <div className="flex justify-between items-center border-t border-border pt-4">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-t border-border pt-4">
             <h3 className="text-lg font-semibold">Total: Rs. {total.toLocaleString()}</h3>
-            <div className="space-x-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
               <Button
                 onClick={handlePaidCheckout}
                 disabled={!cart.length || isSubmitting}
+                className="w-full"
               >
                 {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> "Processing..."</> : "Checkout (Paid)"}
               </Button>
@@ -428,6 +453,7 @@ export default function OfflineCheckoutPage() {
                 variant="secondary"
                 onClick={openKhataModal}
                 disabled={!cart.length || isSubmitting}
+                className="w-full"
               >
                 Save to Khata
               </Button>
@@ -439,14 +465,14 @@ export default function OfflineCheckoutPage() {
       {/* 📒 Khata Modal */}
       {/* Dialog Content inherits bg-background/bg-card and text-foreground/card-foreground */}
       <Dialog open={khataModal} onOpenChange={setKhataModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Save to Khata</DialogTitle>
           </DialogHeader>
           {/* Main content wrapper */}
           <div className="space-y-4">
             {/* Khata Search Section */}
-            <div className="mt-4">
+            <div className="mt-4 relative">
               <Label>Search Existing Customer</Label>
               <div className="relative mt-1">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -463,7 +489,7 @@ export default function OfflineCheckoutPage() {
               {khataSuggestions.length > 0 && (
                 // FIX: bg-white -> bg-popover (Overlay/Modal Background)
                 // FIX: border -> border-border
-                <ul className="absolute z-50 bg-popover border border-border rounded-md mt-1 w-[calc(100%-48px)] max-h-32 overflow-y-auto shadow-md">
+                <ul className="absolute z-50 bg-popover border border-border rounded-md mt-1 w-full max-h-32 overflow-y-auto shadow-md">
                   {khataSuggestions.map((cust) => (
                     <li
                       key={cust._id}
@@ -549,6 +575,14 @@ export default function OfflineCheckoutPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {invoiceOrder && shopDetails && (
+        <OrderInvoice
+          order={invoiceOrder}
+          shopDetails={shopDetails}
+          onPrintComplete={() => setInvoiceOrder(null)}
+        />
+      )}
     </div>
   );
 }

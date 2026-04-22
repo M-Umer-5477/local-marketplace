@@ -48,11 +48,23 @@ export default function OrderInvoice({ order, shopDetails, onPrintComplete }) {
 
 function generateInvoiceHTML(order, shopDetails) {
   const isDelivery = order.deliveryMode === "home_delivery";
+  const isOfflinePos = order.source === "offline";
   const subtotal = order.items.reduce((sum, item) => sum + item.subtotal, 0);
   const deliveryFee = order.deliveryFee || 0;
   const total = order.total || subtotal + deliveryFee;
   const orderDate = new Date(order.createdAt);
   const prepTime = order.estimatedPrepTime || 15;
+  const primaryPaymentMethod = order.payments?.[0]?.method?.toUpperCase();
+  const paymentLabel = order.isKhata
+    ? `KHATA${order.balance > 0 ? ` (Due Rs.${Number(order.balance).toFixed(2)})` : ""}`
+    : order.isPaid
+      ? `PAID${primaryPaymentMethod ? ` (${primaryPaymentMethod})` : ""}`
+      : "COD";
+  const modeLabel = isOfflinePos
+    ? "In-Store Shopping"
+    : isDelivery
+      ? "Home Delivery"
+      : "Self Pickup";
 
   const itemsHTML = order.items.map((item, idx) => `
     <tr>
@@ -236,11 +248,11 @@ function generateInvoiceHTML(order, shopDetails) {
           <div class="section-header">ORDER INFO</div>
           <div class="row">
             <span class="row-label">Mode:</span>
-            <span class="row-value">${isDelivery ? "Home Delivery" : "Self Pickup"}</span>
+            <span class="row-value">${modeLabel}</span>
           </div>
           <div class="row">
             <span class="row-label">Payment:</span>
-            <span class="row-value">${order.isPaid ? "PAID (Card)" : "COD"}</span>
+            <span class="row-value">${paymentLabel}</span>
           </div>
           ${prepTime ? `
             <div class="row">
