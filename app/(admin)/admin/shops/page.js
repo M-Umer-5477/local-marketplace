@@ -197,9 +197,9 @@ export default function ActiveShopsPage() {
                         <DropdownMenuLabel>Manage Shop</DropdownMenuLabel>
                         
                         {/* 1. View Shop */}
-                        <Link href={`/shops/${shop._id}`} target="_blank">
+                        <Link href={`/admin/shops/${shop._id}`} target="_blank">
                             <DropdownMenuItem className="cursor-pointer">
-                                <ExternalLink className="mr-2 h-4 w-4" /> Visit Storefront
+                                <ExternalLink className="mr-2 h-4 w-4" /> Review Store Products
                             </DropdownMenuItem>
                         </Link>
                         
@@ -301,25 +301,27 @@ export default function ActiveShopsPage() {
                     </>
                 )}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2 text-muted-foreground mt-4">
-              {dialogAction === "Suspended" ? (
-                <>
-                    <p>Are you sure you want to suspend this vendor? This action will:</p>
-                    <ul className="list-disc pl-5 text-sm space-y-1">
-                        <li>Immediately take their shop offline.</li>
-                        <li>Send a permanent suspension warning email to the owner.</li>
-                    </ul>
-                    <p className="mt-2 text-foreground font-semibold">Use this for illegal products, fraud, or intentional debt evasion.</p>
-                </>
-              ) : (
-                <>
-                    <p>Good news! Are you ready to restore this vendor's privileges?</p>
-                    <ul className="list-disc pl-5 text-sm space-y-1">
-                        <li>Their shop will become visible to customers immediately.</li>
-                        <li>An email will be dispatched alerting them of their restored status.</li>
-                    </ul>
-                </>
-              )}
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-muted-foreground mt-4">
+                {dialogAction === "Suspended" ? (
+                  <>
+                      <p>Are you sure you want to suspend this vendor? This action will:</p>
+                      <ul className="list-disc pl-5 text-sm space-y-1">
+                          <li>Immediately take their shop offline.</li>
+                          <li>Send a permanent suspension warning email to the owner.</li>
+                      </ul>
+                      <p className="mt-2 text-foreground font-semibold">Use this for illegal products, fraud, or intentional debt evasion.</p>
+                  </>
+                ) : (
+                  <>
+                      <p>Good news! Are you ready to restore this vendor's privileges?</p>
+                      <ul className="list-disc pl-5 text-sm space-y-1">
+                          <li>Their shop will become visible to customers immediately.</li>
+                          <li>An email will be dispatched alerting them of their restored status.</li>
+                      </ul>
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

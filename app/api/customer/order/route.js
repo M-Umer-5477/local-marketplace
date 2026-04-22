@@ -39,6 +39,13 @@ export async function POST(req) {
           { status: 400 }
         );
       }
+
+      if (!product.isActive || product.isDelistedByAdmin) {
+        return NextResponse.json(
+          { error: `${item.name} is currently unavailable for online sale.` },
+          { status: 400 }
+        );
+      }
     }
 
     // ✅ NEW: 2.5. Validate Minimum Order Amount

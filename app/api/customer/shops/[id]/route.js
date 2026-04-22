@@ -21,8 +21,9 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "Shop not found" }, { status: 404 });
     }
 
-    // 2. Fetch All Active Products for this Shop
-    const products = await Product.find({ shopId: id, isActive: true });
+    // 2. Fetch products visible to customers
+    // isActive: seller visibility toggle, isDelistedByAdmin: compliance moderation toggle.
+    const products = await Product.find({ shopId: id, isActive: true, isDelistedByAdmin: { $ne: true } });
 
     // 3. Extract Unique Categories for the Menu Sidebar
     // (Creates a list like ["Grocery", "Drinks", "Snacks"] dynamically)

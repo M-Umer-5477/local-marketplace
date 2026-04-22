@@ -18,6 +18,8 @@ const productSchema = new mongoose.Schema({
   },
   barcode:{type: String, required: true},
   isActive: { type: Boolean, default: true }, // A switch on the dashboard to quickly hide/show a product
+  isDelistedByAdmin: { type: Boolean, default: false }, // Compliance moderation flag set by admin
+  adminDelistedAt: { type: Date, default: null },
   
   // Link to the shop that owns this product
   shopId: { 
