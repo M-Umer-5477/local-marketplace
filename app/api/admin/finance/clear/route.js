@@ -65,7 +65,7 @@ export async function POST(req) {
             seller: sellerId,
             amount: amountToClear,
             type: "Debit", // Debit because money left the platform
-            category: "Payout",
+            category: "Payout_Withdrawal",
             method: "Manual Payout (Admin)",
             status: "Approved",
             description: "Manual earnings payout initiated by Admin"

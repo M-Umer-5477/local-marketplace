@@ -50,8 +50,11 @@ export async function PUT(req) {
     await db.connect();
     const session = await getServerSession(authOptions);
     const body = await req.json();
+    
 
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || session.user.role !== "seller") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Prepare update object
     let updateData = { ...body };
