@@ -85,7 +85,7 @@ export async function POST(req) {
 
     // --- 4. COMMISSION CALCULATION (NEW) ---
     // Use seller's rate or default to 2%
-    const commRate = seller.commissionRate || 2;
+    const commRate = seller.commissionRate || 3;
     
     // ✅ FIX: Subtract delivery fee so we commission ONLY on product price
     // We use 'finalDeliveryFee' because it handles the Pickup vs Delivery logic

@@ -67,7 +67,7 @@ export async function POST(req) {
     const productSubtotal = totalAmount - deliveryFeeAmount; // Rs. 500
 
     const seller = await Seller.findById(shopId);
-    const commRate = seller.commissionRate || 2;
+    const commRate = seller.commissionRate || 3;
     
     // Calculate commission ONLY on the product subtotal
     const commission = Math.round((productSubtotal * commRate) / 100); 
