@@ -132,14 +132,14 @@ export function CartProvider({ children }) {
         ];
       }
 
-      toast.success("Item added to cart");
-
       return {
         shopId: shop._id,
         shopName: shop.shopName,
         items: newItems,
       };
     });
+
+    toast.success("Item added to cart");
   }, []);
 
   // Confirm shop switch: clear cart then add the pending item
