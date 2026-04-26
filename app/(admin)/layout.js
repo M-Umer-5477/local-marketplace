@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth"; // Depending on your setup, this might be "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/auth"; 
 import AdminLayoutClient from "@/components/nav/AdminLayoutClient";
 
 export default async function AdminLayout({ children }) {

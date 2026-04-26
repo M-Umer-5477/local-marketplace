@@ -39,7 +39,7 @@ export default function MyShopPage() {
       shopBanner: "",
       latitude: 32.5731, // Default Gujrat Lat
       longitude: 74.1005, // Default Gujrat Lng
-      minimumOrderAmount: 0, // ✅ NEW: Minimum order amount
+      minimumOrderAmount: 0, //   Minimum order amount
       savedPayoutDetails: {
         method: "EasyPaisa",
         bankName: "",

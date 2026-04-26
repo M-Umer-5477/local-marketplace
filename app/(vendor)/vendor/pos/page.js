@@ -437,7 +437,7 @@ export default function OfflineCheckoutPage() {
             </table>
           </div>
 
-          {/* 💰 Totals */}
+          {/*  Totals */}
           {/* FIX: border-t -> border-t border-border */}
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-t border-border pt-4">
             <h3 className="text-lg font-semibold">Total: Rs. {total.toLocaleString()}</h3>
@@ -462,7 +462,7 @@ export default function OfflineCheckoutPage() {
         </CardContent>
       </Card>
 
-      {/* 📒 Khata Modal */}
+      {/*  Khata Modal */}
       {/* Dialog Content inherits bg-background/bg-card and text-foreground/card-foreground */}
       <Dialog open={khataModal} onOpenChange={setKhataModal}>
         <DialogContent className="w-[95vw] sm:max-w-md">

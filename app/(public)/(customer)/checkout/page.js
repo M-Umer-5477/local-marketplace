@@ -54,7 +54,7 @@ export default function CheckoutPage() {
     fetchShop();
   }, [cart?.shopId]);
 
-  // 🚨 ACTIVE VALIDATION: Calculate distance on the fly
+  //  ACTIVE VALIDATION: Calculate distance on the fly
   let isOutOfRange = false;
   let currentDistance = 0;
   let isBelowMinimum = false;
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
       }
   }
   
-  // ✅ NEW: Check minimum order amount
+  //  NEW: Check minimum order amount
   const shopMinimum = shopDetails?.minimumOrderAmount || 0;
   if (shopMinimum > 0 && cartTotal < shopMinimum) {
       isBelowMinimum = true;
@@ -82,12 +82,12 @@ export default function CheckoutPage() {
     if (!session) return toast.error("Please login first");
     if (cart.items.length === 0) return toast.error("Cart is empty");
     
-    // ✅ NEW: Check minimum order amount
+    //  NEW: Check minimum order amount
     if (isBelowMinimum) {
         return toast.error(`Minimum order is Rs. ${shopMinimum}. Add Rs. ${remainingForMinimum} more items.`);
     }
     
-    // ✅ Check address selection AND range!
+    //  Check address selection AND range!
     if (deliveryMode === "home_delivery") {
         if (!selectedAddress) {
             return toast.error("Please select a delivery address from the top bar.");
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
 
-                                    {/* 🚨 THE OUT OF RANGE WARNING */}
+                                    {/*  THE OUT OF RANGE WARNING */}
                                     {isOutOfRange && (
                                         <div className="bg-red-100 p-3 rounded-lg flex items-start gap-2 text-sm text-red-700 font-medium">
                                             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -283,7 +283,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between font-bold text-lg"><span>Total</span><span className="text-primary">Rs. {grandTotal}</span></div>
               </div>
 
-              {/* ✅ NEW: Minimum Order Warning */}
+              {/*  NEW: Minimum Order Warning */}
               {shopMinimum > 0 && (
                 <div className={`p-3 rounded-lg text-sm ${isBelowMinimum ? "bg-amber-50 border border-amber-200 text-amber-800" : "bg-green-50 border border-green-200 text-green-800"}`}>
                   {isBelowMinimum ? (
@@ -297,7 +297,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* 🚨 BUTTON DISABLED IF OUT OF RANGE OR BELOW MINIMUM */}
+              {/*  BUTTON DISABLED IF OUT OF RANGE OR BELOW MINIMUM */}
               <Button 
                 size="lg" 
                 className="w-full mt-4 shadow-xl" 

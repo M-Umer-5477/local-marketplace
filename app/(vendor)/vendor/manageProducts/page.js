@@ -32,17 +32,12 @@ export default function ManageProductsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
 
-  // const { data: session, status } = useSession(); // 👈 REMOVED
-  // const router = useRouter(); // 👈 REMOVED
 
-  // ✅ Get user from context. We trust this exists because the layout checked.
-  const { user } = useSeller(); // 👈 ADDED
-  const userId = user.id; // 👈 ADDED (Renamed from user.id for minimal changes below)
 
-  // ❌ REMOVED useMemo block. We get 'user' directly from the context.
-  // ❌ REMOVED redirect useEffect. The layout handles this.
+ 
+  const { user } = useSeller(); 
+  const userId = user.id; 
 
-  // ✅ Fetch products
   const fetchProducts = async () => {
     if (!userId) return; // This check is still good practice
     setIsLoading(true);
@@ -58,7 +53,7 @@ export default function ManageProductsPage() {
     }
   };
 
-  // ✅ Fetch once userId is available from our context
+  //  Fetch once userId is available from our context
   useEffect(() => {
     // If component renders, we are "authenticated"
     // Just wait for userId to be available.
@@ -67,19 +62,19 @@ export default function ManageProductsPage() {
     }
   }, [userId]); // 👈 CHANGED dependency
 
-  // ✅ Add Product
+  //  Add Product
   const handleAddProduct = () => {
     setEditingProduct(null);
     setIsFormOpen(true);
   };
 
-  // ✅ Edit Product
+  //  Edit Product
   const handleEditProduct = (product) => {
     setEditingProduct(product);
     setIsFormOpen(true);
   };
 
-  // ✅ Delete Product
+  //  Delete Product
   const handleDeleteClick = (product) => {
     setProductToDelete(product);
     setIsDeleteDialogOpen(true);
@@ -106,7 +101,7 @@ export default function ManageProductsPage() {
     }
   };
 
-  // ✅ Save Product (Create or Update)
+  //  Save Product (Create or Update)
   const handleSaveProduct = async (productData) => {
     if (!userId) return; // 'userId' is now from useSeller()
     setIsFormSaving(true);
@@ -149,7 +144,7 @@ export default function ManageProductsPage() {
     }
   };
 
-  // ✅ Toggle Active
+  //  Toggle Active
   const handleToggleActive = async (product, checked) => {
     // This function did not depend on userId, so it is unchanged.
     try {
@@ -173,7 +168,7 @@ export default function ManageProductsPage() {
     }
   };
 
-  // ✅ Render (This entire section is unchanged)
+  //  Render (This entire section is unchanged)
   return (
     <div className="flex-1 space-y-4 p-4 bg-background md:">
       <div className="flex items-center justify-between">

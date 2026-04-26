@@ -99,7 +99,7 @@ export default function SellerOrdersPage() {
         );
         setOrders(updatedOrders);
         
-        // 🚨 NEW: Trigger invoice print when order is confirmed
+        //  Trigger invoice print when order is confirmed
         if (newStatus === "Confirmed") {
           const confirmedOrder = updatedOrders.find(o => o._id === orderId);
           setInvoiceOrder(confirmedOrder);
@@ -154,7 +154,7 @@ export default function SellerOrdersPage() {
     window.open(url, "_blank");
   };
 
-  // 🚨 UPDATED FILTER: "Returned" and "Not_Picked_Up" moves to history automatically
+  //  "Returned" and "Not_Picked_Up" moves to history automatically
   const activeOrders = orders.filter(o => !["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(o.orderStatus)&& o.source !== "offline");
   const historyOrders = orders.filter(o => ["Delivered", "Picked_Up", "Cancelled", "Returned", "Not_Picked_Up"].includes(o.orderStatus) && o.source !== "offline");
 
@@ -251,7 +251,7 @@ export default function SellerOrdersPage() {
         />
       )}
 
-      {/* 🚨 MODAL 1: CANCEL ORDER (Reject at Pending state) */}
+      {/*  CANCEL ORDER (Reject at Pending state) */}
       <Dialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -307,7 +307,7 @@ export default function SellerOrdersPage() {
       </Dialog>
 
 
-      {/* 🚨 MODAL 2: RETURN ORDER (Customer refused at door) */}
+      {/*  RETURN ORDER (Customer refused at door) */}
       <Dialog open={!!orderToReturn} onOpenChange={(open) => !open && setOrderToReturn(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -341,7 +341,7 @@ export default function SellerOrdersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 🚨 MODAL 3: NOT PICKED UP ORDER (Customer no-show) */}
+      {/*  NOT PICKED UP ORDER (Customer no-show) */}
       <Dialog open={!!orderToNotPickUp} onOpenChange={(open) => !open && setOrderToNotPickUp(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -586,7 +586,7 @@ function OrderCard({ order, onUpdate, updating, onShare, onCancelRequest, onRetu
              </Button>
          )}
 
-         {/* 🚨 THE UPDATED OUT FOR DELIVERY SECTION 🚨 */}
+         {/*  THE UPDATED OUT FOR DELIVERY SECTION  */}
          {order.orderStatus === "Out_for_Delivery" && (
              <div className="w-full space-y-1.5">
                  <Button variant="secondary" size="sm" className="w-full h-8 text-xs text-green-700 bg-green-100 hover:bg-green-200 border border-green-200" onClick={() => onShare(order)}>

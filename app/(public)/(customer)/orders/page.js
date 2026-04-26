@@ -69,7 +69,7 @@ export default function MyOrdersPage() {
   // FILTERING
   const activeOrders = orders.filter(o => ACTIVE_STATUSES.includes(o.orderStatus));
 
-  // 🚨 ADDED "Returned" to move it to the past orders tab
+  //  ADDED "Returned" to move it to the past orders tab
   const pastOrders = orders.filter(o =>
     ["Delivered", "Cancelled", "Picked_Up", "Returned", "Not_Picked_Up"].includes(o.orderStatus)
   );

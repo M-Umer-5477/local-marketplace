@@ -16,9 +16,7 @@ import { toast } from "sonner";
 import PayDuesModal from "@/components/seller/PayDuesModal";
 import WithdrawModal from "@/components/seller/WithdrawModal";
 
-/* ------------------------------------------------------------------ */
-/*  Wallet Page – Inner Content (needs Suspense for useSearchParams)   */
-/* ------------------------------------------------------------------ */
+
 function WalletContent() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -243,9 +241,7 @@ function WalletContent() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Default Export – wraps content in Suspense for useSearchParams     */
-/* ------------------------------------------------------------------ */
+
 export default function WalletPage() {
   return (
     <Suspense
