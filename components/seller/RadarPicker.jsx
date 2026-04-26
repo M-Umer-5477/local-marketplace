@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback, useMemo } from "react";
 import { GoogleMap, Marker, Circle, useJsApiLoader } from "@react-google-maps/api";
-import { Loader2, MapPin, Navigation } from "lucide-react";
+import { Loader2, MapPin, Navigation, AlertTriangle } from "lucide-react";
 
 const containerStyle = {
   width: "100%",
@@ -12,10 +12,12 @@ const containerStyle = {
 // Libraries must be defined outside component to avoid re-renders
 const LIBRARIES = ["places", "geometry"];
 
-export default function RadarPicker({ position, radius, onLocationChange }) {
+export default function RadarPicker({ position, radius = 3, onLocationChange }) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY,
+    googleMapsApiKey: apiKey || "",
     libraries: LIBRARIES,
   });
 
@@ -28,6 +30,9 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
       ? position 
       : defaultCenter;
   }, [position, defaultCenter]);
+
+  // Safe radius — guard against NaN
+  const safeRadius = typeof radius === "number" && !isNaN(radius) ? radius : 3;
 
   // Handle Marker Drag
   const onMarkerDragEnd = useCallback((e) => {
@@ -48,9 +53,18 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
     draggable: false,
     editable: false,
     visible: true,
-    radius: radius * 1000, // Convert km to meters
+    radius: safeRadius * 1000, // Convert km to meters
     zIndex: 1
   };
+
+  // Fallback if API key is missing
+  if (!apiKey) return (
+    <div className="h-[400px] w-full flex flex-col items-center justify-center bg-muted border rounded-xl border-dashed gap-2">
+      <AlertTriangle className="h-8 w-8 text-amber-500" />
+      <p className="text-sm text-muted-foreground">Google Maps API key not configured.</p>
+      <p className="text-xs text-muted-foreground">Set NEXT_PUBLIC_GOOGLE_MAPS_KEY in your .env file.</p>
+    </div>
+  );
 
   if (!isLoaded) return (
     <div className="h-[400px] w-full flex flex-col items-center justify-center bg-muted border rounded-xl border-dashed">
@@ -58,6 +72,9 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
       <p className="text-sm text-muted-foreground mt-2">Loading Radar Map...</p>
     </div>
   );
+
+  // Safely access google maps animation — typeof guard prevents SSR ReferenceError
+  const markerAnimation = typeof window !== "undefined" ? window.google?.maps?.Animation?.DROP : undefined;
 
   return (
     <div className="relative border rounded-xl overflow-hidden shadow-sm group">
@@ -76,7 +93,7 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
           position={center}
           draggable={true}
           onDragEnd={onMarkerDragEnd}
-          animation={window.google?.maps?.Animation?.DROP}
+          animation={markerAnimation}
         />
 
         {/* 2. The Delivery Radius Circle */}
@@ -89,7 +106,7 @@ export default function RadarPicker({ position, radius, onLocationChange }) {
       {/* Floating Info Badge */}
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg border text-xs z-10 max-w-[200px]">
          <p className="font-bold text-primary mb-1 flex items-center gap-1">
-            <Navigation className="w-3 h-3" /> Radar Active: {radius} KM
+            <Navigation className="w-3 h-3" /> Radar Active: {safeRadius} KM
          </p>
          <p className="text-gray-600 leading-tight">
             Customers inside the blue circle can see & order from you.
