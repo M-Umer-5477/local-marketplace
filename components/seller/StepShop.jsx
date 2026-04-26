@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import LocationPicker from "@/components/maps/LocationPicker"; 
-// ✅ IMPORT THE NEW COMPONENT
+
 import ImageUpload from "@/components/seller/image-upload"; 
 
 export default function StepShop({ nextStep, prevStep, data }) {
@@ -140,7 +140,7 @@ export default function StepShop({ nextStep, prevStep, data }) {
               </div>
           </div>
 
-          {/* ✅ UPDATED IMAGE UPLOAD SECTION */}
+          {/*  UPDATED IMAGE UPLOAD SECTION */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium mb-2">Shop Logo</p>

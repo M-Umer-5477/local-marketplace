@@ -20,12 +20,10 @@ export default function SellerForm() {
   const steps = ["Personal", "Shop", "Documents", "Review"];
 
   return (
-    // ✅ SIMPLIFIED WRAPPER:
-    // Removed all max-w- and padding classes.
-    // Let the parent page control the layout.
+ 
     <div className="w-full">
       <div>
-        {/* Stepper progress bar - This part is perfect, no changes needed */}
+  
         <div className="relative mb-8">
           <div className="flex justify-between mb-2 text-sm font-medium">
             {steps.map((label, i) => (
@@ -51,7 +49,7 @@ export default function SellerForm() {
           </div>
         </div>
 
-        {/* Steps - No changes to logic */}
+       
        {step === 1 && <StepPersonal nextStep={nextStep} data={formData} />}
       {step === 2 && <StepShop nextStep={nextStep} prevStep={prevStep} data={formData} />}
       {step === 3 && <StepDocs nextStep={nextStep} prevStep={prevStep} data={formData} />}

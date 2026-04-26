@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// ✅ IMPORT NEW UPLOADER
+
 import ProductImageUpload from "@/components/seller/Product-image-Uploader";
 
 export default function ProductForm ({ product, onSave, onCancel, isLoading }) {

@@ -28,7 +28,7 @@ export function AddressProvider({ children }) {
         if (data.success && data.addresses.length > 0) {
           setAddresses(data.addresses);
           
-          // 🧠 UX Magic: Check if they previously selected an address in this browser
+          //  UX Magic: Check if they previously selected an address in this browser
           const savedAddressId = localStorage.getItem("selectedAddressId");
           let active = null;
           

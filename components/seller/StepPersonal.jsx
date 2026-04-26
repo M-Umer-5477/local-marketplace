@@ -13,7 +13,13 @@ const schema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().regex(/^03\d{9}$/, "Enter a valid 11-digit phone number (03XXXXXXXXX)"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
   confirmPassword: z.string().min(1, "Please confirm your password"),
   cnic: z.string().regex(/^\d{5}-?\d{7}-?\d$/, "Enter a valid 13-digit CNIC (e.g. 12345-1234567-8)"),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -158,4 +164,4 @@ export default function StepPersonal({ nextStep, data }) {
       </form>
     </Card>
   );
-}
+}

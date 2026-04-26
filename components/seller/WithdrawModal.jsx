@@ -20,7 +20,7 @@ export default function WithdrawModal({ balance, savedPayoutDetails, onSuccess }
   const [accountNumber, setAccountNumber] = useState(savedPayoutDetails?.accountNumber || "");
   const [accountTitle, setAccountTitle] = useState(savedPayoutDetails?.accountTitle || "");
 
-  // ✅ Auto-Fill from previous session
+  // Auto-Fill from previous session
   useEffect(() => {
     if (savedPayoutDetails) {
       if (savedPayoutDetails.method) setMethod(savedPayoutDetails.method);

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, UploadCloud, X, Camera, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
-// 🚨 PASTE YOUR REMOVE.BG API KEY HERE 🚨
+ 
 const REMOVE_BG_API_KEY = process.env.NEXT_PUBLIC_REMOVE_BG_API_KEY;
 
 export default function ProductImageUpload({ 
@@ -33,7 +33,7 @@ export default function ProductImageUpload({
 
     let fileToUpload = originalFile;
 
-    // 🌟 1. BULLETPROOF REMOVE.BG API CALL 🌟
+    
     try {
       setAiProcessing(true);
       toast.loading("AI is cleaning the image...", { id: "ai-toast" });
@@ -64,7 +64,7 @@ export default function ProductImageUpload({
       setAiProcessing(false);
     }
 
-    // ☁️ 2. CLOUDINARY UPLOAD (Unchanged and working perfectly) ☁️
+    
     setUploading(true);
     const formData = new FormData();
     formData.append("file", fileToUpload); 

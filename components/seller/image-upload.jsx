@@ -113,7 +113,7 @@ export default function ImageUpload({
           type="file" 
           className="hidden" 
           accept="image/*" 
-          // ✅ This enables camera on mobile
+          //  This enables camera on mobile
           capture={capture} 
           onChange={handleFileChange} 
           disabled={uploading}

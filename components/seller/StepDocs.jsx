@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// ✅ Import the new, cleaner uploader
+
 import ImageUpload from "@/components/seller/image-upload";
 
 export default function StepDocs({ nextStep, prevStep, data }) {
