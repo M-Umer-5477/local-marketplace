@@ -26,6 +26,8 @@ import {
   ChevronRight,
   MapPin,
   X,
+  Info,
+  MessageSquare,
 } from "lucide-react";
 
 // ShadCN UI Components
@@ -182,6 +184,14 @@ export default function MainNavbar() {
               Become a Seller
             </NavLink>
           )}
+
+          <NavLink href="/about" pathname={pathname}>
+            About
+          </NavLink>
+
+          <NavLink href="/contact" pathname={pathname}>
+            Contact
+          </NavLink>
         </nav>
 
         {/* ═══════════════════════════════════════════════════
@@ -434,6 +444,22 @@ export default function MainNavbar() {
                         onClick={() => setOpen(false)}
                       />
                     )}
+
+                    <MobileNavLink
+                      href="/about"
+                      icon={Info}
+                      label="About MartLy"
+                      pathname={pathname}
+                      onClick={() => setOpen(false)}
+                    />
+
+                    <MobileNavLink
+                      href="/contact"
+                      icon={MessageSquare}
+                      label="Contact Us"
+                      pathname={pathname}
+                      onClick={() => setOpen(false)}
+                    />
                   </div>
                 </div>
 
