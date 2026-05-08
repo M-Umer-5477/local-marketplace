@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   LogOut,
   LayoutDashboard,
+  Settings,
   Store,
   Home,
   ShoppingBag,
@@ -228,9 +229,9 @@ export default function MainNavbar() {
                         {getInitials(session.user?.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-semibold text-foreground max-w-[100px] truncate hidden xl:inline">
+                    {/* <span className="text-sm font-semibold text-foreground max-w-[100px] truncate hidden xl:inline">
                       {session.user?.name?.split(" ")[0]}
-                    </span>
+                    </span> */}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -259,12 +260,20 @@ export default function MainNavbar() {
                   <DropdownMenuSeparator />
 
                   {session.user?.role === "customer" && (
-                    <Link href="/dashboard">
-                      <DropdownMenuItem className="cursor-pointer gap-2.5 px-4 py-2.5 rounded-lg mx-1">
-                        <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                        <span>Dashboard</span>
-                      </DropdownMenuItem>
-                    </Link>
+                    <>
+                      <Link href="/dashboard">
+                        <DropdownMenuItem className="cursor-pointer gap-2.5 px-4 py-2.5 rounded-lg mx-1">
+                          <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                          <span>Dashboard</span>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/profile">
+                        <DropdownMenuItem className="cursor-pointer gap-2.5 px-4 py-2.5 rounded-lg mx-1">
+                          <Settings className="h-4 w-4 text-muted-foreground" />
+                          <span>Account Settings</span>
+                        </DropdownMenuItem>
+                      </Link>
+                    </>
                   )}
                   <Link href="/orders">
                     <DropdownMenuItem className="cursor-pointer gap-2.5 px-4 py-2.5 rounded-lg mx-1">
@@ -380,13 +389,22 @@ export default function MainNavbar() {
                     )}
 
                     {session && session.user?.role === "customer" && (
-                      <MobileNavLink
-                        href="/dashboard"
-                        icon={LayoutDashboard}
-                        label="Dashboard"
-                        pathname={pathname}
-                        onClick={() => setOpen(false)}
-                      />
+                      <>
+                        <MobileNavLink
+                          href="/dashboard"
+                          icon={LayoutDashboard}
+                          label="Dashboard"
+                          pathname={pathname}
+                          onClick={() => setOpen(false)}
+                        />
+                        <MobileNavLink
+                          href="/profile"
+                          icon={Settings}
+                          label="Account Settings"
+                          pathname={pathname}
+                          onClick={() => setOpen(false)}
+                        />
+                      </>
                     )}
 
                     <MobileNavLink

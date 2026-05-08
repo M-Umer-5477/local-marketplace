@@ -357,8 +357,8 @@ export default function CustomerDashboard() {
                 </div>
 
                 <div className="pt-2">
-                  <Button variant="outline" className="w-full" disabled>
-                    Edit Profile (Coming Soon)
+                  <Button variant="outline" onClick={() => router.push("/profile")} className="w-full" >
+                    Edit Profile
                   </Button>
                 </div>
               </div>

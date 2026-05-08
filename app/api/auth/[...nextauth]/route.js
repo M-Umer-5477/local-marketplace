@@ -49,13 +49,25 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.role = user.role;
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.role = user.role;
+        token.name = user.name;
+        token.email = user.email;
+      }
+
+      if (trigger === "update" && session) {
+        if (session.name) token.name = session.name;
+        if (session.email) token.email = session.email;
+      }
+
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.sub;
       session.user.role = token.role;
+      if (token.name) session.user.name = token.name;
+      if (token.email) session.user.email = token.email;
       return session;
     },
     async redirect({ baseUrl, user }) {

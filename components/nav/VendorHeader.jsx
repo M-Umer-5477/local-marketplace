@@ -54,6 +54,7 @@ const VendorHeader = ({ isCollapsed, onToggleSidebar, session }) => {
     { href: "/vendor/khata", label: "Customer Khata", icon: BookUser },
     { href: "/vendor/wallet", label: "Shop Wallet", icon: Wallet },
     { href: "/vendor/myShop", label: "View My Shop", icon: Store },
+    { href: "/vendor/settings", label: "Account Settings", icon: Settings },
   ];
 
 
